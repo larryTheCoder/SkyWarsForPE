@@ -1,0 +1,56 @@
+name: SkyWarsForPE
+main: SkyWarsForPE\Main
+version: 1.0.0beta
+api: [1.10.0]
+load: POSTWORLD
+authors: [LarryTheCoder]
+website: https://github.com/larryTheCoder/SkyWarsForPE
+
+commands:
+ skywarshowto:
+  description: "gives a brief tutorial on how to play skywars"
+  usage: "/skywarshowto"
+  permission: skywars.howto
+ skywars:
+  description: "the main skywars command"
+  usage: "/skywars <play|exit>"
+  aliases: "sw"
+permissions:
+ skywars:
+  description: "Allows to access all sw features"
+  default: op
+  children:
+   skywars.editlobby:
+    description: "Edit the lobby"
+    default: op
+   skywars.command:
+    description: "Runs all commands"
+    default: op
+    children:
+     skywars.command.play:
+      description: "Plays a skywars game"
+      default: true
+     skywars.command.exit:
+      description: "Exit from a game using a command"
+      default: true
+     skywars.command.left:
+      description: "See how many players are left till the game begin"
+      default: true
+     skywars.command.stat:
+      description: "See players stat"
+      default: true
+     skywars.command.pos:
+      description: "Sets a new spawnpoint"
+      default: op
+     skywars.command.skiptime:
+      description: "Skip the time before a match"
+      default: op
+     skywars.command.see:
+      description: "See a match as a spectator"
+      default: true
+ # skywars.event.skbypass:
+  #  description: "bypass the time"
+   # default: op
+
+
+

@@ -1,2 +1,3 @@
-# SkyWarsForPE
-A SkyWars Plugin
+SkyWars Plugin!
+Please fork with me
+
