@@ -1,3 +1,3 @@
-SkyWars Plugin!
-Please fork with me
+Skywars Plugins
 
+SkyWars plugin is not ready to realese
