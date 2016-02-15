@@ -1,5 +1,5 @@
 name: SkyWarsForPE
-main: SkyWarsForPE\Main
+main: SkyWarsForPE/Main
 version: 1.0.0beta
 api: [1.10.0]
 load: POSTWORLD
