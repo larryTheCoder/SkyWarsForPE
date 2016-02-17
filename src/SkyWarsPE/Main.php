@@ -68,7 +68,10 @@ private $aplayers = 0;
 			case "skywars": 
 			case "sw":  //same as setting aliases in plugin.yml, both cmds (skywars & sw) are usable
 			case "sk":
-				switch($args[0]){
+                        {
+                            $cmd = strtolower($cmd);
+                            if(count($args) > 0){
+		            switch($args[0]){
 					case "play":
 						if($sender->hasPermission("skywars.command.play") or $sender->hasPermission("skywars.command") or $sender->hasPermission("skywars")){
 							if($this->aplayers >= $this->getConfig()->get('neededplayers') and $this->skywarsstarted == false){ //if players in the world are more or equal as the max players
@@ -205,7 +208,7 @@ private $aplayers = 0;
 					default:
 						return false;
 				}
-				
+                        }	
 		}
 	}
 	
