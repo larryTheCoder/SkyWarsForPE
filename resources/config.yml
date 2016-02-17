@@ -1,5 +1,6 @@
 ===
 chat-format: true
+Prefix: "&9[&cSkyWars&9] "
 lobby: world
 sksign: sign
 aworld: swaworld
