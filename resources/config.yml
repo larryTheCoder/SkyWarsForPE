@@ -1,0 +1,37 @@
+## SkyWarsForPE config
+---
+Language: "English"
+Prefix: "&9[&cSkyWars&9] "
+#Game lobby location
+lobby:
+    x: 1
+    y: 1
+    z: 1
+    world:  lobby
+chat-format: true
+sksign: sign
+aworld: SkyWars
+spectatorspawn:
+  - 128
+  - 70
+  - 128
+neededplayers: 6
+minplayers: 3
+spawns:
+  - - 272
+    - 0
+    - 1
+  - - 260
+    - 0
+    - 5
+  - - 260
+    - 0
+    - 5
+  - - 280
+    - 0
+    - 5
+  - - 292
+    - 0
+    - 5
+---
+
