@@ -254,13 +254,14 @@ class SkyWarsForPE extends PluginBase implements Listener{
     public function onBlockBreak(BlockBreakEvent $event){
 	if($event->getPlayer()->getLevel()->getName() == $this->getConfig()->get('lobby') and !$event->getPlayer()->hasPermission("skywars.editlobby") || !$event->getPlayer()->hasPermission("skywars")){ //if level is lobby and player hasn't the permission to modify it
 		$event->setCancelled(); // cancel the event
-                $sender->sendMessage($this->getPrefix().$this->getMsg('lobby_break'));
+                $event->sendMessage($this->getPrefix().$this->getMsg('lobby_break'));
 	}
     }
 	
     public function onBlockPlace(BlockPlaceEvent $event){
 	if($event->getPlayer()->getLevel()->getName() == $this->getConfig()->get('lobby') and !$event->getPlayer()->hasPermission("skywars.editlobby") || !$event->getPlayer()->hasPermission("skywars")){
 		$event->setCancelled();
+		$event->sendMessage($this->getPrefix().$this->getMsg('lobby_Place'));
 	}
 	if($event->getPlayer()->getLevel()->getName() == $this->getConfig()->get('aworld') and $event->getPlayer()->getGameMode() == 3){
 		$event->setCancelled();
