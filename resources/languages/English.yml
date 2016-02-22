@@ -1,0 +1,15 @@
+## English translation by larryTheCoder
+---
+plugin_load: "SkyWars Plugin is loading..."
+plugin_enabled: "SkyWars Plugin Loaded!"
+Beta_Build: "&bIts seems that you using &6BETA BUILD,&bits may cointain &6BUGS &bor &6CRASHES."
+plugin_disabled: "SkyWars disabled!"
+lobby_hurt: "&4You cant hurt players in lobby!"
+game_full: "&aThe game is full"
+send_game: "&bTeleprted to game world"
+game_started: "&4The Game has already started!"
+has_not_permission: "&4You Dont Have Permission To Do This Command!"
+win_game: "&bYou Won The Match!"
+player_killed1: "$victim."[".$this->getConfig()->get($victim[2])."] was killed by ".$killer->getName()."[".$this->getConfig()->get($killer->getName()[2])."]. ".$this->getConfig()->get('aworld'['neededplayers']) - $this->aplayers." players remaining""
+player_killed2: "$victim."[".$this->getConfig()->get($victim[2])."] died."
+language: "Selected language {$this->cfg->get('Language')}"
