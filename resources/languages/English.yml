@@ -1,9 +1,9 @@
 ## English translation by larryTheCoder
 ---
-plugin_load: "SkyWars Plugin is loading..."
-plugin_enabled: "SkyWars Plugin Loaded!"
+plugin_load: "&eSkyWars Plugin is loading..."
+plugin_enabled: "&bSkyWars Plugin Loaded!"
 Beta_Build: "&bIts seems that you using &6BETA BUILD,&bits may cointain &6BUGS &bor &6CRASHES."
-plugin_disabled: "SkyWars disabled!"
+plugin_disabled: "&4SkyWars disabled!"
 lobby_hurt: "&4You cant hurt players in lobby!"
 game_full: "&aThe game is full"
 send_game: "&bTeleprted to game world"
