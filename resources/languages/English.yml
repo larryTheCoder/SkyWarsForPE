@@ -1,15 +1,30 @@
 ## English translation by larryTheCoder
 ---
-plugin_load: "&eSkyWars Plugin is loading..."
-plugin_enabled: "&bSkyWars Plugin Loaded!"
-Beta_Build: "&bIts seems that you using &6BETA BUILD,&bits may cointain &6BUGS &bor &6CRASHES."
-plugin_disabled: "&4SkyWars disabled!"
+
+plugin_disabled: "SkyWars disabled!"
 lobby_hurt: "&4You cant hurt players in lobby!"
 game_full: "&aThe game is full"
 send_game: "&bTeleprted to game world"
 game_started: "&4The Game has already started!"
-has_not_permission: "&4You Dont Have Permission To Do This Command!"
+has_not_permission: "&cYou dont have permission to do this command!"
 win_game: "&bYou Won The Match!"
-player_killed1: "$victim."[".$this->getConfig()->get($victim[2])."] was killed by ".$killer->getName()."[".$this->getConfig()->get($killer->getName()[2])."]. ".$this->getConfig()->get('aworld'['neededplayers']) - $this->aplayers." players remaining""
-player_killed2: "$victim."[".$this->getConfig()->get($victim[2])."] died."
-language: "Selected language {$this->cfg->get('Language')}"
+###################
+#Commands messages#
+###################
+has_not_permission: "&cYou do not have permission to use this command"
+#invalid arguments in setup mode
+invalid_arguments: "&cInvalid arguments\n&6use: &a&o&lhelp"
+SkyWars_help: "&6use /sw help"
+join_help: "&6use /sw join &a[arena name]"
+leave_help: "&6use /sw leave &a[arena name]"
+start_help: "&6use /sw start &a[arena name]"
+stop_help: "&6use /sw stop &a[arena name]"
+kick_help: "&6use /sw kick &a[arena name] [player name]"
+set_help: "&6use /sw set &a[arena name]"
+create_help: "&6use /sw create &a[arena name]"
+delete_help: "&6use /sw delete &a[arena name]"
+setlobby_help: "&6use /&asetlobby"
+game_started: "&bThe Game has already started!"
+use_cmd_in_game: "&6You can use this only in-game"
+arena_not_running: "&6Arena is not in-game!"
+player_not_exist: "&cPlayer is not in arena"

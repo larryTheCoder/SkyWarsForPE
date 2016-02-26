@@ -1,22 +1,19 @@
 name: SkyWarsForPE
-main: SkyWarsForPE/Main
-version: 0.0.2beta
-api: [1.10.0]
+main: larryTheCoder\SkyWarsListener
+version: 1.0.0beta
+api: 1.12.0
 load: POSTWORLD
+description: ["The Multiplayer System Called SkyWars"]
 authors: [LarryTheCoder]
 website: https://github.com/larryTheCoder/SkyWarsForPE
+softdepend: ["EconomyAPI", "PocketMoney", "MassiveEconomy", "GoldStd"] 
 
 commands:
- skywarshowto:
-  description: "gives a brief tutorial on how to play skywars"
-  usage: "/skywarshowto"
-  permission: skywars.howto
- skywars:
-  description: "the main skywars command"
-  usage: "/skywars <play|exit>"
-  aliases: "sw"
-permissions:
- skywars:
+ sw:
+  description: "Main skywars command"
+  
+permission:
+ sw:
   description: "Allows to access all sw features"
   default: op
   children:
@@ -27,30 +24,27 @@ permissions:
     description: "Runs all commands"
     default: op
     children:
-     skywars.command.play:
-      description: "Plays a skywars game"
-      default: true
-     skywars.command.exit:
-      description: "Exit from a game using a command"
-      default: true
-     skywars.command.left:
-      description: "See how many players are left till the game begin"
-      default: true
-     skywars.command.stat:
-      description: "See players stat"
-      default: true
-     skywars.command.pos:
-      description: "Sets a new spawnpoint"
-      default: op
-     skywars.command.skiptime:
-      description: "Skip the time before a match"
-      default: op
-     skywars.command.see:
-      description: "See a match as a spectator"
-      default: true
+     skywars.editlobby:
+     description: "Edit the lobby"
+     default: op
+    sw.command.help:
+     description: "How to play SkyWars"
+     default: true
+    sw.command.lobby:
+     description: "Go to lobby"
+     default: true
+    sw.command.play:
+     decription: "Play skywars!"
+     default: true
+    sw.command.stat:
+     description: "See your stat"
+     default: true
+    sw.command.spawnpos:
+     description: "Set spawn pos"
+     default: op
+    sw.command.setlobby:
+     description: "set lobby"
+     default: op
  # skywars.event.skbypass:
   #  description: "bypass the time"
-   # default: op
-
-
-
+   # default: op   
