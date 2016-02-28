@@ -1,50 +1,8 @@
 name: SkyWarsForPE
-main: larryTheCoder\SkyWarsListener
+main: larryTheCoder\SkyWarsAPI
 version: 1.0.0beta
 api: 1.12.0
-load: POSTWORLD
 description: ["The Multiplayer System Called SkyWars"]
 authors: [LarryTheCoder]
-website: https://github.com/larryTheCoder/SkyWarsForPE
-softdepend: ["EconomyAPI", "PocketMoney", "MassiveEconomy", "GoldStd"] 
 
-commands:
- sw:
-  description: "Main skywars command"
-  
-permission:
- sw:
-  description: "Allows to access all sw features"
-  default: op
-  children:
-   skywars.editlobby:
-    description: "Edit the lobby"
-    default: op
-   skywars.command:
-    description: "Runs all commands"
-    default: op
-    children:
-     skywars.editlobby:
-     description: "Edit the lobby"
-     default: op
-    sw.command.help:
-     description: "How to play SkyWars"
-     default: true
-    sw.command.lobby:
-     description: "Go to lobby"
-     default: true
-    sw.command.play:
-     decription: "Play skywars!"
-     default: true
-    sw.command.stat:
-     description: "See your stat"
-     default: true
-    sw.command.spawnpos:
-     description: "Set spawn pos"
-     default: op
-    sw.command.setlobby:
-     description: "set lobby"
-     default: op
- # skywars.event.skbypass:
-  #  description: "bypass the time"
-   # default: op   
+ 
