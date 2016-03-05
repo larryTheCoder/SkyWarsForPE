@@ -1,9 +1,13 @@
 Skywars Plugin
 ======
-**SkyWars plugin is not ready to realese**
-
 </br>
-this skywars plugin is forked by PocketWariors
+**SkyWars plugin for PE**
+<br>
 </br>
+This plugin is not **completed** yet because its need to fix some **Bugs**
+</br>
+Commands:
 
-https://github.com/PocketWarriors/SkywarsPe
+* /sw = Main SkyWars command
+
+
