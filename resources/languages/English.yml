@@ -1,0 +1,28 @@
+## English translation by larryTheCoder
+---
+config_not_created: "&cConfig not created...creating new one"
+has_not_permission: "&cYou dont have permission to do this command"
+invalid_arguments: "&cInvalid arguments\n&6use: &a&o&lhelp"
+error: "&cWoops something not right with config"
+not_in_game: "&cYou are not in game!"
+left: "&aPlayer&c %1&a exit from game"
+back_lobby: "&bBack to lobby..."
+game_loaded: "&aGame has been loaded"
+###############################
+#SkyWars help command messages#
+###############################
+lobby: "\n- &2/lobby &l&5»&r&f Teleport to lobby"
+set: "\n- &2/sw kick &l&5»&r&f Set an arena"
+start: "\n- &2/sw set  &l&5»&r&f Force start game"
+reload: "\n- &2/sw reload &b[arena name] &l&5»&r&f Reload the arena"
+kick: "\n- &2/sw kick &b[arena name] [player name] [reason] &l&5»&r&f Kick player from arena"
+remove: "\n- &2/sw remove &l&5»&r&f Remove all Arena data"
+###################
+#Commands messages#
+###################
+use_cmd_in_game: "&6You can use this only in-game"
+succeeded_reload: "&bsucceeded in deleting game settings"
+Force_succeed: "&cForce start game..."
+Succeed_reload: "&bArena has been reloaded!"
+stopgame1: "&cOuch looks like there is less than 2 players..Stopping the game"
+

@@ -1,0 +1,13 @@
+---
+endTime: 180
+gameTime: 240
+waitTime: 60
+godTime: 60
+## Available language [English] we expected new update :D
+Language: English
+Prefix: ' &9[ &cSkyWars&9 ] '
+chat-format: true
+welcome-message: true
+Auth-Server: true
+
+...

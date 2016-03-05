@@ -1,8 +1,35 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsAPI
-version: 1.0.0beta
-api: 1.12.0
-description: ["The Multiplayer System Called SkyWars"]
-authors: [LarryTheCoder]
+version: "1.6.5_Pre-Release10"
+api: [1.12.0]
+load: STARTUP
+author: larryTheCoder
 
- 
+commands:
+    sw:
+        description: "Main skywars command"
+    lobby:
+        description: "Back to lobby"
+        
+permission:
+    lobby:
+        description: "Back to lobby"
+        default: true
+    sw:
+        default: op
+        children:
+            sw.command:
+                default: true
+                children:
+                    sw.command.set:
+                        default: op
+                        description: "Set an arena"
+                    sw.command.reload:
+                        default: op
+                        description: "reload the arena"
+                    sw.command.remove:
+                        default: op
+                        description: "remove all arena"
+                    sw.command.start:
+                        default: op
+                        description: "Force the game"
