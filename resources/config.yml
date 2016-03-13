@@ -9,5 +9,10 @@ Prefix: ' &9[ &cSkyWars&9 ] '
 chat-format: true
 welcome-message: true
 Auth-Server: true
-
+# Game lobby location
+lobby:
+    x: 192
+    y: 60
+    z: 192
+    world: lobby
 ...
