@@ -35,6 +35,10 @@ class SkyWarsCommand{
             if(isset($args[0])){
                 if($p instanceof Player){
                     switch(strtolower($args[0])){
+                //TO-DO case "ban":
+                //TO-DO case "kick:
+                //TO-DO case "reload":
+                //TO-DO case "delete": </arena>
                 case "help":
                                 if(!$p->hasPermission("sw.command.help")){
                                     $p->sendMessage($this->plugin->getMsg('has_not_permission'));
