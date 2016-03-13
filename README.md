@@ -1,13 +1,23 @@
 Skywars Plugin
 ======
-</br>
-**SkyWars plugin for PE**
-<br>
-</br>
-This plugin is not **completed** yet because its need to fix some **Bugs**
-</br>
-Commands:
+**NOTE**: this plugin may crash
 
-* /sw = Main SkyWars command
+## SkyWarsAPI commands
+
+| Default command | Parameter | Description | Default Permission |
+| :-----: | :-------: | :---------: | :-------: |
+| /skywars | | Main SkyWars command | `OP` |
+| /skywars create | `<world>` | create an arena for SkyWars | `OP` |
+| /lobby | | back to lobby | `All` |
+| /skywars setlobby | | Set world main lobby | `OP` |
+
+## SkyWarsAPI Permission
+
+| Default command | Permission |
+| :-----: | :---------: |
+| /skywars | `sw.command` |
+| /skywars create | `sw.command.create` |
+| /lobby | `sw.command.lobby` |
+| /skywars setlobby | `sw.command.setlobby` |
 
 
