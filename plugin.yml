@@ -1,35 +1,31 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsAPI
-version: "1.6.5_Pre-Release10"
+version: "1.6.7_Pre-Release11"
 api: [1.12.0]
 load: STARTUP
 author: larryTheCoder
-
 commands:
-    sw:
-        description: "Main skywars command"
-    lobby:
-        description: "Back to lobby"
-        
+  lobby:
+    description: back to main lobby
+    permission: sw.command.lobby
+  SkyWars:
+    description: use /skywars help for all parameters
+    permission: sw.command
+    aliases: sw
 permission:
-    lobby:
-        description: "Back to lobby"
+    sw.command.lobby:
+        description: back to main lobby
         default: true
-    sw:
+    sw.command:
+        description: allow player to use all skywars command
         default: op
         children:
-            sw.command:
-                default: true
-                children:
-                    sw.command.set:
-                        default: op
-                        description: "Set an arena"
-                    sw.command.reload:
-                        default: op
-                        description: "reload the arena"
-                    sw.command.remove:
-                        default: op
-                        description: "remove all arena"
-                    sw.command.start:
-                        default: op
-                        description: "Force the game"
+            sw.command.help:
+                description: get SkyWars help menu
+                default: op
+            sw.command.setlobby:
+                description: set SkyWars main lobby
+                default: op
+            sw.command.create:
+                description: create a SkyWars arenas
+                default: op
