@@ -1,7 +1,7 @@
 ## English translation by larryTheCoder
 ---
 config_not_created: "&cConfig not created...creating new one"
-has_not_permission: "&cYou dont have permission to do this command"
+has_not_permission: "&c&lHey! &r&7You dont have permission to do that!"
 invalid_arguments: "&cInvalid arguments\n&6use: &a&o&lhelp"
 error: "&cWoops something not right with config"
 not_in_game: "&cYou are not in game!"
@@ -11,12 +11,13 @@ game_loaded: "&aGame has been loaded"
 ###############################
 #SkyWars help command messages#
 ###############################
-lobby: "\n- &2/lobby &l&5»&r&f Teleport to lobby"
-set: "\n- &2/sw kick &l&5»&r&f Set an arena"
-start: "\n- &2/sw set  &l&5»&r&f Force start game"
-reload: "\n- &2/sw reload &b[arena name] &l&5»&r&f Reload the arena"
-kick: "\n- &2/sw kick &b[arena name] [player name] [reason] &l&5»&r&f Kick player from arena"
-remove: "\n- &2/sw remove &l&5»&r&f Remove all Arena data"
+help: "&6use /sw help"
+lobby: "\n- &2/lobby &l&5Â»&r&f Teleport to lobby"
+set: "\n- &2/sw kick &l&5Â»&r&f Set an arena"
+start: "\n- &2/sw set  &l&5Â»&r&f Force start game"
+reload: "\n- &2/sw reload &b[arena name] &l&5Â»&r&f Reload the arena"
+kick: "\n- &2/sw kick &b[arena name] [player name] [reason] &l&5Â»&r&f Kick player from arena"
+remove: "\n- &2/sw remove &l&5Â»&r&f Remove all Arena data"
 ###################
 #Commands messages#
 ###################
@@ -25,4 +26,6 @@ succeeded_reload: "&bsucceeded in deleting game settings"
 Force_succeed: "&cForce start game..."
 Succeed_reload: "&bArena has been reloaded!"
 stopgame1: "&cOuch looks like there is less than 2 players..Stopping the game"
-
+time-start: "&a%1 &bseconds"
+won-game: ""
+death-match: "&a%1 &bminutes to &cdeathmatch"
