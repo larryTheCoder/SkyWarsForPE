@@ -12,6 +12,7 @@ use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 use pocketmine\event\Listener;
 use larryTheCoder\Task\RefreshSigns;
+use pocketmine\level\Position;
 
 class SkyWarsAPI extends PluginBase implements Listener{
 
