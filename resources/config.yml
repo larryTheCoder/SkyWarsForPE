@@ -1,18 +1,23 @@
+## SkyWars Config.
 ---
-endTime: 180
-gameTime: 240
-waitTime: 60
-godTime: 60
-## Available language [English] we expected new update :D
+# Game prefix
+Prefix: "&b[&6Sky&aWars&b] "
+
+# Game language message
+# English
 Language: English
-Prefix: ' &9[ &cSkyWars&9 ] '
-chat-format: true
-welcome-message: true
-Auth-Server: true
+
 # Game lobby location
 lobby:
-    x: 192
-    y: 60
-    z: 192
-    world: lobby
+  spawn_x: 0
+  spawn_y: 0
+  spawn_z: 0
+  world: world
+
+# min players in skywars world
+minplayers: 3
+# max players in skywars world
+maxplayers: 12
+# chat format 
+chat_format: true
 ...

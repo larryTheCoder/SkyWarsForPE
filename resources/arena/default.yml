@@ -1,0 +1,86 @@
+# NOTE: This is currently not implemented
+---
+# if enabled is false arena wont load
+enabled: "false"
+# game lobby location
+signs:
+    join_sign_x: 89
+    join_sign_y: 78
+    join_sign_z: -487
+    join_sign_world: "world"
+    #enable status sign
+    enable_status: "true"
+    #status lines
+    #variables:
+    #   &a &b &c = you can use color with "&"
+    #   %alive = amount of in-game players
+    #   %dead = amount of dead players
+    #   %status = game status
+    #   %world = world name of arena
+    #   %max = max players per arena
+    status_line_1: "&3[SkyWars]"
+    status_line_2: "&a%alive/%max"
+    status_line_3: "%status"
+    status_line_4: "&6%world"
+    #sign update every X seconds
+    sign_update_time: 2
+    #returns player to main level/lobby
+    #world is same like arena_world
+    return_sign_x: 566
+    return_sign_y: 57
+    return_sign_z: 890
+arena:
+    # game world location
+    world: "aworld"
+    # Spectator spawn
+    spec_spawn_x: 320
+    spec_spawn_y: 50
+    spec_spawn_z: 32
+    # if spectator_mode is true 
+    # player to be spectator if they
+    # die true/false
+    spectator_mode: "true"
+    # enable time cycle - true / day / night / [ticks] 
+    time: "day"
+    # Item reward for win put ID:DAMAGE:COUNT ->  17:5:1,17:4:9,4:0:1  
+    # 0 if you don´t want reward
+    item_reward: 0
+    #coin rewars put number of money
+    money_reward: 0
+    # leave game position
+    leave_position_x: 3455
+    leave_position_y: 34
+    leave_position_z: 450
+    leave_position_world: "world"
+    #time (seconds)
+    max_game_time: 300
+    
+# Game chest items [item:DAMAGE] 
+# like [item] [Damage] [amount] 
+# it will be [261] [0] [1]
+chestitems:
+- - 261
+  - 0
+  - 1
+- - 262
+  - 0
+  - 2
+- - 262
+  - 0
+  - 3
+- - 267
+  - 0
+  - 1
+- - 268
+  - 0
+  - 1
+- - 272
+  - 0
+  - 1
+- - 276
+  - 0
+  - 1
+- - 283
+  - 0
+  - 1
+...
