@@ -2,7 +2,7 @@ Skywars Plugin
 ======
 **NOTE**: this plugin may crash
 
-## SkyWarsAPI commands
+## SkyWars commands
 
 | Default command | Parameter | Description | Default Permission |
 | :-----: | :-------: | :---------: | :-------: |
@@ -10,14 +10,6 @@ Skywars Plugin
 | /skywars create | `<world>` | create an arena for SkyWars | `OP` |
 | /lobby | | back to lobby | `All` |
 | /skywars setlobby | | Set world main lobby | `OP` |
-
-## SkyWarsAPI Permission
-
-| Default command | Permission |
-| :-----: | :---------: |
-| /skywars | `sw.command` |
-| /skywars create | `sw.command.create` |
-| /lobby | `sw.command.lobby` |
-| /skywars setlobby | `sw.command.setlobby` |
+| /skywars reload | | reload the plugin | `OP` |
 
 
