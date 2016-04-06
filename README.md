@@ -1,7 +1,9 @@
 Skywars Plugin
 ======
-
+<br>
 [![Join the chat at https://gitter.im/larryTheCoder/SkyWarsForPE](https://badges.gitter.im/larryTheCoder/SkyWarsForPE.svg)](https://gitter.im/larryTheCoder/SkyWarsForPE?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+</br>
 **NOTE**: this plugin may crash
 
 ## SkyWars commands
