@@ -33,7 +33,7 @@ class RefreshSigns extends PluginTask {
                         $ingame = "§5§lRunning";
                     } else
 
-                    if ($aop >= 12) {
+                    if ($aop >= $this->plugin->config->get("max_players")) {
                         $ingame = "§c§lFull";
                     }
                     $t->setText($this->plugin->getPrefix(), "§c" . $aop . "§f/§c12", $ingame, "§6§l" . $text[3]);
