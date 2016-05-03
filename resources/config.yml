@@ -1,23 +1,50 @@
-## SkyWars Config.
+## SkyWars config
 ---
-# Game prefix
-Prefix: "&b[&6Sky&aWars&b] "
-
-# Game language message
-# English
-Language: English
-
-# Game lobby location
+# Game prefix...You can use & as color
+Prefix: '&c[&r&6Sky&bWars&c]&r '
+# language for skywars
+# English by larryTheHarry
+language: English
+# lobby position, where will be players 
+# teleported when they die or leave
+# if this function is not set 
+# the players will teleported to nowhere
 lobby:
-  spawn_x: 0
-  spawn_y: 0
-  spawn_z: 0
-  world: world
+  spawn_x: 291
+  spawn_y: 78
+  spawn_z: 213
+  world: "world"
+# Here you can control block and items in 
+# the Chests...for example:
+# chestitems:
+# - - 261 => item  
+#   - 0  => damage
+#   - 1  => amount
+# NOTE: Only numbers can do this!
+chestitems:
+- - 261
+  - 0
+  - 1 
+- - 262
+  - 0
+  - 2
+- - 262
+  - 0
+  - 3
+- - 267
+  - 0
+  - 1
+- - 268
+  - 0
+  - 1
+- - 272
+  - 0
+  - 1
+- - 276
+  - 0
+  - 1
+- - 283
+  - 0
+  - 1
 
-# min players in skywars world
-minplayers: 3
-# max players in skywars world
-maxplayers: 12
-# chat format 
-chat_format: true
 ...

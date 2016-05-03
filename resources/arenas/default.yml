@@ -1,0 +1,68 @@
+# NOTE: This is currently not implemented
+---
+# if enabled is false arena wont load
+enabled: "true"
+# game lobby location
+signs:
+    join_sign_x: 89
+    join_sign_y: 78
+    join_sign_z: -487
+    join_sign_world: "world"
+    #enable status sign
+    enable_status: "true"
+    #status lines
+    #variables:
+    #   &a &b &c = you can use color with "&"
+    #   %alive = amount of in-game players
+    #   %dead = amount of dead players
+    #   %status = game status
+    #   %world = world name of arena
+    #   %max = max players per arena
+    status_line_1: "&3[SkyWars]"
+    status_line_2: "&a%alive/%max"
+    status_line_3: "%status"
+    status_line_4: "&6%world"
+    #sign update every X seconds
+    sign_update_time: 2
+    #returns player to main level/lobby
+    #world is same like arena_world
+    return_sign_x: 566
+    return_sign_y: 57
+    return_sign_z: 890
+arena:
+    # game world location
+    arena_world: "lobbysaTE"
+    # Spectator spawn
+    spec_spawn_x: 320
+    spec_spawn_y: 50
+    spec_spawn_z: 32
+    # if spectator_mode is true 
+    # player to be spectator if they
+    # die true/false
+    spectator_mode: "true"
+    # enable time cycle - true / day / night / [ticks] 
+    time: "day"
+    # Item reward for win put ID:DAMAGE:COUNT ->  17:5:1,17:4:9,4:0:1  
+    # 0 if you don´t want reward
+    item_reward: 0
+    #coin rewars put number of money
+    money_reward: 0
+    # Finish message level / world
+    # ex: world,SkyWars,{{YOUR_MAIN_WORLD}}
+    # You can use " , " 
+    finish_msg_levels: world,SkyWars,lobby
+    #max players in arena
+    max_players: 12
+    #min player in arena
+    min_players: 2
+    #starting time (seconds)
+    starting_time: 90
+    #spawn positions in arena
+    spawn_positions:
+    - - 324
+      - 90
+      - 546
+    - - 365
+      - 90
+      - 432
+...

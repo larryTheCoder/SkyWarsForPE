@@ -1,0 +1,51 @@
+## English translation by larryTheCoder
+---
+join: "Welcome to SkyWars match"
+join_others: "%1 has joined the match"
+leave: "Leaving the arena..."
+leave_others: "%1 has left the match"
+arena_doesnt_exist: "&cArena doesn´t exist"
+arena_already_exist: "&cArena already exists"
+arena_create: "&eArena successfully created!"
+start_game: "&l&bGame started!"
+death: "&c%1 &ahas been killed. &c%2 &aplayers left"
+send_to_main_world: "&6returning to lobby..."
+starting: "&agame start in %1 seconds"
+kick_from_game: "&9You have been kicked from game for %1"
+game_full: "&cArena is full"
+ingame: "&cgame is in progress"
+enable_setup_mode: "&6You are now in setup mode\n&a-> leave using  &l&odone"
+disable_setup_mode: '&aArena saved'
+world_doesnt_exist: '&cWorld doesnt exits'
+arena_in_setup: "&cArena is in setup mode!"
+#reward for win
+get_money: "&aYou won %1 money!"
+##########################
+# Command help message #
+##########################
+help: "&cPlease use /sw help for a list of commands"
+lobby: "\n- &2/sw lobby &l&5»&r&f Teleport to lobby"
+onjoin: "\n- &2/sw join &b[arena name] &l&5»&r&f Join to the Arena"
+start: "\n- &2/sw start &b[arena name] &l&5»&r&f Force start the arena"
+stop: "\n- &2/sw stop &b[arena name] &l&5»&r&f Force stop the arena"
+kick: "\n- &2/sw kick &b[arena name] [player name] [reason] &l&5»&r&f Kick player from arena"
+set: "\n- &2/sw set &b[arena name] &l&5»&r&f Set or modify arena"
+delete: "\n- &/sw delete &b[arena name] &l&5»&r&f Delete existing arena"
+create: "\n- &2/sw create &b[world name] &l&5»&r&f Create new arena"
+###################
+#Commands messages#
+###################
+has_not_permission: "&cYou do not have permission to use this command"
+#invalid arguments in setup mode
+invalid_arguments: "&cInvalid arguments\n&6use: &a&o&lhelp"
+join_help: "&6use /sw join &a[arena name]"
+start_help: "&6use /sw start &a[arena name]"
+stop_help: "&6use /sw stop &a[arena name]"
+kick_help: "&6use /sw kick &a[arena name] [player name]"
+set_help: "&6use /sw set &a[arena name]"
+create_help: "&6use /cm create &a[arena name]"
+delete_help: "&6use /sw delete &a[arena name]"
+lobby_help: '&6use /sw lobby'
+arena_running: "&cArena is running now"
+arena_not_running: "&6Arena is not in-game!"
+player_not_exist: "&cPlayer is not in arena"

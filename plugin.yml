@@ -1,24 +1,29 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsAPI
-version: "1.7.1_Pre-Release12"
+version: "1.8_BETA"
 api: [2.0.0]
-load: STARTUP
 author: larryTheCoder
 commands:
-  lobby:
-   description: back to main lobby
-   permission: sw.command.lobby
-  skywars:
-    description: use /skywars help for all parameters
-    permission: sw.command
-    aliases: sw
+  sw:
+    description: use /sw help for all parameters
+    aliases: sk,skywars
 permission:
   sw.command.lobby:
     description: back to main lobby
     default: true
+  sw.acces:
+    description: access the game intrance
+    default: true
+# For VIP access NOT DONE
+#  sw.acces.full:
+#    description: ability to join full game
+#    default: true
   sw.editlobby:
     description: prevent players from edit lobby
     default: op
+  sw.sign:
+    description: join using signs 
+    default: true
   sw.command:
     description: allow player to use all skywars command
     default: op
