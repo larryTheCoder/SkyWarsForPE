@@ -240,15 +240,14 @@ class Arena implements Listener {
 
     public function startGame() {
         $this->game = 1;
-        $this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
         $sound = new AnvilUseSound(new Vector3());
         foreach ($this->waitingp as $p) {
             unset($this->waitingp[strtolower($p->getName())]);
             $this->ingamep[strtolower($p->getName())] = $p;
-            $x = $p->getX();
-            $y = $p->getY();
-            $z = $p->getZ();
-            $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world'])->setBlock(new Vector3($x, $y - 1, $z), Block::get(0, 0));
+            $x = $p->getFloorX();
+            $y = $p->getFloorY();
+            $z = $p->getFloorZ();
+            $this->plugin->getServer()->getLevelByName($this->level)->setBlock(new Vector3($x, $y, $z), Block::get(0, 0));
             $sound->setComponents($p->x, $p->y, $p->z);
             $this->level->addSound($sound, [$p]);
         }
@@ -272,6 +271,18 @@ class Arena implements Listener {
         $zipPath = $this->getDataFolder("skywars_worlds/$originalMap/");
         $this->extractWorld($zipPath, $level);
         return true;
+    }
+
+    private function extractWorld($zipPath, $worldName) {
+        $zip = new \ZipArchive;
+        try {
+            $zip->open($zipPath);
+        } catch (Exception $e) {
+            $this->getLogger()->error($e);
+        }
+        $errId = $zip->open($zipPath);
+        $zip->extractTo($this->getServer()->getDataPath() . "skywars_worlds/$worldName/");
+        $zip->close();
     }
 
     public function unsetAllPlayers() {
@@ -325,7 +336,7 @@ class Arena implements Listener {
         }
         $this->strikeLightning($p);
     }
-
+    
     public function onRespawn(PlayerRespawnEvent $e) {
         $p = $e->getPlayer();
         if ($this->getPlayerMode($p) === 0) {
@@ -367,35 +378,43 @@ class Arena implements Listener {
         }
     }
 
-    public function strikeLightning(Vector3 $v) {
-        $pk = new AddEntityPacket();
-        $pk->type = 93;
-        $pk->eid = 93;
-        $pk->x = $v->x;
-        $pk->y = $v->y;
-        $pk->z = $v->z;
-        $pk->metadata = [3, 3, 3, 3];
-        $player = array_merge($this->waitingp, $this->ingamep, $this->spec);
-        foreach ($player as $p) {
-            $p->dataPacket($pk);
-        }
+    /**
+     * @param Player $p
+     */
+    public function strikeLightning(Player $p) {
+        $level = $p->getLevel();
+        
+        $light = new AddEntityPacket();
+        $light->metadata = [];
+        
+        $light->type = 93;
+        $light->eid = Entity::$entityCount++;
+        
+        $light->speedX = 0;
+        $light->speedY = 0;
+        $light->speedZ = 0;
+        
+        $light->yaw = $p->getYaw();
+        $light->pitch = $p->getPitch();
+        
+        $light->x = $p->x;
+        $light->y = $p->y;
+        $light->z = $p->z;
+        
+        Server::broadcastPacket($level->getPlayers(),$light);
     }
 
     public function leaveArena(Player $p) {
+        $sound = new EndermanTeleportSound(new Vector3());
+        $sound->setComponents($p->x, $p->y, $p->z);
         if ($this->getPlayerMode($p) == 0) {
             unset($this->waitingp[strtolower($p->getName())]);
-            $sound = new EndermanTeleportSound(new Vector3());
-            $sound->setComponents($p->x, $p->y, $p->z);
-            $this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
             $this->level->addSound($sound, [$p]);
             $p->teleport(new Position($this->plugin->cfg->getNested('lobby.spawn_x'), $this->plugin->cfg->getNested('lobby.spawn_y'), $this->plugin->cfg->getNested('lobby.spawn_z'), $this->plugin->getServer()->getLevelByName($this->plugin->cfg->getNested('lobby.world'))));
         }
         if ($this->getPlayerMode($p) == 1) {
             if ($this->game === 0) {
                 unset($this->ingamep[strtolower($p->getName())]);
-                $sound = new EndermanTeleportSound(new Vector3());
-                $sound->setComponents($p->x, $p->y, $p->z);
-                $this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
                 $this->level->addSound($sound, [$p]);
                 $this->messageArenaPlayers(str_replace("%1", $p->getName(), $this->plugin->getMsg('leave_others')));
                 $this->checkAlive();
@@ -405,9 +424,6 @@ class Arena implements Listener {
         }
         if ($this->getPlayerMode($p) == 2) {
             unset($this->spec[strtolower($p->getName())]);
-            $sound = new EndermanTeleportSound(new Vector3());
-            $sound->setComponents($p->x, $p->y, $p->z);
-            $this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
             $this->level->addSound($sound, [$p]);
             $p->teleport(new Position($this->plugin->cfg->getNested('lobby.spawn_x'), $this->plugin->cfg->getNested('lobby.spawn_y'), $this->plugin->cfg->getNested('lobby.spawn_z'), $this->plugin->getServer()->getLevelByName($this->plugin->cfg->getNested('lobby.world'))));
         }
