@@ -60,26 +60,17 @@ class ArenaSchedule extends Task {
         }
 
         if ($this->arena->game === 0) {
-                if (count($this->arena->waitingp) >= $this->arena->getMinPlayers() || $this->forcestart === true) {
-                $pk = new UpdateAttributesPacket();
-                $pk->minValue = 0;
-                $pk->maxValue = 1000;
-                $pk->value = $this->startTime;
-                $pk->name = UpdateAttributesPacket::EXPERIENCE_LEVEL;
-
-                foreach ($this->arena->waitingp as $p) {
-                    $p->dataPacket($pk);
-                }
-
+            if (count($this->arena->waitingp) >= $this->arena->getMinPlayers() || $this->forcestart === true) {
                 if ($this->startTime <= 0) {
                     $this->arena->startGame();
                     return;
-                } elseif ($this->startTime === 30 || $this->startTime <= 5) {
-                    $msg = str_replace("%1", $this->startTime, $this->arena->plugin->getMsg('startime'));
-                    foreach ($this->plugin->ingamep as $p) {
-                        $p->sendMessage($msg);
-                    }
                 }
+                $vars = ["%1", "%2", "%3"];
+                $replace = [$this->startTime, count($this->arena->waitingp),$this->arena->getMaxPlayers()];
+                $msg = str_replace($vars, $replace, $this->arena->plugin->getMsg('startime'));
+                    foreach ($this->plugin->ingamep as $p) {
+                        $p->sendTip($msg);
+                    }
                 $this->startTime--;
             } else {
                 $this->startTime = $this->arena->data['arena']['starting_time'];

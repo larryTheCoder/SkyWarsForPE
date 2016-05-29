@@ -62,6 +62,35 @@ class Arena implements Listener {
         }
     }
 
+    /**
+     * @param PlayerCommandPreprocessEvent $event
+     */
+    public function onPlayerCommandPreprocess(PlayerCommandPreprocessEvent $event) {
+        $command = strtolower(substr($event->getMessage(), 0, 9));
+        if ($command === "/lobby") {
+            $this->onCommandProcess($event->getPlayer());
+        }
+    }
+
+    /**
+     * @param ServerCommandEvent $event
+     */
+    public function onServerCommandProcess(ServerCommandEvent $event) {
+        $cmd = strtolower(substr($event->getCommand(), 0, 8));
+        if ($cmd === "lobby") {
+            $this->onCommandProcess($event->getSender());
+        }
+    }
+
+    public function onCommandProcess(CommandSender $sender) {
+        $cmd = $this->getServer()->getCommandMap()->getCommand("lobby");
+        if ($cmd instanceof Command) {
+        if ($this->inArena($sender) && $this->game = 1 && !$this->getPlayerMode($sender) === 1) {
+            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg("in_arena"));
+        }   
+        }
+    }
+
     public function giveEffect($e, Player $p) {
         $effect = Effect::getEffect($e);
         if ($e === 1) {
