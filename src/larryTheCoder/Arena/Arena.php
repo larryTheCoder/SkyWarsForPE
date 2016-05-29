@@ -20,7 +20,9 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\level\sound\EndermanTeleportSound;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
+
 use larryTheCoder\SkyWarsAPI;
+use larryTheCoder\Events\PlayerWinArenaEvent;
 use larryTheCoder\Events\PlayerLoseArenaEvent;
 use larryTheCoder\Events\PlayerJoinArenaEvent;
 
@@ -33,15 +35,20 @@ use larryTheCoder\Events\PlayerJoinArenaEvent;
  */
 class Arena implements Listener {
 
-    public $id;
+    public $data;
+    private $id;
+
     public $plugin;
     public $game = 0; # 0 = waiting | starting, 2 = ingame,
-    public $data;
+    
+
     public $waitingp = [];
     public $ingamep = [];
     public $spec = [];
+
     public $winner = [];
     public $deads = [];
+
     public $setup = false;
 
     public function __construct($id, SkyWarsAPI $plugin) {
@@ -68,14 +75,62 @@ class Arena implements Listener {
     }
 
     public function getStatus() {
-        if ($this->game === 0)
+        if (count($this->waitingp == $this->getMaxPlayers())){
+            return "full";
+        }
+        if ($this->game === 0){
             return "waiting";
-        if ($this->game === 1)
+        }
+        if ($this->game === 1){
             return "ingame";
+        }
     }
 
     public function enableScheduler() {
         $this->plugin->getServer()->getScheduler()->scheduleRepeatingTask(new ArenaSchedule($this), 20);
+    }
+
+    public function getReward(Player $p){
+        if(isset($this->data['arena']['item_reward']) && $this->data['arena']['item_reward'] !== null && intval($this->data['arena']['item_reward']) !== 0){
+            foreach(explode(',', str_replace(' ', '', $this->data['arena']['item_reward'])) as $item){
+                $exp = explode(':', $item);
+                if(isset($exp[0]) && isset($exp[0]) && isset($exp[0])){
+                    list($id, $damage, $count) = $exp;
+                    if(Item::get($id, $damage, $count) instanceof Item){
+                        $p->getInventory()->addItem(Item::get($id, $damage, $count));
+                    }
+                }
+            }
+        }
+        if(isset($this->data['arena']['money_reward'])){
+        if($this->data['arena']['money_reward'] !== null && $this->plugin->economy !== null){
+            $money = $this->data['arena']['money_reward'];
+            $ec = $this->plugin->economy;
+            switch($ec->getName()){
+                case "EconomyAPI":
+                    $ec->addMoney($p->getName(), $money);
+                    break;
+                case "PocketMoney":
+                    $ec->setMoney($p->getName(), $ec->getMoney($p->getName()));
+                    break;
+                case "MassiveEconomy":
+                    $ec->setMoney($p->getName(), $ec->getMoney($p->getName()));
+                    break;
+                case "GoldStd":
+                    $ec->giveMoney($p, $money);
+                    break;
+            }
+            $p->sendMessage($this->plugin->getPrefix().str_replace('%1', $money, $this->plugin->getMsg('get_money')));
+        }
+        }
+    }
+
+    public function broadcastResult(){
+        // TO-DO: random giveReward() to all players like brokenlens
+        if($this->plugin->getServer()->getPlayer($this->winners[1]) instanceof Player){
+            $this->giveReward($this->plugin->getServer()->getPlayer($this->winners[1]));
+            $this->plugin->getServer()->getPluginManager()->callEvent($event = new PlayerWinArenaEvent($this->plugin, $this->plugin->getServer()->getPlayer($this->winners[1]), $this));
+        }
     }
 
     public function getPlayerMode(Player $p) {
@@ -188,17 +243,16 @@ class Arena implements Listener {
                 return;
             }
             $this->saveInv($p);
+            $this->waitingp[strtolower($p->getName())] = $p;
             $sound = new EndermanTeleportSound(new Vector3());
             $sound->setComponents($p->x, $p->y, $p->z);
             $this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
             $this->level->addSound($sound, [$p]);
-            $level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
             $aop = count($this->waitingp);
             $thespawn = $this->data["arena"]["spawn_positions"]["spawn" . ($aop + 1)];
-            $spawn = new Position($thespawn[0] + 0.5, $thespawn[1], $thespawn[2] + 0.5, $level);
+            $spawn = new Position($thespawn[0] + 0.5, $thespawn[1], $thespawn[2] + 0.5, $this->level);
             $p->teleport($spawn, 0, 0);
             $p->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('join'));
-            $this->waitingp[strtolower($p->getName())] = $p;
             $vars = ['%1'];
             $replace = [$p->getName()];
             $this->messageArenaPlayers(str_replace($vars, $replace, $this->plugin->getMsg('join_others')));
@@ -242,6 +296,7 @@ class Arena implements Listener {
         $this->game = 1;
         $sound = new AnvilUseSound(new Vector3());
         foreach ($this->waitingp as $p) {
+            $this->refillChests($this->level);
             unset($this->waitingp[strtolower($p->getName())]);
             $this->ingamep[strtolower($p->getName())] = $p;
             $x = $p->getFloorX();
