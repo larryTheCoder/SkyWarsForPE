@@ -1,4 +1,4 @@
-# NOTE: This is currently not implemented
+# SkyWars default.yml example
 ---
 # if enabled is false arena wont load
 enabled: "true"
@@ -31,7 +31,7 @@ signs:
     return_sign_z: 890
 arena:
     # game world location
-    arena_world: "lobbysaTE"
+    arena_world: "world"
     # Spectator spawn
     spec_spawn_x: 320
     spec_spawn_y: 50
@@ -50,19 +50,63 @@ arena:
     # Finish message level / world
     # ex: world,SkyWars,{{YOUR_MAIN_WORLD}}
     # You can use " , " 
-    finish_msg_levels: world,SkyWars,lobby
+    finish_msg_levels: [world,SkyWars,lobby]
     #max players in arena
     max_players: 12
+    #max VIP(s) in arena
+    #max_players_VIP: 12
     #min player in arena
     min_players: 2
     #starting time (seconds)
     starting_time: 90
     #spawn positions in arena
     spawn_positions:
-    - - 324
-      - 90
-      - 546
-    - - 365
-      - 90
-      - 432
+        spawn1:
+          - 127
+          - 56
+          - 128
+        spawn2:
+          - 130
+          - 56
+          - 129
+        spawn3:
+          - 129
+          - 56
+          - 126
+        spawn4:
+          - 128
+          - 57
+          - 125
+        spawn5:
+          - 128
+          - 57
+          - 125
+        spawn6:
+          - 122
+          - 57
+          - 126
+        spawn7:
+          - 122
+          - 57
+          - 126
+        spawn8:
+          - 122
+          - 57
+          - 126
+        spawn9:
+          - 127
+          - 56
+          - 126
+        spawn10:
+          - 119
+          - 56
+          - 131
+        spawn11:
+          - 131
+          - 57
+          - 126
+        spawn12:
+          - 129
+          - 57
+          - 125
 ...
