@@ -33,6 +33,11 @@ class ConfigManager {
         $this->arena->save();
     }
 
+    public function setMoney($type){
+        $this->arena->setNested('arena.money_reward', $type);
+        $this->arena->save();
+    }
+
     public function setStatus($type) {# OK
         $this->arena->setNested('signs.enable_status', $type);
         $this->arena->save();
@@ -72,14 +77,6 @@ class ConfigManager {
         $this->arena->save();
     }
 
-    public function setLeavePos($x, $y, $z, $level) {# OK
-        $this->arena->setNested('arena.leave_position_x', $x);
-        $this->arena->setNested('arena.leave_position_y', $y);
-        $this->arena->setNested('arena.leave_position_z', $z);
-        $this->arena->setNested('arena.leave_position_world', $level);
-        $this->arena->save();
-    }
-
     public function setMaxTime($data) {# OK
         $this->arena->setNested('arena.max_game_time', $data);
         $this->arena->save();
@@ -109,5 +106,4 @@ class ConfigManager {
         $this->arena->set('enabled', $data);
         $this->arena->save();
     }
-
 }
