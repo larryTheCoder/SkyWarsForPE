@@ -279,7 +279,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     $p->sendMessage(str_replace("%1", $this->mode, $this->getPrefix() . $this->getMsg('arena_setup_spawnpos')));
                     $this->mode++;
                     if ($this->mode == $arena->arena->getNested('arena.max_players') + 1) {
-                        $p->sendMessage($this->getPrefix() . "spawnpos");
+                        $p->sendMessage($this->getPrefix() . $this->getMsg("spawnpos"));
                     }
                 } else if ($this->mode == $arena->arena->getNested('arena.max_players') + 1) {
                     $spawn = $this->getServer()->getDefaultLevel()->getSafeSpawn();
