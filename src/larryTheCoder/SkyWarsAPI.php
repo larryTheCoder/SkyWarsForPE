@@ -4,7 +4,7 @@
  * TO-DO list for 1.9_Alpha
  * <X> Player kill message on Level
  * < > Better MOTD on EntityLevelChange
- * < > Add 1/2 arena loading
+ * <X> Add 1/2 arena loading
  * < > Make first release of SkyWarsForPE
  */
 
@@ -85,11 +85,8 @@ class SkyWarsAPI extends PluginBase implements Listener {
         if (!is_file($this->getDataFolder() . "language/English.yml")) {
             $this->saveResource("language/English.yml");
         }
-        if (!is_file($this->getDataFolder() . "language/{$this->cfg->get('Language')}.yml")) {
-            $this->msg = new Config($this->getDataFolder() . "language/English.yml", Config::YAML);
-            $this->getServer()->getLogger()->info("Selected language English");
-        } else {
-            $this->msg = new Config($this->getDataFolder() . "language/{$this->cfg->get('Language')}.yml", Config::YAML);
+        else{
+            $this->msg = new Config($this->getDataFolder()."language/{$this->cfg->get('Language')}.yml", Config::YAML);
             $this->getServer()->getLogger()->info("Selected language {$this->cfg->get('Language')}");
         }
     }
@@ -300,44 +297,19 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 unset($this->setters[strtolower($p->getName())]['type']);
                 return;
             }
-            if ($this->setters[strtolower($p->getName())]['type'] == "setjoinpos") {
-                $arena->setJoinPos($b->x, $b->y, $b->z);
-                $arena->setArenaWorld($b->level->getName());
-                $p->sendMessage($this->getPrefix() . $this->getMsg('startpos'));
-                unset($this->setters[strtolower($p->getName())]['type']);
-                return;
-            }
-            if ($this->setters[strtolower($p->getName())]['type'] == "setlobbypos") {
-                $arena->setLobbyPos($b->x, $b->y, $b->z);
-                $p->sendMessage($this->getPrefix() . $this->getMsg('lobbypos'));
-                unset($this->setters[strtolower($p->getName())]['type']);
-                return;
-            }
-            if ($this->setters[strtolower($p->getName())]['type'] == "setfirstcorner") {
-                $arena->setFirstCorner($b->x, $b->y, $b->z);
-                $p->sendMessage($this->getPrefix() . $this->getMsg('first_corner'));
-                $this->setters[strtolower($p->getName())]['type'] = "setsecondcorner";
-                return;
-            }
-            if ($this->setters[strtolower($p->getName())]['type'] == "setsecondcorner") {
-                $arena->setSecondCorner($b->x, $b->z);
-                $p->sendMessage($this->getPrefix() . $this->getMsg('second_corner'));
-                unset($this->setters[strtolower($p->getName())]['type']);
-                return;
-            }
             if ($this->setters[strtolower($p->getName())]['type'] == "setspecspawn") {
                 $arena->setSpecSpawn($b->x, $b->y, $b->z);
                 $p->sendMessage($this->getPrefix() . $this->getMsg('spectatorspawn'));
                 unset($this->setters[strtolower($p->getName())]['type']);
                 return;
             }
-            if ($this->setters[strtolower($p->getName())]['type'] == "spawnpos") { # HERE
+            if ($this->setters[strtolower($p->getName())]['type'] == "spawnpos") {
                 if ($this->mode >= 1 && $this->mode <= $arena->arena->getNested('arena.max_players')) {
                     $arena->arena->setNested("arena.spawn_positions.spawn$this->mode", [$b->getX(), $b->getY() + 2, $b->getZ()]);
                     $p->sendMessage(str_replace("%1", $this->mode, $this->getPrefix() . $this->getMsg('arena_setup_spawnpos')));
                     $this->mode++;
                     if ($this->mode == $arena->arena->getNested('arena.max_players') + 1) {
-                        $p->sendMessage($this->getPrefix() . "Spawn location has been set..teleporting to main world");
+                        $p->sendMessage($this->getPrefix() . "spawnpos");
                     }
                 } else if ($this->mode == $arena->arena->getNested('arena.max_players') + 1) {
                     $spawn = $this->getServer()->getDefaultLevel()->getSafeSpawn();
@@ -346,21 +318,6 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     unset($this->setters[strtolower($p->getName())]['type']);
                 }
                 $arena->arena->save();
-                return;
-            }
-            if ($this->setters[strtolower($p->getName())]['type'] == "setleavepos") {
-                $arena->setLeavePos($b->x, $b->y, $b->z, $b->level->getName());
-                $p->sendMessage($this->getPrefix() . $this->getMsg('leavepos'));
-                unset($this->setters[strtolower($p->getName())]['type']);
-                return;
-            }
-            if ($this->setters[strtolower($p->getName())]['type'] == "mainlobby") {
-                $this->cfg->setNested("lobby.x", $b->x);
-                $this->cfg->setNested("lobby.y", $b->y);
-                $this->cfg->setNested("lobby.z", $b->z);
-                $this->cfg->setNested("lobby.world", $b->level->getName());
-                $p->sendMessage($this->getPrefix() . $this->getMsg('mainlobby'));
-                unset($this->setters[strtolower($p->getName())]['type']);
                 return;
             }
         }
@@ -377,22 +334,6 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     $this->setters[strtolower($p->getName())]['type'] = 'setjoinsign';
                     $p->sendMessage($this->getPrefix() . $this->getMsg('break_sign'));
                     return;
-                case 'returnsign':
-                    $this->setters[strtolower($p->getName())]['type'] = 'setreturnsign';
-                    $p->sendMessage($this->getPrefix() . $this->getMsg('break_sign'));
-                    return;
-                case 'startpos':
-                    $this->setters[strtolower($p->getName())]['type'] = 'setjoinpos';
-                    $p->sendMessage($this->getPrefix() . $this->getMsg('break_block'));
-                    return;
-                case 'lobbypos':
-                    $this->setters[strtolower($p->getName())]['type'] = 'setlobbypos';
-                    $p->sendMessage($this->getPrefix() . $this->getMsg('break_block'));
-                    return;
-                case 'corners':
-                    $this->setters[strtolower($p->getName())]['type'] = 'setfirstcorner';
-                    $p->sendMessage($this->getPrefix() . $this->getMsg('break_block'));
-                    return;
                 case 'spectatorspawn':
                     $this->setters[strtolower($p->getName())]['type'] = 'setspecspawn';
                     $p->sendMessage($this->getPrefix() . $this->getMsg('break_block'));
@@ -403,10 +344,6 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     $this->mode = 1;
                     $p->sendMessage($this->getPrefix() . $this->getMsg('break_block'));
                     return;
-                case 'leavepos':
-                    $this->setters[strtolower($p->getName())]['type'] = 'setleavepos';
-                    $p->sendMessage($this->getPrefix() . $this->getMsg('break_block'));
-                    return;
                 case 'done':
                     $p->sendMessage($this->getPrefix() . $this->getMsg('disable_setup_mode'));
                     $this->reloadArena($this->setters[strtolower($p->getName())]['arena']);
@@ -414,28 +351,22 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     return;
             }
             $args = explode(' ', $msg);
-            if (count($args) >= 1 && count($args) <= 2) {
+            if (count($args) >= 1 && count($args) <= 3) {
                 if ($args[0] === 'help') {
                     $help1 = $this->getMsg('help_joinsign')
-                            . $this->getMsg('help_returnsign')
-                            . $this->getMsg('help_startpos')
-                            . $this->getMsg('help_lobbypos')
-                            . $this->getMsg('help_corners')
-                            . $this->getMsg('help_spectatorspawn')
-                            . $this->getMsg('help_leavepos');
-                    $help2 = $this->getMsg('help_time')
-                            . $this->getMsg('help_colortime')
-                            . $this->getMsg('help_type')
-                            . $this->getMsg('help_material')
-                            . $this->getMsg('help_allowstatus')
-                            . $this->getMsg('help_world')
-                            . $this->getMsg('help_statusline');
-                    $help3 = $this->getMsg('help_allowspectator')
-                            . $this->getMsg('help_signupdatetime')
-                            . $this->getMsg('help_maxtime')
-                            . $this->getMsg('help_maxplayers')
-                            . $this->getMsg('help_minplayers')
-                            . $this->getMsg('help_spawnpos');
+                            .$this->getMsg('help_spawnpos')
+                            .$this->getMsg('help_spectator')
+                            .$this->getMsg('help_statusline')
+                            .$this->getMsg('help_world')
+                            .$this->getMsg('help_signupdatetime');
+                    $help2 = $this->getMsg('help_allowspectator')
+                            .$this->getMsg('help_maxtime')
+                            .$this->getMsg('help_maxplayers')
+                            .$this->getMsg('help_minplayers')
+                            .$this->getMsg('help_starttime')
+                            .$this->getMsg('help_time');  
+                    $help3 = $this->getMsg('help_enable')
+                            .$this->getMsg('help_setmoney')                       
                     $helparray = [$help1, $help2, $help3];
                     if (isset($args[1])) {
                         if (intval($args[1]) >= 1 && intval($args[1]) <= 3) {
@@ -466,6 +397,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 $arena->setStatusLine($args[1], substr($msg, 13));
                 $p->sendMessage($this->getPrefix() . $this->getMsg('statusline'));
                 return;
+            #    
             } elseif (strpos($msg, 'enable') === 0) {
                 if (substr($msg, 7) === 'true' || substr($msg, 7) === 'false') {
                     $arena->setEnable(substr($msg, 7));
@@ -474,13 +406,26 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 }
                 $p->sendMessage($this->getPrefix() . $this->getMsg('enable_help'));
                 return;
+            } elseif (strpos($msg, 'setmoney') === 0){
+                if (!is_numeric(substr($msg, 'setmoney'))){
+                    $p->sendMessage($this->getPrefix() . $this->getMsg('setmoney_help'));
+                }
+                $arena->setMoney(substr($msg, 15));
+                
             } elseif (strpos($msg, 'signupdatetime') === 0) {
                 if (!is_numeric(substr($msg, 15))) {
-                    $p->sendMessage($this->getPrefix() . $this->getMsg('signupdatetime'));
+                    $p->sendMessage($this->getPrefix() . $this->getMsg('signupdatetime_help'));
                     return;
                 }
                 $arena->setUpdateTime(substr($msg, 15));
                 $p->sendMessage($this->getPrefix() . $this->getMsg('signupdatetime'));
+            } elseif(strpos($msg, 'world') === 0){
+                if(is_string(substr($msg, 6))){
+                    $arena->setArenaWorld(substr($msg, 6));
+                    $p->sendMessage($this->getPrefix().$this->getMsg('world'));
+                    return;
+                }
+                $p->sendMessage($this->getPrefix().$this->getMsg('world_help'));
             } elseif (strpos($msg, 'allowspectator') === 0) {
                 if (substr($msg, 15) === 'true' || substr($msg, 15) === 'false') {
                     $arena->setSpectator(substr($msg, 15));
@@ -495,6 +440,13 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 }
                 $arena->setMaxTime(substr($msg, 8));
                 $p->sendMessage($this->getPrefix() . $this->getMsg('maxtime'));
+            } elseif(strpos($msg, 'allowstatus') === 0){
+                if(substr($msg, 12) === 'true' || substr($msg, 12) === 'false'){
+                    $arena->setStatus(substr($msg, 12));
+                    $p->sendMessage($this->getPrefix().$this->getMsg('allowstatus'));
+                    return;
+                }
+                $p->sendMessage($this->getPrefix().$this->getMsg('allowstatus_help'));
             } elseif (strpos($msg, 'maxplayers') === 0) {
                 if (!is_numeric(substr($msg, 11))) {
                     $p->sendMessage($this->getPrefix() . $this->getMsg('maxplayers_help'));
@@ -529,7 +481,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
         }
     }
 
-    public function setLobby($p) {
+    public function setLobby(Player $p) {
         $location = $p->getLocation();
         $this->cfg->setNested("lobby", ["spawn_x" => \round($location->getFloorX(), 0), "spawn_y" => \round($location->getFloorY(), 0), "spawn_z" => \round($location->getFloorZ(), 0), "world" => $p->getLevel()->getName()]);
         $this->cfg->save();
