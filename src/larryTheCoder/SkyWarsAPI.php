@@ -4,7 +4,7 @@
  * TO-DO list for 1.9_Alpha
  * <X> Player kill message on Level
  * < > Better MOTD on EntityLevelChange
- * <X> Add 1/2 arena loading
+ * < > Add 1/2 arena loading
  * < > Make first release of SkyWarsForPE
  */
 
@@ -86,8 +86,8 @@ class SkyWarsAPI extends PluginBase implements Listener {
             $this->saveResource("language/English.yml");
         }
         else{
-            $this->msg = new Config($this->getDataFolder()."language/{$this->cfg->get('Language')}.yml", Config::YAML);
-            $this->getServer()->getLogger()->info("Selected language {$this->cfg->get('Language')}");
+            $this->msg = new Config($this->getDataFolder()."language/{$this->cfg->get('language')}.yml", Config::YAML);
+            $this->getServer()->getLogger()->info("Selected language {$this->cfg->get('language')}");
         }
     }
 
@@ -135,36 +135,6 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 $a->setup = false;
             }
             unset($this->setters[strtolower($p->getName())]);
-        }
-    }
-
-    /**
-     * @param PlayerCommandPreprocessEvent $event
-     */
-    public function onPlayerCommandPreprocess(PlayerCommandPreprocessEvent $event) {
-        $command = strtolower(substr($event->getMessage(), 0, 9));
-        if ($command === "/save-all") {
-            $this->onCommandProcess($event->getPlayer());
-        }
-    }
-
-    /**
-     * @param ServerCommandEvent $event
-     */
-    public function onServerCommandProcess(ServerCommandEvent $event) {
-        $cmd = strtolower(substr($event->getCommand(), 0, 8));
-        if ($cmd === "save-all") {
-            $this->onCommandProcess($event->getSender());
-        }
-    }
-
-    public function onCommandProcess(CommandSender $sender) {
-        $cmd = $this->getServer()->getCommandMap()->getCommand("save-all");
-        if ($cmd instanceof Command) {
-            if ($cmd->testPermissionSilent($sender)) {
-                $this->saveConfig();
-                $sender->sendMessage($this->getPrefix() . TextFormat::AQUA . "Saved Arenas data");
-            }
         }
     }
 
@@ -309,7 +279,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     $p->sendMessage(str_replace("%1", $this->mode, $this->getPrefix() . $this->getMsg('arena_setup_spawnpos')));
                     $this->mode++;
                     if ($this->mode == $arena->arena->getNested('arena.max_players') + 1) {
-                        $p->sendMessage($this->getPrefix() . $this->getMsg("spawnpos"));
+                        $p->sendMessage($this->getPrefix() . "spawnpos");
                     }
                 } else if ($this->mode == $arena->arena->getNested('arena.max_players') + 1) {
                     $spawn = $this->getServer()->getDefaultLevel()->getSafeSpawn();
@@ -366,7 +336,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
                             .$this->getMsg('help_starttime')
                             .$this->getMsg('help_time');  
                     $help3 = $this->getMsg('help_enable')
-                            .$this->getMsg('help_setmoney')                       
+                            .$this->getMsg('help_setmoney');                       
                     $helparray = [$help1, $help2, $help3];
                     if (isset($args[1])) {
                         if (intval($args[1]) >= 1 && intval($args[1]) <= 3) {
@@ -499,7 +469,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
     }
 
     public function registerEconomy() {
-        $economy = ["EconomyAPI", "AocketMoney", "MassiveEconomy", "GoldStd"];
+        $economy = ["EconomyAPI", "PocketMoney", "MassiveEconomy", "GoldStd"];
         foreach ($economy as $plugin) {
             $ins = $this->getServer()->getPluginManager()->getPlugin($plugin);
             if ($ins instanceof Plugin && $ins->isEnabled()) {
