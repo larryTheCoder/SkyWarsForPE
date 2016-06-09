@@ -4,6 +4,8 @@ Skywars Plugin
 
 </br>**SkyWars** plugin with random suprizes,cool commands and more<br>
 </br>**Developers** are nedded to create a languages for this **plugin**!<br>
+# Test ServerS
+- 45.34.7.149:19132
 
 #SkyWars commands
 
