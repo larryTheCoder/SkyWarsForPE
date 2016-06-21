@@ -71,6 +71,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
         if (!is_file($this->getDataFolder() . "config.yml")) {
             $this->saveResource("config.yml");
         }
+        // TO-DO shop
         $this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
         if (!file_exists($this->getDataFolder() . "skywars_worlds/")) {
             @mkdir($this->getDataFolder() . "skywars_worlds/");
@@ -98,11 +99,13 @@ class SkyWarsAPI extends PluginBase implements Listener {
             if (strtolower($arena->get("enabled")) === "false") {
                 $this->arenas[basename($file, ".yml")] = $arena->getAll();
                 $this->arenas[basename($file, ".yml")]['enable'] = false;
+                $fname = basename($file);
+                $this->getServer()->getLogger()->info($this->getPrefix() . "Â§a$fname Â§7Â§l-Â§rÂ§c is disabled");
             } else {
                 if ($this->checkFile($arena) === true) {
                     $fname = basename($file);
                     $this->setArenasData($arena, basename($file, ".yml"));
-                    $this->getServer()->getLogger()->info($this->getPrefix() . "§c$fname §7§l-§r§a checking sucessful");
+                    $this->getServer()->getLogger()->info($this->getPrefix() . "Â§c$fname Â§7Â§l-Â§rÂ§a checking sucessful");
                 } else {
                     $this->arenas[basename($file, ".yml")] = $arena->getAll();
                     $this->arenas[basename($file, ".yml")]['enable'] = false;
@@ -112,16 +115,6 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 }
             }
         }
-    }
-
-    public function onQuit(PlayerQuitEvent $e) {
-        $p = $e->getPlayer();
-        $this->unsetPlayers($p);
-    }
-
-    public function onKick(PlayerKickEvent $e) {
-        $p = $e->getPlayer();
-        $this->unsetPlayers($p);
     }
 
     public function unsetPlayers(Player $p) {
@@ -143,7 +136,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
             $players = array_merge($arena->ingamep, $arena->waitingp, $arena->spec);
             if (isset($players[strtolower($p->getName())])) {
                 return $arena;
-            }
+            }  
         }
         return false;
     }
@@ -213,6 +206,16 @@ class SkyWarsAPI extends PluginBase implements Listener {
         return false;
     }
 
+    public function onQuit(PlayerQuitEvent $e){
+        $p = $e->getPlayer();
+        $this->unsetPlayers($p);
+    }
+    
+    public function onKick(PlayerKickEvent $e){
+        $p = $e->getPlayer();
+        $this->unsetPlayers($p);
+    }
+
     public function loadInvs() {
         foreach ($this->getServer()->getOnlinePlayers() as $p) {
             if (isset($this->inv[strtolower($p->getName())])) {
@@ -240,7 +243,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
     }
 
     public function checkFile(Config $arena) {
-        if (!(is_numeric($arena->getNested("signs.join_sign_x")) && is_numeric($arena->getNested("signs.join_sign_y")) && is_numeric($arena->getNested("signs.join_sign_z")) && is_string($arena->getNested("signs.join_sign_world")) && is_string($arena->getNested("signs.status_line_1")) && is_string($arena->getNested("signs.status_line_2")) && is_string($arena->getNested("signs.status_line_3")) && is_string($arena->getNested("signs.status_line_4")) && is_numeric($arena->getNested("signs.return_sign_x")) && is_numeric($arena->getNested("signs.return_sign_y")) && is_numeric($arena->getNested("signs.return_sign_z")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.spec_spawn_x")) && is_numeric($arena->getNested("arena.spec_spawn_y")) && is_numeric($arena->getNested("arena.spec_spawn_z")) && is_numeric($arena->getNested("arena.max_players")) && is_numeric($arena->getNested("arena.min_players")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.starting_time")) && is_array($arena->getNested("arena.spawn_positions")) && is_string($arena->getNested("arena.finish_msg_levels")) && !is_string($arena->getNested("arena.money_reward")))) {
+        if (!(is_numeric($arena->getNested("signs.join_sign_x")) && is_numeric($arena->getNested("signs.join_sign_y")) && is_numeric($arena->getNested("signs.join_sign_z")) && is_numeric($arena->getNested("arena.max_game_time")) && is_string($arena->getNested("signs.join_sign_world")) && is_string($arena->getNested("signs.status_line_1")) && is_string($arena->getNested("signs.status_line_2")) && is_string($arena->getNested("signs.status_line_3")) && is_string($arena->getNested("signs.status_line_4")) && is_numeric($arena->getNested("signs.return_sign_x")) && is_numeric($arena->getNested("signs.return_sign_y")) && is_numeric($arena->getNested("signs.return_sign_z")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.spec_spawn_x")) && is_numeric($arena->getNested("arena.spec_spawn_y")) && is_numeric($arena->getNested("arena.spec_spawn_z")) && is_numeric($arena->getNested("arena.max_players")) && is_numeric($arena->getNested("arena.min_players")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.starting_time")) && is_array($arena->getNested("arena.spawn_positions")) && is_string($arena->getNested("arena.finish_msg_levels")) && !is_string($arena->getNested("arena.money_reward")))) {
             return false;
         }
         if (!((strtolower($arena->getNested("signs.enable_status")) == "true" || strtolower($arena->getNested("signs.enable_status")) == "false") && (strtolower($arena->getNested("arena.spectator_mode")) == "true" || strtolower($arena->getNested("arena.spectator_mode")) == "false") && (strtolower($arena->getNested("arena.time")) == "true" || strtolower($arena->getNested("arena.time")) == "day" || strtolower($arena->getNested("arena.time")) == "night" || is_numeric(strtolower($arena->getNested("arena.time")))) && (strtolower($arena->get("enabled")) == "true" || strtolower($arena->get("enabled")) == "false"))) {
@@ -261,12 +264,6 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 unset($this->setters[strtolower($p->getName())]['type']);
                 return;
             }
-            if ($this->setters[strtolower($p->getName())]['type'] == "setreturnsign") {
-                $arena->setReturnSign($b->x, $b->y, $b->z);
-                $p->sendMessage($this->getPrefix() . $this->getMsg('returnsign'));
-                unset($this->setters[strtolower($p->getName())]['type']);
-                return;
-            }
             if ($this->setters[strtolower($p->getName())]['type'] == "setspecspawn") {
                 $arena->setSpecSpawn($b->x, $b->y, $b->z);
                 $p->sendMessage($this->getPrefix() . $this->getMsg('spectatorspawn'));
@@ -279,7 +276,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     $p->sendMessage(str_replace("%1", $this->mode, $this->getPrefix() . $this->getMsg('arena_setup_spawnpos')));
                     $this->mode++;
                     if ($this->mode == $arena->arena->getNested('arena.max_players') + 1) {
-                        $p->sendMessage($this->getPrefix() . $this->getMsg("spawnpos"));
+                        $p->sendMessage($this->getPrefix() . "spawnpos");
                     }
                 } else if ($this->mode == $arena->arena->getNested('arena.max_players') + 1) {
                     $spawn = $this->getServer()->getDefaultLevel()->getSafeSpawn();
@@ -340,15 +337,15 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     $helparray = [$help1, $help2, $help3];
                     if (isset($args[1])) {
                         if (intval($args[1]) >= 1 && intval($args[1]) <= 3) {
-                            $help = "§9--- §6§lSkyWars setup help§l $args[1]/3§9 ---§r§f";
+                            $help = "Â§9--- Â§6Â§lSkyWars setup helpÂ§l $args[1]/3Â§9 ---Â§rÂ§f";
                             $help .= $helparray[intval(intval($args[1]) - 1)];
                             $p->sendMessage($help);
                             return;
                         }
-                        $p->sendMessage($this->getPrefix() . "§6use: §ahelp §b[page 1-3]");
+                        $p->sendMessage($this->getPrefix() . "Â§6use: Â§ahelp Â§b[page 1-3]");
                         return;
                     }
-                    $p->sendMessage("§9--- §6§lSkyWars setup help§l 1/3§9 ---§r§f" . $help1);
+                    $p->sendMessage("Â§9--- Â§6Â§lSkyWars setup helpÂ§l 1/3Â§9 ---Â§rÂ§f" . $help1);
                     return;
                 }
             }
@@ -461,11 +458,11 @@ class SkyWarsAPI extends PluginBase implements Listener {
 
     public function getMsg($key) {
         $msg = $this->msg;
-        return \str_replace("&", "§", $msg->get($key));
+        return \str_replace("&", "Â§", $msg->get($key));
     }
 
     public function getPrefix() {
-        return \str_replace("&", "§", $this->cfg->get('Prefix'));
+        return \str_replace("&", "Â§", $this->cfg->get('Prefix'));
     }
 
     public function registerEconomy() {
@@ -474,7 +471,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
             $ins = $this->getServer()->getPluginManager()->getPlugin($plugin);
             if ($ins instanceof Plugin && $ins->isEnabled()) {
                 $this->economy = $ins;
-                $this->getServer()->getLogger()->info($this->getPrefix() . "§bSelected economy plugin :§c $plugin");
+                $this->getServer()->getLogger()->info($this->getPrefix() . "Â§bSelected economy plugin :Â§c $plugin");
                 return;
             }
         }
