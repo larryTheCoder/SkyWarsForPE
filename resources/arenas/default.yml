@@ -1,7 +1,7 @@
-# SkyWars default.yml example
+# Arena utils
 ---
 # if enabled is false arena wont load
-enabled: "true"
+enabled: "false"
 # game lobby location
 signs:
     join_sign_x: 89
@@ -31,7 +31,7 @@ signs:
     return_sign_z: 890
 arena:
     # game world location
-    arena_world: "world"
+    arena_world: "SkyWarsPE"
     # Spectator spawn
     spec_spawn_x: 320
     spec_spawn_y: 50
@@ -43,22 +43,24 @@ arena:
     # enable time cycle - true / day / night / [ticks] 
     time: "day"
     # Item reward for win put ID:DAMAGE:COUNT ->  17:5:1,17:4:9,4:0:1  
-    # 0 if you don´t want reward
+    # 0 if you donÂ´t want reward
     item_reward: 0
     #coin rewars put number of money
     money_reward: 0
     # Finish message level / world
     # ex: world,SkyWars,{{YOUR_MAIN_WORLD}}
     # You can use " , " 
-    finish_msg_levels: [world,SkyWars,lobby]
+    finish_msg_levels: world,SkyWars,lobby
     #max players in arena
     max_players: 12
     #max VIP(s) in arena
     #max_players_VIP: 12
     #min player in arena
     min_players: 2
+    #Max game time
+    max_game_time: 390
     #starting time (seconds)
-    starting_time: 90
+    starting_time: 60
     #spawn positions in arena
     spawn_positions:
         spawn1:
