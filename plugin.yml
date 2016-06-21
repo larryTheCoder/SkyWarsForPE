@@ -5,8 +5,11 @@ api: [2.0.0]
 author: larryTheCoder
 commands:
   sw:
-    description: use /sw help for all parameters
-    aliases: sk,skywars
+    description: main skywars command
+    default: true
+  lobby:
+    description: skywars leave-game command
+    default: true
 permission:
   sw.command.lobby:
     description: back to main lobby
@@ -26,7 +29,7 @@ permission:
     default: true
   sw.command:
     description: allow player to use all skywars command
-    default: op
+    default: true
     children:
      sw.command.help:
         description: get SkyWars help menu
@@ -39,4 +42,22 @@ permission:
         default: op
      sw.command.reload:
         description: reload skywars plugin
+        default: op
+     sw.command.start:
+        description: start a game
+        default: op
+     sw.command.stop:
+        description: stop a game
+        default: op
+     sw.command.delete:
+        description: delete a arena
+        default: op
+     sw.command.set:
+        description: set an arena
+        default: op
+     sw.command.join:
+        description: join to arena
+        default: true
+     sw.command.kick:
+        description: kick a player from game
         default: op
