@@ -1,6 +1,6 @@
 Skywars Plugin
 ================
-![skyWars](https://github.com/larryTheCoder/SkyWarsForPE/blob/master/images/skywars.jpg)
+![skyWars](https://raw.githubusercontent.com/svilex/res/master/skywars.png)
 
 </br>**SkyWars** plugin with random suprizes,cool commands and more<br>
 </br>**Developers** are nedded to create a languages for this **plugin**!<br>
