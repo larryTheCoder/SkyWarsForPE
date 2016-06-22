@@ -1,0 +1,110 @@
+## Turkish translation by BulutMCPE
+---
+join: "SkyWars'a hoşgeldin!"
+join_others: "%1 maça katıldı!"
+in_arena: "&cMaç başladığı için oyundan ayrılamazsın!"
+leave: "Maçtan çıkılıyor..."
+leave_others: "%1 maçtan çıktı!"
+arena_doesnt_exist: "&cArena bulunamadı!"
+arena_already_exist: "&cArena zaten var!"
+arena_create: "&eArena başarıyla oluşturuldu!"
+start_game: "&l&bOyun başladı!"
+death: "&c%1 &aöldürüldü. &c%2 &aoyuncu kaldı!"
+send_to_main_world: "&6Lobiye dönülüyor..."
+arena_setup_spawnpos: "&bSpawn %1 oluşturuldu"
+starting: "&aMaç %1 saniye sonra başlayacak!"
+kick_from_game: "&9%1 için oyundan atıldın!"
+game_full: "&cArena dolu!"
+set_main_lobby: "&bAna lobi oluşturuldu!"
+ingame: "&cOyun devam ediyor!"
+startime: "&aMaçın başlamasına &c%1 &bsaniye! [&6%2&a/&6%3]"
+enable_setup_mode: "&6Şuan kurulum modundasın\n&a-> Çıkmak için  &l&odone yaz!"
+disable_setup_mode: '&aArena kaydedildi!'
+world_doesnt_exist: '&cDünya bulunamadı!'
+arena_in_setup: "&cArena kurulum aşamasında!"
+#Kazanınca verilen ödül
+get_money: "&aSen kazandın tebrikler! %1 para sana hediyemiz!"
+##########################
+# Komut Yardımı Mesajları #
+##########################
+help: "&cLütfen /sw help komutunu kullanarak bilgi al!"
+lobby: "\n- &2/sw lobby &l&5Â»&r&f Lobiye ışınlar!"
+onjoin: "\n- &2/sw join &b[arena ismi] &l&5Â»&r&f Arenaya gider!"
+start: "\n- &2/sw start &b[arena ismi] &l&5Â»&r&f Arenayı başlatır!"
+stop: "\n- &2/sw stop &b[arena ismi] &l&5Â»&r&f Arenayı durdurur!"
+kick: "\n- &2/sw kick &b[arena ismi] [oyuncu] [sebep] &l&5Â»&r&f Arenadan oyuncu atar!"
+set: "\n- &2/sw set &b[arena ismi] &l&5Â»&r&f Arenayı kurar veya düzenler!"
+delete: "\n- &2/sw delete &b[arena ismi] &l&5Â»&r&f Varolan arenayı siler!"
+create: "\n- &2/sw create &b[dünya ismi] &l&5Â»&r&f Yeni arena kurar!"
+###################
+#Komutların Mesajları#
+###################
+has_not_permission: "&cBu komutu kullanabilmek için yetkilendirilmedin!"
+#Arena kurulurken geçersiz eylem!
+invalid_arguments: "&cGeçersiz eylem!\n&6Kullanım: &a&o&lhelp"
+join_help: "&6Kullanım: /sw join &a[arena ismi]"
+start_help: "&6Kullanım: /sw start &a[arena ismi]"
+stop_help: "&6Kullanım: /sw stop &a[arena ismi]"
+kick_help: "&6Kullanım: /sw kick &a[arena ismi] [oyuncu]"
+set_help: "&6Kullanım: /sw set &a[arena ismi]"
+create_help: "&6Kullanım: /sw create &a[arena ismi]"
+delete_help: "&6Kullanım: /sw delete &a[arena ismi]"
+reset_help: "&bTekrar dene &6/sw reset help"
+lobby_help: '&6Kullanım: /sw lobby'
+arena_running: "&cArena şuan oynanıyor!"
+arena_not_running: "&6Arena oyunda değil!"
+player_not_exist: "&cOyuncu arenada değil!"
+##########################
+#Kurulum Modu Mesajları#
+##########################
+spawnpos: "&aSpawn bölgesi başarıyla güncellendi!"
+joinsign: "&aGiriş tabelası başarıyla güncellendi!"
+spectatorspawn: "&aİzleyici bölgesi başarıyla güncellendi!"
+allowstatus: "&aDurum tabelası başarıyla güncellendi!"
+signupdatetime: "&aTabela yenilenme süresi başarıyla güncellendi!"
+world: "&aArena dünyası başarıyla güncellendi!"
+allowspectator: "&aİzleyici modu başarıyla güncellendi!"
+maxtime: "&aMaksimum oyun süresi başarıyla güncellendi!"
+maxplayers: "&aMaksimum oyuncu sayısı başarıyla güncellendi!"
+minplayers: "&aMinimum oyuncu sayısı başarıyla güncellendi!"
+starttime: "&aBaşlama süresi başarıyla güncellendi!"
+time: "&aArena zamanı başarıyla güncellendi!"
+enable: "&aArena başarıyla güncellendi!"
+########################################
+#Kurulum Modunda Yardım Mesajları#
+########################################
+statusline_help: "&6Kullanım: &astatusline &b[satır] [yazı]"
+allowstatus_help: "&6Kullanım: &aallowstatus &b[true/false]"
+signupdatetime_help: "&6Kullanım: &asignupdatetime &b[saniye]"
+world_help: "&6Kullanım: &aworld &b[dünya]"
+allowspectator_help: "&6Kullanım: &aallowspectator &b[true/false]"
+maxtime_help: "&6Kullanım: &amaxtime &b[saniye]"
+maxplayers_help: "&6Kullanım: &amaxplayers &b[sayı]"
+minplayers_help: "&6Kullanım: &aminplayers &b[sayı]"
+starttime_help: "&6Kullanım: &astarttime &b[saniye]"
+time_help: "&6Kullanım: &atime &b[true/day/night/TICKS]"
+enable_help: "&6Kullanım: &aenable &b[true/false]"
+#################################
+# Arena Kurulum Modunda Yardım Mesajları #
+#################################
+help_joinsign: "\n- &2joinsign &l&5Â»&r&f Giriş tabelasını belirle!"
+help_spawnpos: "\n- &2spawnpos &l&5Â»&r&f Spawn bölgesini belirle!"
+help_spectator: "\n- &2spectatorspawn &l&5Â»&r&f Arena izleyici bölgesini belirle!"
+help_statusline: "\n &2statusline &b[satır (1-4)] [yazı] &l&5Â»&r&f Durum tabelasını düzenle\n&aEklentiler:\n- %alive = hayattaki oyuncular\n- %dead = ölen oyuncular\n- %status = oyun durumu\n- %type = arena tipi\n- %max = maksimum oyuncu"
+help_enable: "\n &2enable &b[true / false] &l&5Â»&r&f Arenayı etkinleştir!"
+help_allowstatus: "\n- &2allowstatus &b[true/false] &l&5Â»&r&f Aç/Kapa giriş tabelasındaki durumu!"
+help_signupdatetime: "\n- &2signupdatetime &b[saniye] &l&5Â»&r&f Tabela güncellenme süresini belirle!"
+help_allowspectator: "\n- &2allowspectator &b[true / false] &l&5Â»&r&f İzleyicilerin oluşmasına izin ver!"
+help_maxtime: "\n- &2maxtime &b[saniye] &l&5Â»&r&f Maksimum oyuncu sayısını belirle!"
+help_maxplayers: "\n- &2maxplayers &b[miktar] &l&5Â»&r&f Maksimum oyuncu sayısını belirle!"
+help_minplayers: "\n- &2minplayers &b[miktar] &l&5Â»&r&f Minimum oyuncu sayısını belirle!"
+help_starttime: "\n- &2starttime &b[saniye] &l&5Â»&r&f Arena başlama süresini belirle!" 
+help_time: "\n- &2time &b[true/day/night/ticks] &l&5Â»&r&f Arena zamanı belirle!"
+help_setmoney: "\n- &2setmoney &b[miktar] &l&5Â»&r&f Oyuncu arenayı kazandığında verilecek para miktarını belirle!"
+#########################
+# Arena içinde Mesajlar #
+#########################
+waiting_time: "&aDaha fazla oyuncu bekleniyor..."
+arena_started: "&aArena &e%1 &abaşladı!"
+no_players: "&cYetersiz oyuncu!"
+reloaded: "&aSkyWars eklentisi yenilendi!"
