@@ -1,4 +1,4 @@
-?php
+<?php
 
 namespace larryTheCoder\Arena;
 
@@ -34,10 +34,10 @@ class ArenaSchedule extends Task {
         $this->arena = $arena;
         $this->mainTime = $this->arena->data['arena']['max_game_time'];
         $this->startTime = $this->arena->data['arena']['starting_time'];
-        $this->line1 = str_replace("&", "Â§", $this->arena->data['signs']['status_line_1']);
-        $this->line2 = str_replace("&", "Â§", $this->arena->data['signs']['status_line_2']);
-        $this->line3 = str_replace("&", "Â§", $this->arena->data['signs']['status_line_3']);
-        $this->line4 = str_replace("&", "Â§", $this->arena->data['signs']['status_line_4']);
+        $this->line1 = str_replace("&", "§", $this->arena->data['signs']['status_line_1']);
+        $this->line2 = str_replace("&", "§", $this->arena->data['signs']['status_line_2']);
+        $this->line3 = str_replace("&", "§", $this->arena->data['signs']['status_line_3']);
+        $this->line4 = str_replace("&", "§", $this->arena->data['signs']['status_line_4']);
         if (!$this->arena->plugin->getServer()->isLevelGenerated($this->arena->data['signs']['join_sign_world'])) {
             $this->arena->plugin->getServer()->generateLevel($this->arena->data['signs']['join_sign_world']);
             $this->arena->plugin->getServer()->loadLevel($this->arena->data['signs']['join_sign_world']);
@@ -51,8 +51,8 @@ class ArenaSchedule extends Task {
         if (strtolower($this->arena->data['signs']['enable_status']) === 'true') {
             $this->updateTime++;
             if ($this->updateTime >= $this->arena->data['signs']['sign_update_time']) {
-                $vars = ['%alive', '%dead', '%status','%max', '&','%world'];
-                $replace = [count(array_merge($this->arena->ingamep, $this->arena->waitingp)), count($this->arena->deads), $this->arena->getStatus(), $this->arena->getMaxPlayers(), "Â§", $this->arena->data['arena']['arena_world']];
+                $vars = ['%alive', '%dead', '%status', '%max', '&', '%world'];
+                $replace = [count(array_merge($this->arena->ingamep, $this->arena->waitingp)), count($this->arena->deads), $this->arena->getStatus(), $this->arena->getMaxPlayers(), "§", $this->arena->data['arena']['arena_world']];
                 $tile = $this->arena->plugin->getServer()->getLevelByName($this->arena->data['signs']['join_sign_world'])->getTile(new Vector3($this->arena->data['signs']['join_sign_x'], $this->arena->data['signs']['join_sign_y'], $this->arena->data['signs']['join_sign_z']));
                 if ($tile instanceof Sign) {
                     $tile->setText(str_replace($vars, $replace, $this->line1), str_replace($vars, $replace, $this->line2), str_replace($vars, $replace, $this->line3), str_replace($vars, $replace, $this->line4));
@@ -60,26 +60,25 @@ class ArenaSchedule extends Task {
                 $this->updateTime = 0;
             }
         }
-        $p = $this->arena->waitingp;
         // on cage
         if ($this->arena->game === 0) {
             if (count($this->arena->waitingp) >= $this->arena->getMinPlayers() || $this->arena->forcestart === true) {
+                $this->startTime--;
+                $vars = ["%1", "%2", "%3"];
+                $replace = [$this->startTime, count($this->arena->waitingp), $this->arena->getMaxPlayers()];
+                $msg = str_replace($vars, $replace, $this->arena->plugin->getMsg('start_time'));
+                foreach ($this->arena->waitingp as $p) {
+                    $p->sendPopup($msg);
+                }
                 if ($this->startTime <= 0) {
                     $this->arena->startGame();
-                    $this->arena->plugin->getServer()->getLogger()->info($this->arena->plugin->getPrefix().TextFormat::GREEN."Arena level ".TextFormat::RED.$this->arena->data['arena']['arena_world'].TextFormat::GREEN." has started!");
+                    $this->arena->plugin->getServer()->getLogger()->info($this->arena->plugin->getPrefix() . TextFormat::GREEN . "Arena level " . TextFormat::RED . $this->arena->data['arena']['arena_world'] . TextFormat::GREEN . " has started!");
+                    $this->arena->forcestart = false;
                     return;
+                } else {
+                    $this->startTime = $this->arena->data['arena']['starting_time'];
                 }
-                $vars = ["%1", "%2", "%3"];
-                $replace = [$this->startTime, count($this->arena->waitingp),$this->arena->getMaxPlayers()];
-                $msg = str_replace($vars, $replace, $this->arena->plugin->getMsg('start_time'));
-                if($p instanceof Player){
-                    $p->sendTip($msg);
-                }
-                $this->startTime--;
             } else {
-                if($p instanceof Player){
-                    $p->sendTip($this->arena->plugin->getMsg('waiting_time'));
-                }
                 $this->startTime = $this->arena->data['arena']['starting_time'];
             }
         }
@@ -87,13 +86,14 @@ class ArenaSchedule extends Task {
         if ($this->arena->game === 1) {
             $this->startTime = $this->arena->data['arena']['starting_time'];
             $this->mainTime--;
-            if($this->mainTime === 0){
+            if ($this->mainTime === 0) {
                 $this->arena->stopGame();
-                $this->arena->plugin->getServer()->getLogger()->info($this->arena->plugin->getPrefix().TextFormat::RED."Arena level ".TextFormat::GREEN.$this->arena->data['arena']['arena_world'].TextFormat::RED." has stopeed!");
-            } 
-            if($p instanceof Player) {
-                $p->sendTip(str_replace( "%1" , $this->mainTime, $this->plugin->getMsg('main_time')));
-            }     
+                $this->arena->plugin->getServer()->getLogger()->info($this->arena->plugin->getPrefix() . TextFormat::RED . "Arena level " . TextFormat::GREEN . $this->arena->data['arena']['arena_world'] . TextFormat::RED . " has stopeed!");
+            }
+            foreach ($this->arena->waitingp as $p) {
+                $p->sendPopup($msg);
+            }
         }
     }
+
 }

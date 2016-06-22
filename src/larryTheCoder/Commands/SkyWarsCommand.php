@@ -53,7 +53,7 @@ class SkyWarsCommand {
                             $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
                             break;
                         }
-                        $msg = "Â§9--- Â§cÂ§lSkyWars helpÂ§lÂ§9 ---Â§rÂ§f";
+                        $msg = "§9--- §c§lSkyWars help§l§9 ---§r§f";
                         if ($sender->hasPermission("sw.command.lobby")) {
                             $msg .= $this->plugin->getMsg('lobby');
                         }
@@ -127,10 +127,6 @@ class SkyWarsCommand {
                         if (isset($args[1])) {
                             if (!isset($this->plugin->ins[$args[1]])) {
                                 $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_doesnt_exist'));
-                                break;
-                            }
-                            if (!count($this->plugin->ins[$args[1]]->waitingp) <= $this->plugin->ins[$args[1]]->getMinPlayers()) {
-                                $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('no_players'));
                                 break;
                             }
                             $this->plugin->ins[$args[1]]->forcestart = true;

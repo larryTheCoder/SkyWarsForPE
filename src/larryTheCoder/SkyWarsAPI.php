@@ -100,12 +100,12 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 $this->arenas[basename($file, ".yml")] = $arena->getAll();
                 $this->arenas[basename($file, ".yml")]['enable'] = false;
                 $fname = basename($file);
-                $this->getServer()->getLogger()->info($this->getPrefix() . "Â§a$fname Â§7Â§l-Â§rÂ§c is disabled");
+                $this->getServer()->getLogger()->info($this->getPrefix() . "§a$fname §7§l-§r§c is disabled");
             } else {
                 if ($this->checkFile($arena) === true) {
                     $fname = basename($file);
                     $this->setArenasData($arena, basename($file, ".yml"));
-                    $this->getServer()->getLogger()->info($this->getPrefix() . "Â§c$fname Â§7Â§l-Â§rÂ§a checking sucessful");
+                    $this->getServer()->getLogger()->info($this->getPrefix() . "§c$fname §7§l-§r§a checking sucessful");
                 } else {
                     $this->arenas[basename($file, ".yml")] = $arena->getAll();
                     $this->arenas[basename($file, ".yml")]['enable'] = false;
@@ -337,15 +337,15 @@ class SkyWarsAPI extends PluginBase implements Listener {
                     $helparray = [$help1, $help2, $help3];
                     if (isset($args[1])) {
                         if (intval($args[1]) >= 1 && intval($args[1]) <= 3) {
-                            $help = "Â§9--- Â§6Â§lSkyWars setup helpÂ§l $args[1]/3Â§9 ---Â§rÂ§f";
+                            $help = "§9--- §6§lSkyWars setup help§l $args[1]/3§9 ---§r§f";
                             $help .= $helparray[intval(intval($args[1]) - 1)];
                             $p->sendMessage($help);
                             return;
                         }
-                        $p->sendMessage($this->getPrefix() . "Â§6use: Â§ahelp Â§b[page 1-3]");
+                        $p->sendMessage($this->getPrefix() . "§6use: §ahelp §b[page 1-3]");
                         return;
                     }
-                    $p->sendMessage("Â§9--- Â§6Â§lSkyWars setup helpÂ§l 1/3Â§9 ---Â§rÂ§f" . $help1);
+                    $p->sendMessage("§9--- §6§lSkyWars setup help§l 1/3§9 ---§r§f" . $help1);
                     return;
                 }
             }
@@ -458,11 +458,11 @@ class SkyWarsAPI extends PluginBase implements Listener {
 
     public function getMsg($key) {
         $msg = $this->msg;
-        return \str_replace("&", "Â§", $msg->get($key));
+        return \str_replace("&", "§", $msg->get($key));
     }
 
     public function getPrefix() {
-        return \str_replace("&", "Â§", $this->cfg->get('Prefix'));
+        return \str_replace("&", "§", $this->cfg->get('Prefix'));
     }
 
     public function registerEconomy() {
@@ -471,7 +471,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
             $ins = $this->getServer()->getPluginManager()->getPlugin($plugin);
             if ($ins instanceof Plugin && $ins->isEnabled()) {
                 $this->economy = $ins;
-                $this->getServer()->getLogger()->info($this->getPrefix() . "Â§bSelected economy plugin :Â§c $plugin");
+                $this->getServer()->getLogger()->info($this->getPrefix() . "§bSelected economy plugin :§c $plugin");
                 return;
             }
         }
