@@ -1,13 +1,12 @@
 ## English translation by larryTheCoder
 ---
-join: "Welcome to SkyWars match"
-join_others: "%1 has joined the match"
-in_arena: "&cYou can`t leave now the match has started"
+join: "&aWelcome to SkyWars match ,&c%1"
+join_others: "&c%1 &a has joined to arena!"
 leave: "Leaving the arena..."
 leave_others: "%1 has left the match"
-arena_doesnt_exist: "&cArena doesnÂ´t exist"
+arena_doesnt_exist: "&cArena doesn´t exist"
 arena_already_exist: "&cArena already exists"
-arena_create: "&eArena successfully created!"
+
 start_game: "&l&bGame started!"
 death: "&c%1 &ahas been killed. &c%2 &aplayers left"
 send_to_main_world: "&6returning to lobby..."
@@ -15,8 +14,7 @@ arena_setup_spawnpos: "&bSpawn %1 has been registered"
 starting: "&agame start in %1 seconds"
 kick_from_game: "&9You have been kicked from game for %1"
 game_full: "&cArena is full"
-set_main_lobby: "&bMain lobby has been set!"
-ingame: "&cgame is in progress"
+ingame: "&cArena is running"
 startime: "&aStarting in &c%1 &bseconds [&6%2&a/&6%3]"
 enable_setup_mode: "&6You are now in setup mode\n&a-> leave using  &l&odone"
 disable_setup_mode: '&aArena saved'
@@ -24,18 +22,21 @@ world_doesnt_exist: '&cWorld doesnt exits'
 arena_in_setup: "&cArena is in setup mode!"
 #reward for win
 get_money: "&aYou won %1 money!"
-##########################
+
+
+
+########################
 # Command help message #
-##########################
+########################
 help: "&cPlease use /sw help for a list of commands"
-lobby: "\n- &2/sw lobby &l&5Â»&r&f Teleport to lobby"
-onjoin: "\n- &2/sw join &b[arena name] &l&5Â»&r&f Join to the Arena"
-start: "\n- &2/sw start &b[arena name] &l&5Â»&r&f Force start the arena"
-stop: "\n- &2/sw stop &b[arena name] &l&5Â»&r&f Force stop the arena"
-kick: "\n- &2/sw kick &b[arena name] [player name] [reason] &l&5Â»&r&f Kick player from arena"
-set: "\n- &2/sw set &b[arena name] &l&5Â»&r&f Set or modify arena"
-delete: "\n- &2/sw delete &b[arena name] &l&5Â»&r&f Delete existing arena"
-create: "\n- &2/sw create &b[world name] &l&5Â»&r&f Create new arena"
+lobby: "\n- &2/lobby &l&5»&r&f Teleport to lobby"
+onjoin: "\n- &2/sw join &b[arena name] &l&5»&r&f Join to the Arena"
+start: "\n- &2/sw start &b[arena name] &l&5»&r&f Force start the arena"
+stop: "\n- &2/sw stop &b[arena name] &l&5»&r&f Force stop the arena"
+kick: "\n- &2/sw kick &b[arena name] [player name] [reason] &l&5»&r&f Kick player from arena"
+set: "\n- &2/sw set &b[arena name] &l&5»&r&f Set or modify arena"
+delete: "\n- &2/sw delete &b[arena name] &l&5»&r&f Delete existing arena"
+create: "\n- &2/sw create &b[world name] &l&5»&r&f Create new arena"
 ###################
 #Commands messages#
 ###################
@@ -50,13 +51,19 @@ set_help: "&6use /sw set &a[arena name]"
 create_help: "&6use /sw create &a[arena name]"
 delete_help: "&6use /sw delete &a[arena name]"
 reset_help: "&bTry to use &6/sw reset help"
-lobby_help: '&6use /sw lobby'
-arena_running: "&cArena is running now"
+lobby_help: '&6use /lobby'
+arena_delete: "&aArena has seccessfully deleted"
 arena_not_running: "&6Arena is not in-game!"
 player_not_exist: "&cPlayer is not in arena"
+set_main_lobby: "&bMain lobby has been set!"
+arena_create: "&eArena successfully created!"
+arena_doesnt_running: "&cArena not running!"
+already_in_game: "&cYou are now in the arena silly"
+
 ##########################
 #setup mode done messages#
 ##########################
+statusline: "&aStatus line has been seccessfully updated!"
 spawnpos: "&aSpawn location has been seccessfully updated!"
 joinsign: "&aJoin sign has been successfully updated"
 spectatorspawn: "&aSpectator spawn has been successfully updated"
@@ -84,27 +91,41 @@ minplayers_help: "&6use: &aminplayers &b[amount]"
 starttime_help: "&6use: &astarttime &b[seconds]"
 time_help: "&6use: &atime &b[true/day/night/TICKS]"
 enable_help: "&6use: &aenable &b[true/false]"
+setmoney_help: "&6use: &asetmoney &b[amount]"
 #################################
 # Arena setup mode command help #
 #################################
-help_joinsign: "\n- &2joinsign &l&5Â»&r&f Set join sign position"
-help_spawnpos: "\n- &2spawnpos &l&5Â»&r&f Set arena join position"
-help_spectator: "\n- &2spectatorspawn &l&5Â»&r&f Set arena spectator spawn"
-help_statusline: "\n &2statusline &b[line (1-4)] [text] &l&5Â»&r&f Set status sign line\n&aYou can use this variables:\n- %alive = amount of in-game players\n- %dead = amount of dead players\n- %status = game status\n- %type = type of arena\n- %max = max players per arena"
-help_enable: "\n &2enable &b[true / false] &l&5Â»&r&f Enable the arena"
-help_allowstatus: "\n- &2allowstatus &b[true/false] &l&5Â»&r&f Enable/disable status on join sign"
-help_signupdatetime: "\n- &2signupdatetime &b[seconds] &l&5Â»&r&f Set sign update interval"
-help_allowspectator: "\n- &2allowspectator &b[true / false] &l&5Â»&r&f Allow to spawn spectators"
-help_maxtime: "\n- &2maxtime &b[seconds] &l&5Â»&r&f Set max game time"
-help_maxplayers: "\n- &2maxplayers &b[count] &l&5Â»&r&f Set max game players"
-help_minplayers: "\n- &2minplayers &b[count] &l&5Â»&r&f Set players minimal count required to start the game"
-help_starttime: "\n- &2starttime &b[seconds] &l&5Â»&r&f Set arena starting time" 
-help_time: "\n- &2time &b[true/day/night/ticks] &l&5Â»&r&f Set time in arena"
-help_setmoney: "\n- &2setmoney &b[amount] &l&5Â»&r&f give a player money when he/she won"
+help_world: "\n- &2setworld &b[world] &l&5»&r&f Set arena world" 
+help_joinsign: "\n- &2joinsign &l&5»&r&f Set join sign position"
+help_spawnpos: "\n- &2spawnpos &l&5»&r&f Set arena join position"
+help_spectator: "\n- &2spectatorspawn &l&5»&r&f Set arena spectator spawn"
+help_statusline: "\n &2statusline &b[line (1-4)] [text] &l&5»&r&f Set status sign line\n&aYou can use this variables:\n- %alive = amount of in-game players\n- %dead = amount of dead players\n- %status = game status\n- %type = type of arena\n- %max = max players per arena"
+help_enable: "\n &2enable &b[true / false] &l&5»&r&f Enable the arena"
+help_allowstatus: "\n- &2allowstatus &b[true/false] &l&5»&r&f Enable/disable status on join sign"
+help_signupdatetime: "\n- &2signupdatetime &b[seconds] &l&5»&r&f Set sign update interval"
+help_allowspectator: "\n- &2allowspectator &b[true / false] &l&5»&r&f Allow to spawn spectators"
+help_maxtime: "\n- &2maxtime &b[seconds] &l&5»&r&f Set max game time"
+help_maxplayers: "\n- &2maxplayers &b[count] &l&5»&r&f Set max game players"
+help_minplayers: "\n- &2minplayers &b[count] &l&5»&r&f Set players minimal count required to start the game"
+help_starttime: "\n- &2starttime &b[seconds] &l&5»&r&f Set arena starting time" 
+help_time: "\n- &2time &b[true/day/night/ticks] &l&5»&r&f Set time in arena"
+help_setmoney: "\n- &2setmoney &b[amount] &l&5»&r&f give a player money when he/she won"
 #########################
 # Arena ingame messages #
 #########################
+arena_chest_refilled: "&aArena &c%1 &achest has refilled"
+chest_refilled: "&aChest has been refilled!"
+end_game: "&a+-------------------+\n-&b     Game ended\n- &e1 : &b%1\n- &e1 : &b%2\n- &e1 : &b%3\n- &e1 : &b%4&a+-------------------+"
+in_game_timer: "&bPlayers in Arena &6%2&c/&6%3&aEnding in &e%1"
+in_game: "&cYou can`t leave now the match has started"
+start_time: "&bPlayers in Arena &6%2&c/&6%3\n&aStarting in &e%1"
 waiting_time: "&aWaiting for more players.."
 arena_started: "&aArena &e%1 &ahas started!"
-no_players: "&cInsufficent players"
+no_players: "&cThere is no players in arena!"
 reloaded: "&aSkyWars plugin reloaded!"
+reloading: "&aReloading..."
+########################
+# Other setup messages #
+########################
+break_sign: "&bBreak the sign to countinue"
+break_block: "&bBreak the block to countinue"
