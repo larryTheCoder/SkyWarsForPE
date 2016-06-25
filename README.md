@@ -2,6 +2,7 @@ Skywars Plugin
 ================
 ![skyWars](https://raw.githubusercontent.com/svilex/res/master/skywars.png)
 
+**This plugin is inactive**\n
 </br>**SkyWars** plugin with random suprizes,cool commands and more<br>
 </br>**Developers** are nedded to create a languages for this **plugin**!<br>
 # Test ServerS
