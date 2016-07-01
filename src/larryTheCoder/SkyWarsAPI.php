@@ -1,5 +1,6 @@
 <?php
 
+// LANGUAGE CHECK SUCCESS
 /**
  * TO-DO list for 1.9_Alpha
  * <X> Player kill message on Level
@@ -20,13 +21,12 @@ use pocketmine\command\Command;
 use pocketmine\utils\TextFormat;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
+use larryTheCoder\Utils\SkyWarsListener;
 use larryTheCoder\Commands\SkyWarsCommand;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
 
 /**
  * SkyWarsAPI <version 7> : MCPE Minigame
@@ -46,6 +46,8 @@ class SkyWarsAPI extends PluginBase implements Listener {
     public $inv = [];
     public $setters = [];
     public $economy;
+    public $shop = null;
+    public $listener = null;
     public $mode = 0;
 
     public function onEnable() {
@@ -56,12 +58,18 @@ class SkyWarsAPI extends PluginBase implements Listener {
         if (!$this->getServer()->isLevelGenerated($this->cfg->getNested('lobby.world'))) {
             $this->getServer()->generateLevel($this->cfg->getNested('lobby.world'));
         }
-        $this->cmd = new SkyWarsCommand($this);
+        $this->loadClasses();
         $this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
     }
 
     public function onDisable() {
         $this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
+    }
+
+    public function loadClasses() {
+        $this->listener = SkyWarsListener::getInstance($this);
+        $this->cmd = new SkyWarsCommand($this);
+        //$this->shop = new SkyWarsShopAPI($this->economy);
     }
 
     public function initConfig() {
@@ -73,8 +81,11 @@ class SkyWarsAPI extends PluginBase implements Listener {
         }
         // TO-DO shop
         $this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
-        if (!file_exists($this->getDataFolder() . "skywars_worlds/")) {
-            @mkdir($this->getDataFolder() . "skywars_worlds/");
+        if (!file_exists($this->getDataFolder() . "/arenas/worlds/")) {
+            @mkdir($this->getDataFolder() . "/arenas/worlds/");
+        }
+        if (!is_file($this->getDataFolder() . "chests.yml")) {
+            $this->saveResource("chests.yml");
         }
         if (!file_exists($this->getDataFolder() . "language/")) {
             @mkdir($this->getDataFolder() . "language/");
@@ -85,9 +96,8 @@ class SkyWarsAPI extends PluginBase implements Listener {
         }
         if (!is_file($this->getDataFolder() . "language/English.yml")) {
             $this->saveResource("language/English.yml");
-        }
-        else{
-            $this->msg = new Config($this->getDataFolder()."language/{$this->cfg->get('language')}.yml", Config::YAML);
+        } else {
+            $this->msg = new Config($this->getDataFolder() . "language/{$this->cfg->get('language')}.yml", Config::YAML);
             $this->getServer()->getLogger()->info("Selected language {$this->cfg->get('language')}");
         }
     }
@@ -117,6 +127,203 @@ class SkyWarsAPI extends PluginBase implements Listener {
         }
     }
 
+    // COPY from svile plugin SkyWars-Pocketmine
+    public function getChestContents() {
+        $items = array(
+            //ARMOR
+            'armor' => array(
+                array(
+                    Item::LEATHER_CAP,
+                    Item::LEATHER_TUNIC,
+                    Item::LEATHER_PANTS,
+                    Item::LEATHER_BOOTS
+                ),
+                array(
+                    Item::GOLD_HELMET,
+                    Item::GOLD_CHESTPLATE,
+                    Item::GOLD_LEGGINGS,
+                    Item::GOLD_BOOTS
+                ),
+                array(
+                    Item::CHAIN_HELMET,
+                    Item::CHAIN_CHESTPLATE,
+                    Item::CHAIN_LEGGINGS,
+                    Item::CHAIN_BOOTS
+                ),
+                array(
+                    Item::IRON_HELMET,
+                    Item::IRON_CHESTPLATE,
+                    Item::IRON_LEGGINGS,
+                    Item::IRON_BOOTS
+                ),
+                array(
+                    Item::DIAMOND_HELMET,
+                    Item::DIAMOND_CHESTPLATE,
+                    Item::DIAMOND_LEGGINGS,
+                    Item::DIAMOND_BOOTS
+                )
+            ),
+            //WEAPONS
+            'weapon' => array(
+                array(
+                    Item::WOODEN_SWORD,
+                    Item::WOODEN_AXE,
+                ),
+                array(
+                    Item::GOLD_SWORD,
+                    Item::GOLD_AXE
+                ),
+                array(
+                    Item::STONE_SWORD,
+                    Item::STONE_AXE
+                ),
+                array(
+                    Item::IRON_SWORD,
+                    Item::IRON_AXE
+                ),
+                array(
+                    Item::DIAMOND_SWORD,
+                    Item::DIAMOND_AXE
+                )
+            ),
+            //FOOD
+            'food' => array(
+                array(
+                    Item::RAW_PORKCHOP,
+                    Item::RAW_CHICKEN,
+                    Item::MELON_SLICE,
+                    Item::COOKIE
+                ),
+                array(
+                    Item::RAW_BEEF,
+                    Item::CARROT
+                ),
+                array(
+                    Item::APPLE,
+                    Item::GOLDEN_APPLE
+                ),
+                array(
+                    Item::BEETROOT_SOUP,
+                    Item::BREAD,
+                    Item::BAKED_POTATO
+                ),
+                array(
+                    Item::MUSHROOM_STEW,
+                    Item::COOKED_CHICKEN
+                ),
+                array(
+                    Item::COOKED_PORKCHOP,
+                    Item::STEAK,
+                    Item::PUMPKIN_PIE
+                ),
+            ),
+            //THROWABLE
+            'throwable' => array(
+                array(
+                    Item::BOW,
+                    Item::ARROW
+                ),
+                array(
+                    Item::SNOWBALL
+                ),
+                array(
+                    Item::EGG
+                )
+            ),
+            //BLOCKS
+            'block' => array(
+                Item::STONE,
+                Item::WOODEN_PLANK,
+                Item::COBBLESTONE,
+                Item::DIRT
+            ),
+            //OTHER
+            'other' => array(
+                array(
+                    Item::WOODEN_PICKAXE,
+                    Item::GOLD_PICKAXE,
+                    Item::STONE_PICKAXE,
+                    Item::IRON_PICKAXE,
+                    Item::DIAMOND_PICKAXE
+                ),
+                array(
+                    Item::STICK,
+                    Item::STRING
+                )
+            )
+        );
+
+        $templates = [];
+        for ($i = 0; $i < 10; $i++) {
+
+            $armorq = mt_rand(0, 1);
+            $armortype = $items['armor'][mt_rand(0, (count($items['armor']) - 1))];
+            $armor1 = array($armortype[mt_rand(0, (count($armortype) - 1))], 1);
+            if ($armorq) {
+                $armortype = $items['armor'][mt_rand(0, (count($items['armor']) - 1))];
+                $armor2 = array($armortype[mt_rand(0, (count($armortype) - 1))], 1);
+            } else {
+                $armor2 = array(0, 1);
+            }
+            unset($armorq, $armortype);
+
+            $weapontype = $items['weapon'][mt_rand(0, (count($items['weapon']) - 1))];
+            $weapon = array($weapontype[mt_rand(0, (count($weapontype) - 1))], 1);
+            unset($weapontype);
+
+            $ftype = $items['food'][mt_rand(0, (count($items['food']) - 1))];
+            $food = array($ftype[mt_rand(0, (count($ftype) - 1))], mt_rand(2, 5));
+            unset($ftype);
+
+            $add = mt_rand(0, 1);
+            if ($add) {
+                $tr = $items['throwable'][mt_rand(0, (count($items['throwable']) - 1))];
+                if (count($tr) == 2) {
+                    $throwable1 = array($tr[1], mt_rand(10, 20));
+                    $throwable2 = array($tr[0], 1);
+                } else {
+                    $throwable1 = array(0, 1);
+                    $throwable2 = array($tr[0], mt_rand(5, 10));
+                }
+                $other = array(0, 1);
+            } else {
+                $throwable1 = array(0, 1);
+                $throwable2 = array(0, 1);
+                $ot = $items['other'][mt_rand(0, (count($items['other']) - 1))];
+                $other = array($ot[mt_rand(0, (count($ot) - 1))], 1);
+            }
+            unset($add, $tr, $ot);
+
+            $block = array($items['block'][mt_rand(0, (count($items['block']) - 1))], 64);
+
+            $contents = array(
+                $armor1,
+                $armor2,
+                $weapon,
+                $food,
+                $throwable1,
+                $throwable2,
+                $block,
+                $other
+            );
+            shuffle($contents);
+            $fcontents = array(
+                mt_rand(1, 2) => array_shift($contents),
+                mt_rand(3, 5) => array_shift($contents),
+                mt_rand(6, 10) => array_shift($contents),
+                mt_rand(11, 15) => array_shift($contents),
+                mt_rand(16, 17) => array_shift($contents),
+                mt_rand(18, 20) => array_shift($contents),
+                mt_rand(21, 25) => array_shift($contents),
+                mt_rand(26, 27) => array_shift($contents),
+            );
+            $templates[] = $fcontents;
+        }
+
+        shuffle($templates);
+        return $templates;
+    }
+
     public function unsetPlayers(Player $p) {
         if (isset($this->selectors[strtolower($p->getName())])) {
             unset($this->selectors[strtolower($p->getName())]);
@@ -136,7 +343,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
             $players = array_merge($arena->ingamep, $arena->waitingp, $arena->spec);
             if (isset($players[strtolower($p->getName())])) {
                 return $arena;
-            }  
+            }
         }
         return false;
     }
@@ -175,16 +382,17 @@ class SkyWarsAPI extends PluginBase implements Listener {
     }
 
     public function isArenaSet($name) {
-        if (isset($this->ins[$name]))
+        if (isset($this->ins[$name])) {
             return true;
-
+        }
         return false;
     }
 
     public function reloadArena($name) {
         $arena = new Config($this->getDataFolder() . "arenas/$name.yml");
-        if (isset($this->ins[$name]))
+        if (isset($this->ins[$name])) {
             $this->ins[$name]->setup = false;
+        }
         if (!$this->checkFile($arena) || $arena->get('enabled') === "false") {
             $this->arenas[$name] = $arena->getAll();
             $this->arenas[$name]['enable'] = 'false';
@@ -206,12 +414,12 @@ class SkyWarsAPI extends PluginBase implements Listener {
         return false;
     }
 
-    public function onQuit(PlayerQuitEvent $e){
+    public function onQuit(PlayerQuitEvent $e) {
         $p = $e->getPlayer();
         $this->unsetPlayers($p);
     }
-    
-    public function onKick(PlayerKickEvent $e){
+
+    public function onKick(PlayerKickEvent $e) {
         $p = $e->getPlayer();
         $this->unsetPlayers($p);
     }
@@ -243,10 +451,10 @@ class SkyWarsAPI extends PluginBase implements Listener {
     }
 
     public function checkFile(Config $arena) {
-        if (!(is_numeric($arena->getNested("signs.join_sign_x")) && is_numeric($arena->getNested("signs.join_sign_y")) && is_numeric($arena->getNested("signs.join_sign_z")) && is_numeric($arena->getNested("arena.max_game_time")) && is_string($arena->getNested("signs.join_sign_world")) && is_string($arena->getNested("signs.status_line_1")) && is_string($arena->getNested("signs.status_line_2")) && is_string($arena->getNested("signs.status_line_3")) && is_string($arena->getNested("signs.status_line_4")) && is_numeric($arena->getNested("signs.return_sign_x")) && is_numeric($arena->getNested("signs.return_sign_y")) && is_numeric($arena->getNested("signs.return_sign_z")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.spec_spawn_x")) && is_numeric($arena->getNested("arena.spec_spawn_y")) && is_numeric($arena->getNested("arena.spec_spawn_z")) && is_numeric($arena->getNested("arena.max_players")) && is_numeric($arena->getNested("arena.min_players")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.starting_time")) && is_array($arena->getNested("arena.spawn_positions")) && is_string($arena->getNested("arena.finish_msg_levels")) && !is_string($arena->getNested("arena.money_reward")))) {
+        if (!(is_numeric($arena->getNested("signs.join_sign_x")) && is_numeric($arena->getNested("signs.join_sign_y")) && is_numeric($arena->getNested("signs.join_sign_z")) && is_numeric($arena->getNested("arena.max_game_time")) && is_string($arena->getNested("signs.join_sign_world")) && is_string($arena->getNested("signs.status_line_1")) && is_string($arena->getNested("signs.status_line_2")) && is_string($arena->getNested("signs.status_line_3")) && is_string($arena->getNested("signs.status_line_4")) && is_numeric($arena->getNested("signs.return_sign_x")) && is_numeric($arena->getNested("signs.return_sign_y")) && is_numeric($arena->getNested("signs.return_sign_z")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("chest.refill_rate")) && is_numeric($arena->getNested("arena.spec_spawn_x")) && is_numeric($arena->getNested("arena.spec_spawn_y")) && is_numeric($arena->getNested("arena.spec_spawn_z")) && is_numeric($arena->getNested("arena.max_players")) && is_numeric($arena->getNested("arena.min_players")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.starting_time")) && is_array($arena->getNested("arena.spawn_positions")) && is_string($arena->getNested("arena.finish_msg_levels")) && !is_string($arena->getNested("arena.money_reward")))) {
             return false;
         }
-        if (!((strtolower($arena->getNested("signs.enable_status")) == "true" || strtolower($arena->getNested("signs.enable_status")) == "false") && (strtolower($arena->getNested("arena.spectator_mode")) == "true" || strtolower($arena->getNested("arena.spectator_mode")) == "false") && (strtolower($arena->getNested("arena.time")) == "true" || strtolower($arena->getNested("arena.time")) == "day" || strtolower($arena->getNested("arena.time")) == "night" || is_numeric(strtolower($arena->getNested("arena.time")))) && (strtolower($arena->get("enabled")) == "true" || strtolower($arena->get("enabled")) == "false"))) {
+        if (!((strtolower($arena->getNested("signs.enable_status")) == "true" || strtolower($arena->getNested("signs.enable_status")) == "false") && (strtolower($arena->getNested("arena.spectator_mode")) == "true" || strtolower($arena->getNested("arena.spectator_mode")) == "false") && (strtolower($arena->getNested("chest.refill")) == "true" || strtolower($arena->getNested("chest.refill")) == "false") && (strtolower($arena->getNested("arena.time")) == "true" || strtolower($arena->getNested("arena.time")) == "day" || strtolower($arena->getNested("arena.time")) == "night" || is_numeric(strtolower($arena->getNested("arena.time")))) && (strtolower($arena->getNested("arena.start_when_full")) == "true" || strtolower($arena->getNested("arena.start_when_full")) == "false") && (strtolower($arena->get("enabled")) == "true" || strtolower($arena->get("enabled")) == "false"))) {
             return false;
         }
         return true;
@@ -321,19 +529,19 @@ class SkyWarsAPI extends PluginBase implements Listener {
             if (count($args) >= 1 && count($args) <= 3) {
                 if ($args[0] === 'help') {
                     $help1 = $this->getMsg('help_joinsign')
-                            .$this->getMsg('help_spawnpos')
-                            .$this->getMsg('help_spectator')
-                            .$this->getMsg('help_statusline')
-                            .$this->getMsg('help_world')
-                            .$this->getMsg('help_signupdatetime');
+                            . $this->getMsg('help_spawnpos')
+                            . $this->getMsg('help_spectator')
+                            . $this->getMsg('help_statusline')
+                            . $this->getMsg('help_world')
+                            . $this->getMsg('help_signupdatetime');
                     $help2 = $this->getMsg('help_allowspectator')
-                            .$this->getMsg('help_maxtime')
-                            .$this->getMsg('help_maxplayers')
-                            .$this->getMsg('help_minplayers')
-                            .$this->getMsg('help_starttime')
-                            .$this->getMsg('help_time');  
+                            . $this->getMsg('help_maxtime')
+                            . $this->getMsg('help_maxplayers')
+                            . $this->getMsg('help_minplayers')
+                            . $this->getMsg('help_starttime')
+                            . $this->getMsg('help_time');
                     $help3 = $this->getMsg('help_enable')
-                            .$this->getMsg('help_setmoney');                       
+                            . $this->getMsg('help_setmoney');
                     $helparray = [$help1, $help2, $help3];
                     if (isset($args[1])) {
                         if (intval($args[1]) >= 1 && intval($args[1]) <= 3) {
@@ -364,7 +572,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 $arena->setStatusLine($args[1], substr($msg, 13));
                 $p->sendMessage($this->getPrefix() . $this->getMsg('statusline'));
                 return;
-            #    
+                #    
             } elseif (strpos($msg, 'enable') === 0) {
                 if (substr($msg, 7) === 'true' || substr($msg, 7) === 'false') {
                     $arena->setEnable(substr($msg, 7));
@@ -373,12 +581,11 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 }
                 $p->sendMessage($this->getPrefix() . $this->getMsg('enable_help'));
                 return;
-            } elseif (strpos($msg, 'setmoney') === 0){
-                if (!is_numeric(substr($msg, 'setmoney'))){
+            } elseif (strpos($msg, 'setmoney') === 0) {
+                if (!is_numeric(substr($msg, 'setmoney'))) {
                     $p->sendMessage($this->getPrefix() . $this->getMsg('setmoney_help'));
                 }
                 $arena->setMoney(substr($msg, 15));
-                
             } elseif (strpos($msg, 'signupdatetime') === 0) {
                 if (!is_numeric(substr($msg, 15))) {
                     $p->sendMessage($this->getPrefix() . $this->getMsg('signupdatetime_help'));
@@ -386,13 +593,13 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 }
                 $arena->setUpdateTime(substr($msg, 15));
                 $p->sendMessage($this->getPrefix() . $this->getMsg('signupdatetime'));
-            } elseif(strpos($msg, 'world') === 0){
-                if(is_string(substr($msg, 6))){
+            } elseif (strpos($msg, 'setworld') === 0) {
+                if (is_string(substr($msg, 6))) {
                     $arena->setArenaWorld(substr($msg, 6));
-                    $p->sendMessage($this->getPrefix().$this->getMsg('world'));
+                    $p->sendMessage($this->getPrefix() . $this->getMsg('world'));
                     return;
                 }
-                $p->sendMessage($this->getPrefix().$this->getMsg('world_help'));
+                $p->sendMessage($this->getPrefix() . $this->getMsg('world_help'));
             } elseif (strpos($msg, 'allowspectator') === 0) {
                 if (substr($msg, 15) === 'true' || substr($msg, 15) === 'false') {
                     $arena->setSpectator(substr($msg, 15));
@@ -407,13 +614,13 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 }
                 $arena->setMaxTime(substr($msg, 8));
                 $p->sendMessage($this->getPrefix() . $this->getMsg('maxtime'));
-            } elseif(strpos($msg, 'allowstatus') === 0){
-                if(substr($msg, 12) === 'true' || substr($msg, 12) === 'false'){
+            } elseif (strpos($msg, 'allowstatus') === 0) {
+                if (substr($msg, 12) === 'true' || substr($msg, 12) === 'false') {
                     $arena->setStatus(substr($msg, 12));
-                    $p->sendMessage($this->getPrefix().$this->getMsg('allowstatus'));
+                    $p->sendMessage($this->getPrefix() . $this->getMsg('allowstatus'));
                     return;
                 }
-                $p->sendMessage($this->getPrefix().$this->getMsg('allowstatus_help'));
+                $p->sendMessage($this->getPrefix() . $this->getMsg('allowstatus_help'));
             } elseif (strpos($msg, 'maxplayers') === 0) {
                 if (!is_numeric(substr($msg, 11))) {
                     $p->sendMessage($this->getPrefix() . $this->getMsg('maxplayers_help'));

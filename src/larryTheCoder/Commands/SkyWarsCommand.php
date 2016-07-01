@@ -90,6 +90,7 @@ class SkyWarsCommand {
                         if (!$sender->hasPermission("sw.command.reload")) {
                             $sender->sendMessage($this->plugin->getMsg("has_not_permission"));
                         }
+                        $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('reloading'));
                         $plugin = $this->plugin->getServer()->getPluginManager()->getPlugin("SkyWarsForPE");
                         $this->plugin->getServer()->getPluginManager()->disablePlugin($plugin);
                         $this->plugin->getServer()->getPluginManager()->enablePlugin($plugin);
@@ -129,7 +130,11 @@ class SkyWarsCommand {
                                 $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_doesnt_exist'));
                                 break;
                             }
-                            $this->plugin->ins[$args[1]]->forcestart = true;
+                            if (count($this->plugin->ins[$args[1]]->waitingp) <= $this->plugin->ins[$args[1]]->getMinPlayers()) {
+                                $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('no_players'));
+                                break;
+                            }
+                            $this->plugin->ins[$args[1]]->startGame();
                             $sender->sendMessage(str_replace('%1', $args[1], $this->plugin->getPrefix() . $this->plugin->getMsg('arena_started')));
                             break;
                         }
@@ -141,13 +146,14 @@ class SkyWarsCommand {
                             $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('start_help'));
                             break;
                         }
-                        if (count($this->plugin->getPlayerArena($sender)->waitingp) >= $this->plugin->getPlayerArena($sender)->getMinPlayers()) {
+                        if (count($this->plugin->getPlayerArena($sender)->waitingp) <= $this->plugin->getPlayerArena($sender)->getMinPlayers()) {
                             $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('no_players'));
                             break;
                         }
-                        $this->plugin->getPlayerArena($sender)->forcestart === true;
-                        $sender->sendMessage(str_replace('%1', $args[1], $this->plugin->getPrefix() . $this->plugin->getMsg('arena_started')));
+                        $this->plugin->getPlayerArena($sender)->startGame();
+                        $sender->sendMessage($this->plugin->getPrefix() . "§bArena has been started!");
                         break;
+
                     case "stop":
                         if (!$sender->hasPermission('sw.command.stop')) {
                             $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
@@ -162,11 +168,19 @@ class SkyWarsCommand {
                                 $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_doesnt_exist'));
                                 break;
                             }
+                            if ($this->plugin->ins[$args[1]]->game === 1) {
+                                $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_doesnt_running'));
+                                break;
+                            }
                             $this->plugin->ins[$args[1]]->stopGame();
                             break;
                         }
                         if (!$sender instanceof Player) {
                             $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('stop_help'));
+                            break;
+                        }
+                        if (!$this->plugin->getPlayerArena($sender)->game === 1) {
+                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_doesnt_running'));
                             break;
                         }
                         if ($this->plugin->getPlayerArena($sender) === false) {
@@ -257,7 +271,7 @@ class SkyWarsCommand {
                         if ($this->plugin->isArenaSet($args[1])) {
                             $a = $this->plugin->ins[$args[1]];
                             if ($a->game !== 0 || count(array_merge($a->ingamep, $a->waitingp, $a->spec)) > 0) {
-                                $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_running'));
+                                $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('ingame'));
                                 break;
                             }
                             $a->setup = true;
