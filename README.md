@@ -3,10 +3,10 @@ Skywars Plugin
 ![skyWars](https://raw.githubusercontent.com/svilex/res/master/skywars.png)
 
 **This plugin is inactive**
-</br>**SkyWars** plugin with random suprizes,cool commands and more<br>
-</br>**Developers** are nedded to create a languages for this **plugin**!<br>
-# Test ServerS
-- **45.34.7.149:19132**
+**SkyWars** plugin with random suprizes,cool commands and more
+**Developers** are nedded to create a languages for this **plugin**!
+# Softdepends
+* **SkyWarsShopAPI** ***>*** Shopping tools for this plugin
 
 #SkyWars commands
 
