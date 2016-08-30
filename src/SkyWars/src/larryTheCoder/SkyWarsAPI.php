@@ -6,7 +6,7 @@
  * <X> Player kill message on Level
  * < > Better MOTD on EntityLevelChange
  * < > Add 1/2 arena loading
- * < > Make first release of SkyWarsForPE
+ * < > Add Sqlite & YAML Database
  */
 
 namespace larryTheCoder;
@@ -16,17 +16,18 @@ use pocketmine\item\Item;
 use pocketmine\utils\Config;
 use pocketmine\plugin\Plugin;
 use pocketmine\event\Listener;
-use larryTheCoder\Arena\Arena;
 use pocketmine\command\Command;
 use pocketmine\utils\TextFormat;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
-use larryTheCoder\Utils\SkyWarsListener;
-use larryTheCoder\Commands\SkyWarsCommand;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+#
+use larryTheCoder\Arena\Arena;
+use larryTheCoder\Utils\ConfigManager;
+use larryTheCoder\Commands\SkyWarsCommand;
 
 /**
  * SkyWarsAPI <version 7> : MCPE Minigame
@@ -42,45 +43,61 @@ class SkyWarsAPI extends PluginBase implements Listener {
     public $cfg;
     public $msg;
     public $ins = [];
+
+    /** @param SkyWarsAPI */
+    public static $instance = null;
     public $selectors = [];
     public $inv = [];
     public $setters = [];
     public $economy;
-    public $shop = null;
+    public $shops = null;
     public $listener = null;
     public $mode = 0;
 
     public function onEnable() {
         $this->initConfig();
-        $this->registerEconomy();
+        if (!$this->cfg->get("use_economy", false)) {
+            $this->registerEconomy();
+        }
         $this->checkArenas();
-        $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        $this->getServer()->getPluginManager()->registerEvents(new SkyWarslistener($this), $this);
         if (!$this->getServer()->isLevelGenerated($this->cfg->getNested('lobby.world'))) {
             $this->getServer()->generateLevel($this->cfg->getNested('lobby.world'));
         }
+        self::$instance = $this;
         $this->loadClasses();
         $this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
     }
 
     public function onDisable() {
+        $this->unLoadGame();
         $this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
     }
 
+    public function unloadGame() {
+        foreach ($this->ins as $arena) {
+            if ($arena->game !== 0) {
+                $arena->stopGame();
+            }
+        }
+    }
+
     public function loadClasses() {
-        $this->listener = SkyWarsListener::getInstance($this);
         $this->cmd = new SkyWarsCommand($this);
-        //$this->shop = new SkyWarsShopAPI($this->economy);
+    }
+
+    public static function getInstance() {
+        return self::$instance;
     }
 
     public function initConfig() {
         if (!file_exists($this->getDataFolder())) {
             @mkdir($this->getDataFolder());
         }
-        if (!is_file($this->getDataFolder() . "config.yml")) {
-            $this->saveResource("config.yml");
-        }
+
         // TO-DO shop
-        $this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+        $this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML, yaml_parse(stream_get_contents($resource = $this->getResource("config.yml"))));
+        \fclose($resource);
         if (!file_exists($this->getDataFolder() . "/arenas/worlds/")) {
             @mkdir($this->getDataFolder() . "/arenas/worlds/");
         }
@@ -125,203 +142,6 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 }
             }
         }
-    }
-
-    // COPY from svile plugin SkyWars-Pocketmine
-    public function getChestContents() {
-        $items = array(
-            //ARMOR
-            'armor' => array(
-                array(
-                    Item::LEATHER_CAP,
-                    Item::LEATHER_TUNIC,
-                    Item::LEATHER_PANTS,
-                    Item::LEATHER_BOOTS
-                ),
-                array(
-                    Item::GOLD_HELMET,
-                    Item::GOLD_CHESTPLATE,
-                    Item::GOLD_LEGGINGS,
-                    Item::GOLD_BOOTS
-                ),
-                array(
-                    Item::CHAIN_HELMET,
-                    Item::CHAIN_CHESTPLATE,
-                    Item::CHAIN_LEGGINGS,
-                    Item::CHAIN_BOOTS
-                ),
-                array(
-                    Item::IRON_HELMET,
-                    Item::IRON_CHESTPLATE,
-                    Item::IRON_LEGGINGS,
-                    Item::IRON_BOOTS
-                ),
-                array(
-                    Item::DIAMOND_HELMET,
-                    Item::DIAMOND_CHESTPLATE,
-                    Item::DIAMOND_LEGGINGS,
-                    Item::DIAMOND_BOOTS
-                )
-            ),
-            //WEAPONS
-            'weapon' => array(
-                array(
-                    Item::WOODEN_SWORD,
-                    Item::WOODEN_AXE,
-                ),
-                array(
-                    Item::GOLD_SWORD,
-                    Item::GOLD_AXE
-                ),
-                array(
-                    Item::STONE_SWORD,
-                    Item::STONE_AXE
-                ),
-                array(
-                    Item::IRON_SWORD,
-                    Item::IRON_AXE
-                ),
-                array(
-                    Item::DIAMOND_SWORD,
-                    Item::DIAMOND_AXE
-                )
-            ),
-            //FOOD
-            'food' => array(
-                array(
-                    Item::RAW_PORKCHOP,
-                    Item::RAW_CHICKEN,
-                    Item::MELON_SLICE,
-                    Item::COOKIE
-                ),
-                array(
-                    Item::RAW_BEEF,
-                    Item::CARROT
-                ),
-                array(
-                    Item::APPLE,
-                    Item::GOLDEN_APPLE
-                ),
-                array(
-                    Item::BEETROOT_SOUP,
-                    Item::BREAD,
-                    Item::BAKED_POTATO
-                ),
-                array(
-                    Item::MUSHROOM_STEW,
-                    Item::COOKED_CHICKEN
-                ),
-                array(
-                    Item::COOKED_PORKCHOP,
-                    Item::STEAK,
-                    Item::PUMPKIN_PIE
-                ),
-            ),
-            //THROWABLE
-            'throwable' => array(
-                array(
-                    Item::BOW,
-                    Item::ARROW
-                ),
-                array(
-                    Item::SNOWBALL
-                ),
-                array(
-                    Item::EGG
-                )
-            ),
-            //BLOCKS
-            'block' => array(
-                Item::STONE,
-                Item::WOODEN_PLANK,
-                Item::COBBLESTONE,
-                Item::DIRT
-            ),
-            //OTHER
-            'other' => array(
-                array(
-                    Item::WOODEN_PICKAXE,
-                    Item::GOLD_PICKAXE,
-                    Item::STONE_PICKAXE,
-                    Item::IRON_PICKAXE,
-                    Item::DIAMOND_PICKAXE
-                ),
-                array(
-                    Item::STICK,
-                    Item::STRING
-                )
-            )
-        );
-
-        $templates = [];
-        for ($i = 0; $i < 10; $i++) {
-
-            $armorq = mt_rand(0, 1);
-            $armortype = $items['armor'][mt_rand(0, (count($items['armor']) - 1))];
-            $armor1 = array($armortype[mt_rand(0, (count($armortype) - 1))], 1);
-            if ($armorq) {
-                $armortype = $items['armor'][mt_rand(0, (count($items['armor']) - 1))];
-                $armor2 = array($armortype[mt_rand(0, (count($armortype) - 1))], 1);
-            } else {
-                $armor2 = array(0, 1);
-            }
-            unset($armorq, $armortype);
-
-            $weapontype = $items['weapon'][mt_rand(0, (count($items['weapon']) - 1))];
-            $weapon = array($weapontype[mt_rand(0, (count($weapontype) - 1))], 1);
-            unset($weapontype);
-
-            $ftype = $items['food'][mt_rand(0, (count($items['food']) - 1))];
-            $food = array($ftype[mt_rand(0, (count($ftype) - 1))], mt_rand(2, 5));
-            unset($ftype);
-
-            $add = mt_rand(0, 1);
-            if ($add) {
-                $tr = $items['throwable'][mt_rand(0, (count($items['throwable']) - 1))];
-                if (count($tr) == 2) {
-                    $throwable1 = array($tr[1], mt_rand(10, 20));
-                    $throwable2 = array($tr[0], 1);
-                } else {
-                    $throwable1 = array(0, 1);
-                    $throwable2 = array($tr[0], mt_rand(5, 10));
-                }
-                $other = array(0, 1);
-            } else {
-                $throwable1 = array(0, 1);
-                $throwable2 = array(0, 1);
-                $ot = $items['other'][mt_rand(0, (count($items['other']) - 1))];
-                $other = array($ot[mt_rand(0, (count($ot) - 1))], 1);
-            }
-            unset($add, $tr, $ot);
-
-            $block = array($items['block'][mt_rand(0, (count($items['block']) - 1))], 64);
-
-            $contents = array(
-                $armor1,
-                $armor2,
-                $weapon,
-                $food,
-                $throwable1,
-                $throwable2,
-                $block,
-                $other
-            );
-            shuffle($contents);
-            $fcontents = array(
-                mt_rand(1, 2) => array_shift($contents),
-                mt_rand(3, 5) => array_shift($contents),
-                mt_rand(6, 10) => array_shift($contents),
-                mt_rand(11, 15) => array_shift($contents),
-                mt_rand(16, 17) => array_shift($contents),
-                mt_rand(18, 20) => array_shift($contents),
-                mt_rand(21, 25) => array_shift($contents),
-                mt_rand(26, 27) => array_shift($contents),
-            );
-            $templates[] = $fcontents;
-        }
-
-        shuffle($templates);
-        return $templates;
     }
 
     public function unsetPlayers(Player $p) {
@@ -451,7 +271,7 @@ class SkyWarsAPI extends PluginBase implements Listener {
     }
 
     public function checkFile(Config $arena) {
-        if (!(is_numeric($arena->getNested("signs.join_sign_x")) && is_numeric($arena->getNested("signs.join_sign_y")) && is_numeric($arena->getNested("signs.join_sign_z")) && is_numeric($arena->getNested("arena.max_game_time")) && is_string($arena->getNested("signs.join_sign_world")) && is_string($arena->getNested("signs.status_line_1")) && is_string($arena->getNested("signs.status_line_2")) && is_string($arena->getNested("signs.status_line_3")) && is_string($arena->getNested("signs.status_line_4")) && is_numeric($arena->getNested("signs.return_sign_x")) && is_numeric($arena->getNested("signs.return_sign_y")) && is_numeric($arena->getNested("signs.return_sign_z")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("chest.refill_rate")) && is_numeric($arena->getNested("arena.spec_spawn_x")) && is_numeric($arena->getNested("arena.spec_spawn_y")) && is_numeric($arena->getNested("arena.spec_spawn_z")) && is_numeric($arena->getNested("arena.max_players")) && is_numeric($arena->getNested("arena.min_players")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.starting_time")) && is_array($arena->getNested("arena.spawn_positions")) && is_string($arena->getNested("arena.finish_msg_levels")) && !is_string($arena->getNested("arena.money_reward")))) {
+        if (!(is_numeric($arena->getNested("signs.join_sign_x")) && is_numeric($arena->getNested("signs.join_sign_y")) && is_numeric($arena->getNested("signs.join_sign_z")) && is_numeric($arena->getNested("arena.max_game_time")) && is_string($arena->getNested("signs.join_sign_world")) && is_string($arena->getNested("signs.status_line_1")) && is_string($arena->getNested("signs.status_line_2")) && is_string($arena->getNested("signs.status_line_3")) && is_string($arena->getNested("signs.status_line_4")) && is_numeric($arena->getNested("signs.return_sign_x")) && is_numeric($arena->getNested("signs.return_sign_y")) && is_numeric($arena->getNested("signs.return_sign_z")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("chest.refill_rate")) && is_numeric($arena->getNested("arena.spec_spawn_x")) && is_numeric($arena->getNested("arena.spec_spawn_y")) && is_numeric($arena->getNested("arena.spec_spawn_z")) && is_numeric($arena->getNested("arena.max_players")) && is_numeric($arena->getNested("arena.min_players")) && is_numeric($arena->getNested("arena.grace_time")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.starting_time")) && is_array($arena->getNested("arena.spawn_positions")) && is_string($arena->getNested("arena.finish_msg_levels")) && !is_string($arena->getNested("arena.money_reward")))) {
             return false;
         }
         if (!((strtolower($arena->getNested("signs.enable_status")) == "true" || strtolower($arena->getNested("signs.enable_status")) == "false") && (strtolower($arena->getNested("arena.spectator_mode")) == "true" || strtolower($arena->getNested("arena.spectator_mode")) == "false") && (strtolower($arena->getNested("chest.refill")) == "true" || strtolower($arena->getNested("chest.refill")) == "false") && (strtolower($arena->getNested("arena.time")) == "true" || strtolower($arena->getNested("arena.time")) == "day" || strtolower($arena->getNested("arena.time")) == "night" || is_numeric(strtolower($arena->getNested("arena.time")))) && (strtolower($arena->getNested("arena.start_when_full")) == "true" || strtolower($arena->getNested("arena.start_when_full")) == "false") && (strtolower($arena->get("enabled")) == "true" || strtolower($arena->get("enabled")) == "false"))) {
@@ -573,6 +393,10 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 $p->sendMessage($this->getPrefix() . $this->getMsg('statusline'));
                 return;
                 #    
+            } elseif (strpos($msg, "chestrefill")) {
+                if(substr($msg, 7) === "help"){
+                    $p->sendMessage($this->getMsg("chest_refill_help"));
+                }
             } elseif (strpos($msg, 'enable') === 0) {
                 if (substr($msg, 7) === 'true' || substr($msg, 7) === 'false') {
                     $arena->setEnable(substr($msg, 7));

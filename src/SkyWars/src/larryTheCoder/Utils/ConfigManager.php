@@ -1,8 +1,7 @@
 <?php
 
-namespace larryTheCoder;
+namespace larryTheCoder\Utils;
 
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\utils\Config;
 
 /**
@@ -33,7 +32,14 @@ class ConfigManager {
         $this->arena->save();
     }
 
-    public function setMoney($type){
+    public function enableRefillChest($type) {
+        if (is_bool($type)) { // make sure if $type is boolean
+            $this->arena->setNested('chest.refill', $type);
+            $this->arena->save();
+        }
+    }
+
+    public function setMoney($type) {
         $this->arena->setNested('arena.money_reward', $type);
         $this->arena->save();
     }
@@ -106,4 +112,5 @@ class ConfigManager {
         $this->arena->set('enabled', $data);
         $this->arena->save();
     }
+
 }

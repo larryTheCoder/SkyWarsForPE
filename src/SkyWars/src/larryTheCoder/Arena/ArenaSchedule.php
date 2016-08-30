@@ -1,7 +1,5 @@
 <?php
 
-// LANGUAGE CHECK SUCCESS
-
 namespace larryTheCoder\Arena;
 
 use pocketmine\tile\Sign;
@@ -62,7 +60,6 @@ final class ArenaSchedule extends Task {
             }
         }
         $this->time++;
-        // Arena condition: IN_CAGE
         if ($this->arena->game === 0) {
             if (count($this->arena->players) >= $this->arena->getMinPlayers() || $this->arena->forcestart === true) {
                 $this->startTime--;
@@ -82,14 +79,17 @@ final class ArenaSchedule extends Task {
                 $this->startTime = $this->arena->data['arena']['starting_time'];
             }
         }
+        
         // Arena condition: IN_GAME
         if ($this->arena->game === 1) {
+            $this->arena->fallTime--;
             $this->startTime = $this->arena->data['arena']['starting_time'];
             $this->mainTime--;
             if ($this->mainTime === 0) {
                 $this->arena->stopGame();
                 $this->arena->plugin->getServer()->getLogger()->info($this->arena->plugin->getPrefix() . TextFormat::RED . "Arena level " . TextFormat::GREEN . $this->arena->data['arena']['arena_world'] . TextFormat::RED . " has stopeed!");
             }
+            $msg = str_replace("%1",date('i:s',$this->mainTime), $this->arena->plugin->getMsg('playing'));
             foreach ($this->arena->players as $p) {
                 $p->sendPopup($msg);
             }
