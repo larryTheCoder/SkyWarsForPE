@@ -48,6 +48,18 @@ class SkyWarsCommand {
         if (strtolower($cmd->getName()) == "sw") {
             if (isset($args[0])) {
                 switch (strtolower($args[0])) {
+                    case "randomjoin":
+                        if(!$sender->hasPermission("sw.command.join")){
+                            $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
+                            break;
+                        }                       
+                        if (!$sender instanceof Player) {
+                            $this->consoleSender($sender);
+                            break;
+                        }
+                        foreach($this->plugin->ins as $arena){
+                            $arena->joinToArena($sender);
+                        }
                     case "help":
                         if (!$sender->hasPermission("sw.command.help")) {
                             $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
