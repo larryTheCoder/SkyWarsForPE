@@ -392,7 +392,7 @@ final class Arena implements Listener {
     }
 
     private function refillChests() {
-        $contents = ArenaChessLoader::getChestContents();
+        $contents = Utils::getChestContents();
         foreach ($this->plugin->getServer()->getLevelByName($this->level)->getTiles() as $tile) {
             if ($tile instanceof Chest) {
                 for ($i = 0; $i < $tile->getSize(); $i++) {
