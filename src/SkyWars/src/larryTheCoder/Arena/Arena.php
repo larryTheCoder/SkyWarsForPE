@@ -150,12 +150,8 @@ final class Arena implements Listener {
 
     public function broadcastResult() {
         // TO-DO: random giveReward() to all players like brokenlens server
-        if (!isset($this->winners[0])) {
-            $this->giveReward($this->plugin->getServer()->getPlayer($this->winners[strtolower($this->players->getName())]));
-        } else if (!isset($this->winners[1])) {
-            $this->giveReward($this->plugin->getServer()->getPlayer($this->winners[1]));
-        }
-        $this->plugin->getServer()->getPluginManager()->callEvent($event = new PlayerWinArenaEvent($this->plugin, $this->winners, $this));
+        $this->giveReward($this->plugin->getServer()->getPlayer($this->winners[1]));
+        $this->plugin->getServer()->getPluginManager()->callEvent($event = new PlayerWinArenaEvent($this->plugin, $this->plugin->getServer()->getPlayer($this->winners[1]), $this));
         if (!isset($this->winners[1])) {
             $this->winners[1] = "---";
         }
@@ -356,12 +352,12 @@ final class Arena implements Listener {
     }
 
     public function stopGame($forced = false) {
-        $this->reload();
         if (!$forced) {
             $this->broadcastResult();
         }
         $this->unsetAllPlayers();
         $this->game = 0;
+        $this->reload();
     }
 
     /**
