@@ -47,3 +47,5 @@ Most codes are made by CreeperFace and licensed under GPLv3, copy is prohibited.
 
 **NOTICE**: Use Genisys for a better performance
 
+Not understand yet? use [Wiki] (https://github.com/larryTheCoder/SkyWarsForPE/wiki)
+
