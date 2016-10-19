@@ -320,13 +320,10 @@ final class Arena implements Listener {
     }
 
     public function checkAlive() {
-        if (count($this->players) <= 2) {
-            for ($i = 0; $i <= count($this->players); $i++) {
-                if ($this->players instanceof Player) {
-                    $this->winners[$i] = $this->players[$i]->getName();
-                }
+        if (count($this->players) === 1) {
+            foreach($this->players as $p){
+                $this->winners[1] = $p->getName();
             }
-
             $this->stopGame();
         }
     }
