@@ -1,16 +1,18 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsAPI
-version: "1.8_BETA"
+version: "1.9 Galaxy Edition"
 api: [2.0.0]
 author: larryTheCoder
 commands:
   sw:
     description: main skywars command
     default: true
+    permission: sw.command
   lobby:
     description: skywars leave-game command
     default: true
-permission:
+    permission: sw.command.lobby
+permissions:
   sw.command.lobby:
     description: back to main lobby
     default: true
@@ -31,9 +33,12 @@ permission:
     description: allow player to use all skywars command
     default: true
     children:
+     sw.command.random:
+        description: Randomly teleport to a game
+        default: true
      sw.command.help:
         description: get SkyWars help menu
-        default: op
+        default: true
      sw.command.setlobby:
         description: set SkyWars main lobby
         default: op

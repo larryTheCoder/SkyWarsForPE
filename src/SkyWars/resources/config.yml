@@ -1,10 +1,29 @@
-## SkyWars config
+## SkyWars config 
 ---
 # Game prefix...You can use & as color
 Prefix: '&c[&r&6Sky&bWars&c]&r '
 # language for skywars
 # English by larryTheHarry
 language: English
+# The players health will be set to this value when joining a SkyWars game.
+# N.B : If greater than the player max health , max health will be used instead.
+join_health: 20
+# Players playing a SkyWars game won't be able to run these commands.
+# You can add or delete commands but make sure to respect syntax.
+banned_command_in_game: 
+- /hub
+- /lobby
+- /spawn
+- /tpa
+- /tp
+- /tpaccept
+- /back
+- /home
+- /f
+- /kill
+# If this option is "true" , the game will start once all the spawns 
+# will be finished, regardless from countdown.
+start_when_full: "true"
 # lobby position, where will be players 
 # teleported when they die or leave
 # if this function is not set 
@@ -14,37 +33,31 @@ lobby:
   spawn_y: 78
   spawn_z: 213
   world: "world"
-# Here you can control block and items in 
-# the Chests...for example:
-# chestitems:
-# - - 261 => item  
-#   - 0  => damage
-#   - 1  => amount
-# NOTE: Only numbers can do this!
-chestitems:
-- - 261
-  - 0
-  - 1 
-- - 262
-  - 0
-  - 2
-- - 262
-  - 0
-  - 3
-- - 267
-  - 0
-  - 1
-- - 268
-  - 0
-  - 1
-- - 272
-  - 0
-  - 1
-- - 276
-  - 0
-  - 1
-- - 283
-  - 0
-  - 1
-
+# allow to drop items
+allow_drop_item: true
+# This is new function: Reward command handler
+# return to "false" will not give out any money
+# This can be used if u dont have economy plugin and avoid
+# crahing!
+use_economy: false
+# Reset world from ZIP Archive
+# this is not supported yet
+reset_zip: false
+# chat
+chat:
+   # Enable chat listener
+   enable_chat: true
+   # chat format
+   chat_format_player: "&b[Player] &a%1 > &f%2"
+   chat_format_spectator: "&7[Spectator] &8%1 > &f%2"
+# items
+item:
+  # Enable leave item
+  # TRUE or FALSE
+  enable_leave_item: true
+  # Enable double tap
+  enable_double_tap: true
+  # Spectate leave item
+  # Example: leave_item: "META:DATA"
+  leave_item: "120:0"
 ...

@@ -2,46 +2,32 @@
 
 /**
  * @todo: 
- *   - spectacte/leave arena using an item 
- *   - start game sound system
- *   - portal join
- *   - allow to use ZipArchive for world save
- *   - invinsible player when spectate
+ *   - leave arena using an item [DONE]
+ *   - start game sound system [DONE]
+ *   - portal join [TO DO]
+ *   - allow to use ZipArchive for world save [DONE]
+ *   - invinsible player when spectate [DONE]
  */
 
 namespace larryTheCoder\Arena;
 
-use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\block\Block;
 use pocketmine\level\Level;
-use pocketmine\block\Chest;
-use pocketmine\utils\Config;
+use pocketmine\tile\Chest;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Effect;
-use pocketmine\entity\Entity;
 use pocketmine\event\Listener;
 use pocketmine\level\Position;
 use pocketmine\utils\TextFormat;
-use pocketmine\event\EventPriority;
-use pocketmine\inventory\ChestInventory;
+use pocketmine\level\weather\Weather;
 use pocketmine\level\sound\AnvilUseSound;
-use pocketmine\plugin\MethodEventExecutor;
-use pocketmine\event\player\PlayerMoveEvent;
-use pocketmine\event\player\PlayerDeathEvent;
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\player\PlayerRespawnEvent;
-use pocketmine\network\protocol\AddEntityPacket;
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\level\sound\EndermanTeleportSound;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\network\protocol\ContainerSetContentPacket;
-use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 #
 use larryTheCoder\SkyWarsAPI;
+use larryTheCoder\Utils\Utils;
 use larryTheCoder\Events\PlayerWinArenaEvent;
-use larryTheCoder\Events\PlayerLoseArenaEvent;
 use larryTheCoder\Events\PlayerJoinArenaEvent;
 
 /**
@@ -63,7 +49,8 @@ final class Arena implements Listener {
     public $winners = [];
     public $deads = [];
     // Avoid from player be killed after fell off the glass
-    public $fallTime = null;
+    public $fallTime = 0;
+    public $updateLevel = false;
 
     /** @var Level */
     public $level;
@@ -74,17 +61,14 @@ final class Arena implements Listener {
         $this->plugin = $plugin;
         $this->data = $plugin->arenas[$id];
         $this->checkWorlds();
-        if (strtolower($this->data['arena']['time'] !== "false")) {
-            $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world'])->setTime(str_replace(['day', 'night'], [6000, 18000], $this->data['arena']['time']));
-            $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world'])->stopTime();
-        }
-        $this->fallTime = $this->data['arena']['grace_time'];
         $this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
-        # Avoid from falling from spawn and avoid 
-        # placing blocks when game isn't running
-        $this->plugin->getServer()->getPluginManager()->registerEvent("pocketmine\\event\\block\\BlockPlaceEvent", $this, EventPriority::HIGHEST, new MethodEventExecutor("onPlaceEvent"), $this->plugin);
-        $this->plugin->getServer()->getPluginManager()->registerEvent("pocketmine\\event\\block\\BlockBreakEvent", $this, EventPriority::HIGHEST, new MethodEventExecutor("onBreakEvent"), $this->plugin);
-        $this->plugin->getServer()->getPluginManager()->registerEvent("pocketmine\\event\\player\\PlayerInteractEvent", $this, EventPriority::HIGHEST, new MethodEventExecutor("onPlayerInteract"), $this->plugin);
+        if ($this->reload() === false) {
+            $this->plugin->getLogger()->info(TextFormat::RED . 'An error occured while reloading the arena: ' . TextFormat::WHITE . $this->level->getName());
+            return;
+        }
+        # Arena Listener
+        $this->enableScheduler();
+        $plugin->getServer()->getPluginManager()->registerEvents(new ArenaListener($this->plugin, $this), $plugin);
     }
 
     public function enableScheduler() {
@@ -107,23 +91,29 @@ final class Arena implements Listener {
 
     public function kickPlayer($p, $reason = "") {
         $players = array_merge($this->players, $this->spec);
+        if (empty($reason)) {
+            $reason = "Generic Reason";
+        }
         $players[strtolower($p)]->sendMessage(str_replace("%1", $reason, $this->plugin->getMsg('kick_from_game')));
-        $this->leaveArena($players[strtolower($p)]);
+        $this->leaveArena($players[strtolower($p)], true);
     }
 
     public function getStatus() {
-        if (count($this->players === $this->getMaxPlayers())) {
-            return "full";
+        if ($this->setup == true) {
+            return "&6In setup";
         }
         if ($this->game === 0) {
-            return "waiting";
+            return "&fTap to join";
         }
         if ($this->game === 1) {
-            return "ingame";
+            return "&eRunning";
+        }
+        if (count($this->players === $this->getMaxPlayers())) {
+            return "&cFull";
         }
     }
 
-    public function getReward(Player $p) {
+    public function giveReward(Player $p) {
         if (isset($this->data['arena']['item_reward']) && $this->data['arena']['item_reward'] !== null && intval($this->data['arena']['item_reward']) !== 0) {
             foreach (explode(',', str_replace(' ', '', $this->data['arena']['item_reward'])) as $item) {
                 $exp = explode(':', $item);
@@ -158,72 +148,22 @@ final class Arena implements Listener {
         }
     }
 
-    public function checkWinners(Player $p) {
-        if (count($this->players) <= 3) {
-            $this->winners[count($this->players)] = $p->getName();
-        }
-    }
-
-    /**
-     * @param Player $p
-     * @param bool $left
-     * @param bool $spectate
-     * @return bool
-     */
-    public function closePlayer(Player $p, $left = false, $spectate = false) {
-        $p->gamemode = 4; //Just to make sure setGamemode() won't return false if the gm is the same
-        $p->setGamemode($p->getServer()->getDefaultGamemode());
-        $p->getInventory()->clearAll();
-        $p->removeAllEffects();
-        if ($p->isAlive()) {
-            $p->setSprinting(false);
-            $p->setSneaking(false);
-            $p->extinguish();
-            $p->setMaxHealth(20);
-            $p->setMaxHealth($p->getMaxHealth());
-            if ($p->getAttributeMap() != null) {//just to be really sure
-                $p->setHealth($p->getMaxHealth());
-                $p->setFood(20);
-            }
-        }
-        if (!$spectate) {
-            //TODO: Invisibility issues for death players
-            $p->teleport($p->getServer()->getDefaultLevel()->getSpawnLocation());
-        } elseif ($this->game !== 0 && 1 < count($this->players)) {
-            $p->setGamemode(Player::CREATIVE); // :D
-            foreach ($this->players as $dname) {
-                if (($d = $this->pg->getServer()->getPlayer($dname)) instanceof Player) {
-                    $d->hidePlayer($p);
-                }
-            }
-            $pk = new ContainerSetContentPacket();
-            $pk->windowid = ContainerSetContentPacket::SPECIAL_CREATIVE;
-            $p->dataPacket($pk);
-            $idmeta = explode(':', $this->pg->configs['spectator.quit.item']);
-            $p->getInventory()->setHeldItemIndex(1);
-            $p->getInventory()->setItem(0, Item::get((int) $idmeta[0], (int) $idmeta[1], 1));
-            $p->getInventory()->setHotbarSlotIndex(0, 0);
-            $p->getInventory()->sendContents($p);
-            $p->getInventory()->sendContents($p->getViewers());
-            $p->sendMessage($this->pg->lang['death.spectator']);
-        }
-        return true;
-    }
-
     public function broadcastResult() {
         // TO-DO: random giveReward() to all players like brokenlens server
-        if ($this->plugin->getServer()->getPlayer($this->winners[1]) instanceof Player) {
+        if (!isset($this->winners[0])) {
+            $this->giveReward($this->plugin->getServer()->getPlayer($this->winners[strtolower($this->players->getName())]));
+        } else if (!isset($this->winners[1])) {
             $this->giveReward($this->plugin->getServer()->getPlayer($this->winners[1]));
-            $this->plugin->getServer()->getPluginManager()->callEvent($event = new PlayerWinArenaEvent($this->plugin, $this->plugin->getServer()->getPlayer($this->winners[1]), $this));
         }
-        if (!isset($this->winners[1]))
+        $this->plugin->getServer()->getPluginManager()->callEvent($event = new PlayerWinArenaEvent($this->plugin, $this->winners, $this));
+        if (!isset($this->winners[1])) {
             $this->winners[1] = "---";
-        if (!isset($this->winners[2]))
+        }
+        if (!isset($this->winners[2])) {
             $this->winners[2] = "---";
-        if (!isset($this->winners[3]))
-            $this->winners[3] = "---";
+        }
         $vars = ['%1', '%2', '%3', '%4'];
-        $replace = [$this->id, $this->winners[1], $this->winners[2], $this->winners[3]];
+        $replace = [$this->id, $this->winners[1], $this->winners[2]];
         $msg = str_replace($vars, $replace, $this->plugin->getMsg('end_game'));
         $levels = $this->plugin->getServer()->getDefaultLevel();
         foreach ($levels as $level) {
@@ -235,7 +175,7 @@ final class Arena implements Listener {
             }
         }
     }
-
+    
     public function getPlayerMode(Player $p) {
         if (isset($this->players[strtolower($p->getName())])) {
             return 0;
@@ -263,20 +203,6 @@ final class Arena implements Listener {
         $p->getInventory()->clearAll();
     }
 
-    public function onMove(PlayerMoveEvent $e) {
-        $p = $e->getPlayer() instanceof Player;
-        if ($this->inArena($p) && $this->game === 0 && $p->getGameMode() == 0) {
-            $to = clone $e->getFrom();
-            $to->yaw = $e->getTo()->yaw;
-            $to->pitch = $e->getTo()->pitch;
-            $e->setTo($to);
-            return;
-        }
-        if ($this->game > 1) {
-            $e->getHandlers()->unregister($this);
-        }
-    }
-
     public function loadInv(Player $p) {
         if (!$p->isOnline()) {
             return;
@@ -296,26 +222,6 @@ final class Arena implements Listener {
 
     public function getMinPlayers() {
         return $this->data['arena']['min_players'];
-    }
-
-    public function onBlockTouch(PlayerInteractEvent $e) {
-        $b = $e->getBlock();
-        $p = $e->getPlayer();
-        if ($p->hasPermission("sw.sign") || $p->isOp()) {
-            if ($b->x == $this->data["signs"]["join_sign_x"] && $b->y == $this->data["signs"]["join_sign_y"] && $b->z == $this->data["signs"]["join_sign_z"] && $b->level == $this->plugin->getServer()->getLevelByName($this->data["signs"]["join_sign_world"])) {
-                if ($this->getPlayerMode($p) === 0 || $this->getPlayerMode($p) === 1) {
-                    return;
-                }
-                $this->joinToArena($p);
-            }
-            if ($b->x == $this->data["signs"]["return_sign_x"] && $b->y == $this->data["signs"]["return_sign_y"] && $b->z == $this->data["signs"]["return_sign_z"] && $b->level == $this->plugin->getServer()->getLevelByName($this->data["arena"]["arena_world"])) {
-                if ($this->getPlayerMode($p) === 1) {
-                    $this->leaveArena($p);
-                }
-            }
-            return;
-        }
-        $p->sendMessage($this->plugin->getMsg('has_not_permission'));
     }
 
     public function joinToArena(Player $p) {
@@ -342,6 +248,10 @@ final class Arena implements Listener {
             if ($e->isCancelled()) {
                 return;
             }
+            $vars = ['%1'];
+            $replace = [$p->getName()];
+            $this->messageArenaPlayers(str_replace($vars, $replace, $this->plugin->getMsg('join_others')));
+            $p->setGamemode(0);
             $this->saveInv($p);
             $this->players[strtolower($p->getName())] = $p;
             $sound = new EndermanTeleportSound(new Vector3());
@@ -353,23 +263,21 @@ final class Arena implements Listener {
             $spawn = new Position($thespawn[0] + 0.5, $thespawn[1], $thespawn[2] + 0.5, $this->level);
             $p->teleport($spawn, 0, 0);
             $p->sendMessage(str_replace("%1", $p->getName(), $this->plugin->getPrefix() . $this->plugin->getMsg('join')));
-            $vars = ['%1'];
-            $replace = [$p->getName()];
-            $this->messageArenaPlayers(str_replace($vars, $replace, $this->plugin->getMsg('join_others')));
             return;
         }
         $p->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('has_not_permission'));
     }
 
-    public function leaveArena(Player $p) {
+    public function leaveArena(Player $p, $kicked = false) {
         $sound = new EndermanTeleportSound(new Vector3());
         $sound->setComponents($p->x, $p->y, $p->z);
         if ($this->getPlayerMode($p) == 0) {
-            if ($this->game === 0) {
-                $this->checkWinners($p);
+            if ($this->game === 0 or $kicked = true) {
                 unset($this->players[strtolower($p->getName())]);
                 $this->level->addSound($sound, [$p]);
-                $this->messageArenaPlayers(str_replace("%1", $p->getName(), $this->plugin->getMsg('leave_others')));
+                if ($kicked === true) {
+                    $this->messageArenaPlayers(str_replace("%1", $p->getName(), $this->plugin->getMsg('leave_others')));
+                }
                 $this->checkAlive();
             } else {
                 $p->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('in_game'));
@@ -386,20 +294,22 @@ final class Arena implements Listener {
         if (!$this->plugin->getServer()->isLevelLoaded($this->plugin->cfg->getNested('lobby.world'))) {
             $this->plugin->getServer()->loadLevel($this->plugin->cfg->getNested('lobby.world'));
         }
-        $p->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('leave'));
+        if ($kicked === false) {
+            $p->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('leave'));
+        }
         $this->loadInv($p);
         $p->removeAllEffects();
     }
 
-    private function refillChests() {
+    public function refillChests() {
         $contents = Utils::getChestContents();
-        foreach ($this->plugin->getServer()->getLevelByName($this->level)->getTiles() as $tile) {
+        foreach ($this->level->getTiles() as $tile) {
             if ($tile instanceof Chest) {
                 for ($i = 0; $i < $tile->getSize(); $i++) {
                     $tile->getInventory()->setItem($i, Item::get(0));
                 }
                 if (empty($contents)) {
-                    $contents = ArenaChessLoader::getChestContents();
+                    $contents = Utils::getChestContents();
                 }
                 foreach (array_shift($contents) as $key => $val) {
                     $tile->getInventory()->setItem($key, Item::get($val[0], 0, $val[1]));
@@ -410,12 +320,13 @@ final class Arena implements Listener {
     }
 
     public function checkAlive() {
-        if (count($this->players) <= 1) {
-            if (count($this->players) === 1) {
-                foreach ($this->players as $p) {
-                    $this->winners[1] = $p->getName();
+        if (count($this->players) <= 2) {
+            for ($i = 0; $i <= count($this->players); $i++) {
+                if ($this->players instanceof Player) {
+                    $this->winners[$i] = $this->players[$i]->getName();
                 }
             }
+
             $this->stopGame();
         }
     }
@@ -430,10 +341,16 @@ final class Arena implements Listener {
             }
             $this->players[strtolower($p->getName())] = $p;
             if ($p instanceof Player) {
-                $x = $p->getFloorX();
-                $y = $p->getFloorY();
-                $z = $p->getFloorZ();
-                $p->getLevel()->setBlock(new Vector3($x, $y, $z), Block::get(0, 0));
+                $p->setMaxHealth($this->plugin->cfg->get("join_health"));
+                $p->setMaxHealth($p->getMaxHealth());
+                if ($p->getAttributeMap() != null) {//just to be really sure
+                    $p->setHealth($this->plugin->cfg->get("join_health"));
+                    $p->setFood(20);
+                }
+                $x = $p->getX();
+                $y = $p->getY();
+                $z = $p->getZ();
+                $p->getLevel()->setBlock(new Vector3($x, $y - 1, $z), Block::get(0, 0));
                 $sound->setComponents($p->x, $p->y, $p->z);
                 $this->level->addSound($sound, [$p]);
             }
@@ -441,36 +358,57 @@ final class Arena implements Listener {
         $this->messageArenaPlayers($this->plugin->getMsg('start_game'));
     }
 
-    public function stopGame() {
+    public function stopGame($forced = false) {
+        $this->reload();
+        if (!$forced) {
+            $this->broadcastResult();
+        }
         $this->unsetAllPlayers();
-        $this->resetLevel($this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']));
         $this->game = 0;
-        $this->plugin->getServer()->getLogger()->info($this->plugin->getPrefix() . TextFormat::RED . "Arena level " . TextFormat::YELLOW . $this->data['arena']['arena_world'] . TextFormat::RED . " has stopeed!");
     }
 
-    private function saveWorld($level) {
-        if ($level instanceof Level) {
-            $this->plugin->copyr($this->plugin->getServer()->getDataPath() . "/worlds/" . $level->getName(), $this->plugin->getDataFolder() . "/arenas/worlds/" . $level->getName());
+    /**
+     * @return bool     
+     */
+    private function reload() {
+        $this->fallTime = $this->data['arena']['grace_time'];
+        # First thing World Reset
+        if (!is_file($this->plugin->getDataFolder() . 'arenas/worlds/' . $this->data["arena"]["arena_world"] . '.zip')) {
+            return false;
         }
-    }
-
-    public function resetLevel(Level $level) {
-        $levelname = $level->getName();
-        if ($this->plugin->getServer()->isLevelLoaded($levelname)) {
-            $this->plugin->getServer()->unloadLevel($level, true);
+        $levelname = $this->data["arena"]["arena_world"];
+        $this->plugin->getServer()->unloadLevel($this->level);
+        if ($this->plugin->cfg->get("reset_zip", false)) {
+            Utils::copyr($this->plugin->getDataFolder() . "/arenas/worlds/" . $levelname, $this->plugin->getServer()->getDataPath() . "/worlds/" . $levelname);
+            if (!$this->plugin->getServer()->isLevelLoaded($levelname)) {
+                $this->plugin->getServer()->loadLevel($levelname);
+            }
+            Utils::copyr($this->plugin->getServer()->getDataPath() . "/worlds/" . $levelname, $this->plugin->getDataFolder() . "/arenas/worlds/" . $levelname);
+        } else {
+            if ($this->plugin->getServer()->isLevelLoaded($levelname)) {
+                $zip = new \ZipArchive;
+                $zip->open($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelname . '.zip');
+                $zip->extractTo($this->plugin->getServer()->getDataPath() . 'worlds');
+                $zip->close();
+                unset($zip);
+                $this->plugin->getServer()->loadLevel($levelname);
+                $this->plugin->getServer()->getLevelByName($levelname)->setAutoSave(false);
+            }
         }
-        $this->plugin->copyr($this->plugin->getDataFolder() . "/arenas/worlds/" . $levelname, $this->plugin->getServer()->getDataPath() . "/worlds/" . $levelname);
-        if (!$this->plugin->getServer()->isLevelLoaded($levelname)) {
-            $this->plugin->getServer()->loadLevel($levelname);
-        }
-        $this->plugin->copyr($this->plugin->getServer()->getDataPath() . "/worlds/" . $levelname, $this->plugin->getDataFolder() . "/arenas/worlds/" . $levelname);
-        return;
+        # Third world wheather
+        $this->changeWeather();
     }
 
     public function unsetAllPlayers() {
         foreach ($this->players as $p) {
             $p->removeAllEffects();
             $this->loadInv($p);
+            $p->setMaxHealth(20);
+            $p->setMaxHealth($p->getMaxHealth());
+            if ($p->getAttributeMap() != null) {//just to be really sure
+                $p->setHealth(20);
+                $p->setFood(20);
+            }
             $sound = new EndermanTeleportSound(new Vector3());
             $sound->setComponents($p->x, $p->y, $p->z);
             $this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
@@ -481,6 +419,12 @@ final class Arena implements Listener {
         foreach ($this->spec as $p) {
             $p->removeAllEffects();
             $this->loadInv($p);
+            $p->setMaxHealth(20);
+            $p->setMaxHealth($p->getMaxHealth());
+            if ($p->getAttributeMap() != null) {//just to be really sure
+                $p->setHealth(20);
+                $p->setFood(20);
+            }
             $sound = new EndermanTeleportSound(new Vector3());
             $sound->setComponents($p->x, $p->y, $p->z);
             $this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
@@ -495,92 +439,6 @@ final class Arena implements Listener {
         return isset($players[strtolower($p->getName())]);
     }
 
-    public function onPlayerDeath(PlayerDeathEvent $e) {
-        $p = $e->getEntity();
-        if ($p instanceof Player) {
-            if (!$this->inArena($p)) {
-                return;
-            }
-            if ($this->getPlayerMode($p) === 1) {
-                $e->setDeathMessage("");
-            }
-            if ($this->getPlayerMode($p) === 0) {
-                $this->plugin->getServer()->getPluginManager()->callEvent($event = new PlayerLoseArenaEvent($this->plugin, $p, $this));
-                $e->setDeathMessage("");
-                $e->setDrops([]);
-                unset($this->players[strtolower($p->getName())]);
-                $this->strikeLightning($p);
-                $this->spec[strtolower($p->getName())] = $p;
-                $this->messageArenaPlayers($this->plugin->getPrefix() . str_replace(['%2', '%1'], [count($this->players), $p->getName()], $this->plugin->getMsg('death')));
-                $this->checkAlive();
-            }
-        }
-    }
-
-    public function onRespawn(PlayerRespawnEvent $e) {
-        $p = $e->getPlayer();
-        if ($this->getPlayerMode($p) === 0) {
-            if ($this->data['arena']['spectator_mode'] == 'true') {
-                $e->setRespawnPosition(new Position($this->data['arena']['spec_spawn_x'], $this->data['arena']['spec_spawn_y'], $this->data['arena']['spec_spawn_z'], $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world'])));
-                unset($this->players[strtolower($p->getName())]);
-                $this->spec[strtolower($p->getName())] = $p;
-                return;
-            }
-            unset($this->players[strtolower($p->getName())]);
-            $e->setRespawnPosition(new Position($this->plugin->cfg->getNested('lobby.spawn_x'), $this->plugin->cfg->getNested('lobby.spawn_y'), $this->plugin->cfg->getNested('lobby.spawn_z'), $this->plugin->getServer()->getLevelByName($this->plugin->cfg->getNested('lobby.world'))));
-            return;
-        }
-        if ($this->getPlayerMode($p) === 1) {
-            $e->setRespawnPosition(new Position($this->data['arena']['spec_spawn_x'], $this->data['arena']['spec_spawn_y'], $this->data['arena']['spec_spawn_z'], $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world'])));
-        }
-    }
-
-    public function onHit(EntityDamageEvent $e) {
-        $entity = $e->getEntity();
-
-        $player = $entity instanceof Player;
-
-        if ($e instanceof EntityDamageByEntityEvent || $e instanceof EntityDamageByChildEntityEvent && $this->fallTime === 0) {
-            $damager = $e->getDamager();
-            if (!($damager instanceof Player && $this->inArena($damager) && $this->game <= 1 || $player && $this->inArena($entity) && $this->game <= 1)) {
-                $e->setCancelled(true);
-                return;
-            }
-        } else if (!$player) {
-            return;
-        } else if ($this->inArena($entity) && $this->game <= 1) {
-            $e->setCancelled(false);
-            return;
-        }
-    }
-
-    /**
-     * @param Player $p
-     */
-    public function strikeLightning(Player $p) {
-        $level = $p->getLevel();
-
-        $light = new AddEntityPacket();
-        $light->metadata = [];
-
-        $light->type = 93;
-        $light->eid = Entity::$entityCount++;
-
-        $light->speedX = 0;
-        $light->speedY = 0;
-        $light->speedZ = 0;
-
-        $light->yaw = $p->getYaw();
-        $light->pitch = $p->getPitch();
-
-        $light->x = $p->x;
-        $light->y = $p->y;
-        $light->z = $p->z;
-
-        Server::broadcastPacket($level->getPlayers(), $light);
-    }
-
-    // TO-DO: .zip world 
     public function checkWorlds() {
         if (!$this->plugin->getServer()->isLevelGenerated($this->data['signs']['join_sign_world'])) {
             $this->plugin->getServer()->generateLevel($this->data['signs']['join_sign_world']);
@@ -588,47 +446,59 @@ final class Arena implements Listener {
         if (!$this->plugin->getServer()->isLevelLoaded($this->data['signs']['join_sign_world'])) {
             $this->plugin->getServer()->loadLevel($this->data['signs']['join_sign_world']);
         }
+        if (!$this->plugin->getServer()->isLevelGenerated($this->data['arena']['arena_world'])) {
+            $this->plugin->getServer()->generateLevel($this->data['arena']['arena_world']);
+        }
+        if (!$this->plugin->getServer()->isLevelLoaded($this->data['arena']['arena_world'])) {
+            $this->plugin->getServer()->loadLevel($this->data['arena']['arena_world']);
+        }
         if (!$this->plugin->getServer()->isLevelGenerated($this->plugin->cfg->getNested('lobby.world'))) {
             $this->plugin->getServer()->generateLevel($this->plugin->cfg->getNested('lobby.world'));
         }
         if (!$this->plugin->getServer()->isLevelLoaded($this->plugin->cfg->getNested('lobby.world'))) {
             $this->plugin->getServer()->loadLevel($this->plugin->cfg->getNested('lobby.world'));
         }
-        // THIS IS VERY VERY HARD FOR ME :p [for me]
-        // IF anyone know how to use {{  addEmtyDir() and addFile() }} please tell me
-        if (!$this->plugin->cfg->get("reset_zip", false)) {
+        //I solved the problem :P
+        $world = $this->data['arena']['arena_world'];
+        if ($this->plugin->cfg->get("reset_zip", false)) {
             if (!file_exists($this->plugin->getDataFolder() . "/arenas/worlds/" . $this->data['arena']['arena_world'])) {
-                $this->saveWorld($this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']));
+                Utils::copyr($this->plugin->getServer()->getDataPath() . "/worlds/" . $world, $this->plugin->getDataFolder() . "/arenas/worlds/" . $world);
             }
         } else {
-            $this->plugin->getServer()->getLogger()->info(TextFormat::RED . \base64_decode('WmlwQXJjaGl2ZSBpcyBjdXJyZW50bHkgdW5hdmFpbGFibGUgcGxlYXNlIGRpc2FibGUgcmVzZXRfemlwIGZ1bmN0aW9uIG9uIGNvbmZpZw=='));
+            if (!is_file($this->plugin->getDataFolder() . "arenas/worlds/$world.zip")) {
+                $path = realpath($this->plugin->getServer()->getDataPath() . 'worlds/' . $world);
+                $zip = new \ZipArchive;
+                @mkdir($this->plugin->getDataFolder() . 'arenas/worlds', 0755);
+                $zip->open($this->plugin->getDataFolder() . 'arenas/worlds/' . $world . '.zip', $zip::CREATE | $zip::OVERWRITE);
+                $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path), \RecursiveIteratorIterator::LEAVES_ONLY);
+                foreach ($files as $nu => $file) {
+                    if (!$file->isDir()) {
+                        $relativePath = $world . '/' . substr($file, strlen($path) + 1);
+                        $zip->addFile($file, $relativePath);
+                    }
+                }
+                $zip->close();
+                $this->plugin->getServer()->loadLevel($world);
+                unset($zip, $path, $files);
+            }
         }
-        //if ($this->plugin->getServer()->isLevelLoaded($this->level)) {
-        //    $this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($this->level));
-        //    $zip = new \ZipArchive;
-        //    $zip->addEmptyDir($this->plugin->getDataFolder() . 'arenas/worlds' . $this->world . '.zip');
-        //    $zip->extractTo($this->plugin->getServer()->getDataPath() . 'worlds');
-        //    $zip->
-        //    $zip->close();
-        //    unset($zip);
-        //    $this->plugin->getServer()->loadLevel($this->level);
-        //} else {
-        //    if (!file_exists($this->plugin->getDataFolder() . "/arenas/worlds/" . $this->data['arena']['arena_world'])) {
-        //       $this->saveWorld($this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']));
-        //    }
-        //    $zip = new \ZipArchive;
-        //    $level = $this->data["arena"]["arena_world"];
-        //    $zip->open($this->plugin->getDataFolder() . 'arenas/worlds/level.zip');
-        //   $zip->addFile($this->plugin->getServer()->getFilePath() . "worlds/$level/*");
-        //    $zip->close();
-        //   unset($zip);
-        //}
-        //if (!$this->plugin->getServer()->isLevelGenerated($this->data['arena']['arena_world'])) {
-        //    $this->plugin->getServer()->generateLevel($this->data['arena']['arena_world']);
-        // }
-        // if (!$this->plugin->getServer()->isLevelLoaded($this->data['arena']['arena_world'])) {
-        //     $this->plugin->getServer()->loadLevel($this->data['arena']['arena_world']);
-        //}
+    }
+
+    public function reloadArena() {
+        if (strtolower($this->data['arena']['time'] !== "false")) {
+            $this->level->setTime(str_replace(['day', 'night'], [6000, 18000], $this->data['arena']['time']));
+            $this->level->stopTime();
+        }
+        $this->changeWeather();
+    }
+
+    public function changeWeather() {
+        $cond = new Weather($this->level, mt_getrandmax());
+        if (!$cond->getWeather($cond->getWeatherFromString(strtolower($this->data["arena"]["weather"])))) {
+            $cond->setWeather($cond->getWeatherFromString(strtolower($this->data["arena"]["weather"])), mt_getrandmax());
+            return true;
+        }
+        return false;
     }
 
 }

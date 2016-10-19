@@ -1,7 +1,11 @@
 <?php
 
+# Checked with 0 Errors 2 Warnings
+
 namespace larryTheCoder\Arena;
 
+use pocketmine\Player;
+use pocketmine\level\Level;
 use pocketmine\tile\Sign;
 use pocketmine\math\Vector3;
 use pocketmine\scheduler\Task;
@@ -11,12 +15,12 @@ use pocketmine\level\sound\ButtonClickSound;
  * ArenaSheduler : Scheduled game reseting
  * 
  * @copyright (c) 2016, larryTheHarry
- * CurrentVersion: < Alpha >
+ * CurrentVersion: BETA
  * 
  */
 final class ArenaSchedule extends Task {
 
-    private $startTime;
+    private $startTime = 60;
     private $mainTime;
     private $updateTime = 0;
     private $arena;
@@ -31,7 +35,6 @@ final class ArenaSchedule extends Task {
     public function __construct(Arena $arena) {
         $this->arena = $arena;
         $this->mainTime = $this->arena->data['arena']['max_game_time'];
-        $this->startTime = $this->arena->data['arena']['starting_time'];
         $this->line1 = str_replace("&", "§", $this->arena->data['signs']['status_line_1']);
         $this->line2 = str_replace("&", "§", $this->arena->data['signs']['status_line_2']);
         $this->line3 = str_replace("&", "§", $this->arena->data['signs']['status_line_3']);
@@ -45,8 +48,8 @@ final class ArenaSchedule extends Task {
         }
     }
 
-    // TO-DO 
     public function onRun($currentTick) {
+        # Sign schedule for arena
         if (strtolower($this->arena->data['signs']['enable_status']) === 'true') {
             $this->updateTime++;
             if ($this->updateTime >= $this->arena->data['signs']['sign_update_time']) {
@@ -59,40 +62,59 @@ final class ArenaSchedule extends Task {
                 $this->updateTime = 0;
             }
         }
-        $this->time++;
+        # Arena is not running
         if ($this->arena->game === 0) {
-            if (count($this->arena->players) >= $this->arena->getMinPlayers() || $this->arena->forcestart === true) {
+            if (count($this->arena->players) > $this->arena->getMinPlayers() - 1) {
                 $this->startTime--;
                 foreach ($this->arena->players as $p) {
-                    $p->sendPopup(str_replace("%1", date('i:s',$this->startTime), $this->arena->plugin->getMsg('starting')));
-                }
-                if ($this->startTime <= 0) {
-                    if (count($this->arena->players) >= $this->arena->getMinPlayers() || $this->arena->forcestart === true) {
-                        $this->arena->startGame();
-                        $this->startTime = $this->arena->data['arena']['starting_time'];
-                        $this->arena->forcestart = false;
-                    } else {
-                        $this->startTime = $this->arena->data['arena']['starting_time'];
+                    if ($p instanceof Player) {
+                        $p->sendPopup(str_replace("%1", $this->startTime, $this->arena->plugin->getMsg('starting')));
+                    }
+                    if ($this->startTime <= 10) {
+                        $p->getLevel()->addSound((new ButtonClickSound($p)), [$p]);
                     }
                 }
+                if ($this->startTime == 0) {
+                        $this->arena->startGame();
+                        $this->startTime = 60;
+                        $this->arena->forcestart = false;
+                        return;
+                }
+                if ($this->arena->plugin->cfg->get("start_when_full") && $this->arena->getMaxPlayers() - 1 < count($this->arena->players)) {
+                    $this->arena->startGame();
+                    $this->startTime = 60;
+                    $this->arena->forcestart = false;
+                    return;
+                }
             } else {
-                $this->startTime = $this->arena->data['arena']['starting_time'];
+                foreach ($this->arena->players as $p) {
+                    $p->sendPopup($this->arena->plugin->getMsg("wait"));
+                }
+                $this->startTime = 60;
             }
         }
-        
-        // Arena condition: IN_GAME
-        if ($this->arena->game === 1) {
-            $this->arena->fallTime--;
-            $this->startTime = $this->arena->data['arena']['starting_time'];
+        # Arena is running
+        if ($this->arena->game === 1) {                   
+            if ($this->arena->fallTime !== 0) {
+                $this->arena->fallTime--;
+            }
+            
+            if ($this->arena->data["chest"]["refill"] !== false && ($this->mainTime % $this->arena->data['chest']["refill_rate"]) == 0) {
+                $this->arena->refillChests();
+                $this->arena->messageArenaPlayers($this->arena->plugin->getMsg("chest_refilled"));
+            }
             $this->mainTime--;
             if ($this->mainTime === 0) {
                 $this->arena->stopGame();
-                $this->arena->plugin->getServer()->getLogger()->info($this->arena->plugin->getPrefix() . TextFormat::RED . "Arena level " . TextFormat::GREEN . $this->arena->data['arena']['arena_world'] . TextFormat::RED . " has stopeed!");
+                $this->arena->updateLevel = true;
             }
-            $msg = str_replace("%1",date('i:s',$this->mainTime), $this->arena->plugin->getMsg('playing'));
+            $msg = str_replace("%1", date('i:s', $this->mainTime), $this->arena->plugin->getMsg('playing'));
             foreach ($this->arena->players as $p) {
                 $p->sendPopup($msg);
             }
+            // This will checks if there is 1 players left in arena
+            // So there will no errors
+            $this->arena->checkAlive();
         }
     }
 

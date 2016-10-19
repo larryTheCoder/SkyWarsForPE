@@ -5,6 +5,7 @@ namespace larryTheCoder\Commands;
 use larryTheCoder\SkyWarsAPI;
 use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
+use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\utils\Config;
 
@@ -48,18 +49,6 @@ class SkyWarsCommand {
         if (strtolower($cmd->getName()) == "sw") {
             if (isset($args[0])) {
                 switch (strtolower($args[0])) {
-                    case "randomjoin":
-                        if(!$sender->hasPermission("sw.command.join")){
-                            $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
-                            break;
-                        }                       
-                        if (!$sender instanceof Player) {
-                            $this->consoleSender($sender);
-                            break;
-                        }
-                        foreach($this->plugin->ins as $arena){
-                            $arena->joinToArena($sender);
-                        }
                     case "help":
                         if (!$sender->hasPermission("sw.command.help")) {
                             $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
@@ -78,8 +67,8 @@ class SkyWarsCommand {
                         if ($sender->hasPermission('sw.command.stop')) {
                             $msg .= $this->plugin->getMsg('stop');
                         }
-                        if ($sender->hasPermission('sw.command.kick')) {
-                            $msg .= $this->plugin->getMsg('kick');
+                        if ($sender->hasPermission('sw.command.random')) {
+                            $msg .= $this->plugin->getMsg('random');
                         }
                         if ($sender->hasPermission('sw.command.set')) {
                             $msg .= $this->plugin->getMsg('set');
@@ -97,6 +86,19 @@ class SkyWarsCommand {
                             $msg.= $this->plugin->getMsg('setlobby');
                         }
                         $sender->sendMessage($msg);
+                        break;
+                    case "random":
+                        if (!$sender->hasPermission("sw.command.random")) {
+                            $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
+                            break;
+                        }
+                        if (!$sender instanceof Player) {
+                            $this->consoleSender($sender);
+                            break;
+                        }
+                        # choose which arena randomly by int
+                        $arena = mt_rand(0, count($this->plugin->ins));
+                        $this->plugin->ins[$arena]->joinToArena($sender);                       
                         break;
                     case "reload":
                         if (!$sender->hasPermission("sw.command.reload")) {
@@ -127,7 +129,6 @@ class SkyWarsCommand {
                         $a->setNested('arena.arena_world', $args[1]);
                         $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_create'));
                         break;
-                    // Functioning
                     case "start":
                         if (!$sender->hasPermission('sw.command.start')) {
                             $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
@@ -142,10 +143,6 @@ class SkyWarsCommand {
                                 $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_doesnt_exist'));
                                 break;
                             }
-                            if (count($this->plugin->ins[$args[1]]->players) <= $this->plugin->ins[$args[1]]->getMinPlayers()) {
-                                $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('no_players'));
-                                break;
-                            }
                             $this->plugin->ins[$args[1]]->startGame();
                             $sender->sendMessage(str_replace('%1', $args[1], $this->plugin->getPrefix() . $this->plugin->getMsg('arena_started')));
                             break;
@@ -158,14 +155,9 @@ class SkyWarsCommand {
                             $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('start_help'));
                             break;
                         }
-                        if (count($this->plugin->getPlayerArena($sender)->players) <= $this->plugin->getPlayerArena($sender)->getMinPlayers()) {
-                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('no_players'));
-                            break;
-                        }
                         $this->plugin->getPlayerArena($sender)->startGame();
-                        $sender->sendMessage($this->plugin->getPrefix() . "�bArena has been started!");
+                        $sender->sendMessage($this->plugin->getPrefix() . "§bArena has been started!");
                         break;
-
                     case "stop":
                         if (!$sender->hasPermission('sw.command.stop')) {
                             $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
@@ -218,23 +210,50 @@ class SkyWarsCommand {
                         unset($this->plugin->arenas[$args[1]]);
                         $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('arena_delete'));
                         break;
-                    case "kick": // sw kick [arena] [player] [reason]
-                        if (!$sender->hasPermission('sw.command.kick')) {
+                    // TO-DO: improve /kick
+                    case "ban": // /ban [Player Name]
+                        if (!$sender->hasPermission('sw.command.ban')) {
                             $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
                             break;
                         }
-                        if (!isset($args[2]) || isset($args[4])) {
-                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('kick_help'));
+                        if (!isset($args[1]) || isset($args[2])) {
+                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('ban_help'));
+                            break;
+                        }            
+                        if (!file_exists($this->plugin->getDataFolder() . "players/{$args[1]}.yml")){
+                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('no_player_file'));
                             break;
                         }
-                        if (!isset(array_merge($this->plugin->ins[$args[1]]->players)[strtolower($args[2])])) {
-                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('player_not_exist'));
+                        $file = new Config($this->plugin->getDataFolder() . "players/{$args[1]}.yml", Config::YAML);
+                        if ($file->get("ban") === true) {
+                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('player_already_banned'));
                             break;
                         }
-                        if (!isset($args[3])) {
-                            $args[3] = "";
+                        $file->set("ban", true);
+                        $file->save();
+                        $sender->sendMessage(str_replace(["%1"], [$args[1]], $this->plugin->getPrefix() . $this->plugin->getMsg('player_has_banned')));
+                        break;
+                   case "unban": // /unban [Player Name]
+                        if (!$sender->hasPermission('sw.command.unban')) {
+                            $sender->sendMessage($this->plugin->getMsg('has_not_permission'));
+                            break;
                         }
-                        $this->plugin->ins[$args[1]]->kickPlayer($args[2], $args[3]);
+                        if (!isset($args[1]) || isset($args[2])) {
+                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('ban_help'));
+                            break;
+                        }            
+                        if (!file_exists($this->plugin->getDataFolder() . "players/{$args[1]}.yml")){
+                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('no_player_file'));
+                            break;
+                        }
+                        $file = new Config($this->plugin->getDataFolder() . "players/{$args[1]}.yml", Config::YAML);
+                        if ($file->get("ban") === false) {
+                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('player_already_unbanned'));
+                            break;
+                        }
+                        $file->set("ban", false);
+                        $file->save();
+                        $sender->sendMessage(str_replace(["%1"], [$args[1]], $this->plugin->getPrefix() . $this->plugin->getMsg('player_has_unbanned')));
                         break;
                     case "join":
                         if (!$sender->hasPermission('sw.command.join')) {
@@ -282,7 +301,7 @@ class SkyWarsCommand {
                         }
                         if ($this->plugin->isArenaSet($args[1])) {
                             $a = $this->plugin->ins[$args[1]];
-                            if ($a->game !== 0 || count(array_merge($a->ingamep, $a->players, $a->spec)) > 0) {
+                            if ($a->game !== 0 || count(array_merge($a->players, $a->spec)) > 0) {
                                 $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('ingame'));
                                 break;
                             }
@@ -291,17 +310,6 @@ class SkyWarsCommand {
                         $this->plugin->setters[strtolower($sender->getName())]['arena'] = $args[1];
                         $sender->sendMessage($this->plugin->getMsg('enable_setup_mode'));
                         break;
-                    case "reset":
-                        if (count($args) > 0) {
-                            if (isset($args[0])) {
-                                switch ($args[0]) {
-                                    case "world":
-                                    //TO-DO
-                                }
-                            }
-                            $sender->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg('reset_help'));
-                            break;
-                        }
                     case "setlobby":
                         if (!$sender->hasPermission('sw.command.setlobby')) {
                             $sender->sendMessage($this->plugin->getMsg('has_not_permission'));

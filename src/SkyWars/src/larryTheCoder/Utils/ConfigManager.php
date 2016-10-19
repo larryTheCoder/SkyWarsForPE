@@ -33,7 +33,7 @@ class ConfigManager {
         $this->arena->save();
     }
 
-    public function enableRefillChest($type) {
+    public function setChestPriority($type) {
         if (is_bool($type)) { // make sure if $type is boolean
             $this->arena->setNested('chest.refill', $type);
             $this->arena->save();
@@ -95,6 +95,7 @@ class ConfigManager {
     }
 
     public function setMinPlayers($data) {# OK
+        $data - 1;
         $this->arena->setNested('arena.min_players', $data);
         $this->arena->save();
     }
@@ -108,9 +109,22 @@ class ConfigManager {
         $this->arena->setNested('arena.time', $data);
         $this->arena->save();
     }
+    
+    /**
+     * @deprecated
+     */
+    public function setWeather($cond){
+        $this->arena->set('arena.wheather', $cond);
+        $this->arena->save();
+    }
 
     public function setEnable($data) {# OK
         $this->arena->set('enabled', $data);
+        $this->arena->save();
+    }
+
+    public function setChestTicks($data) {
+        $this->arena->setNested('chest.refill_rate', $data);
         $this->arena->save();
     }
 
