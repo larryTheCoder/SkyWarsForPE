@@ -84,7 +84,7 @@ class PortalManager {
             $player->teleport($level->getSafeSpawn());
             // position
             //$level->loadChunk ( $pos->x, $pos->z );
-            $player->sendMessage(kyWarsAPI::getInstance()->getPrefix().TextFormat::GRAY . "Teleporting [" . TextFormat::GOLD . $levelname . TextFormat::GRAY . "] at " . round($pos->x) . " " . round($pos->y) . " " . round($pos->z));
+            $player->sendMessage(SkyWarsAPI::getInstance()->getPrefix().TextFormat::GRAY . "Teleporting [" . TextFormat::GOLD . $levelname . TextFormat::GRAY . "] at " . round($pos->x) . " " . round($pos->y) . " " . round($pos->z));
             $player->teleport(new Position($pos->x, $pos->y, $pos->z, $level));
             $level->updateAllLight($pos);
             $level->updateAround($pos);
