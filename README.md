@@ -1,5 +1,6 @@
 # SkyWarsForPE
 
+Download is available! [Click Here] (https://github.com/larryTheCoder/SkyWarsForPE/releases/download/v1.9.2/SkyWarsForPE.Galaxy.Edition.phar)
 ### License
 Most codes are made by CreeperFace and licensed under GPLv3, copy is prohibited.
 
