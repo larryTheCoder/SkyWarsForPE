@@ -444,10 +444,10 @@ class SkyWarsAPI extends PluginBase implements Listener {
                 $p->sendMessage($this->getPrefix() . $this->getMsg('enable_help'));
                 return;
             } elseif (strpos($msg, 'setmoney') === 0) {
-                if (!is_numeric(substr($msg, 'setmoney'))) {
+                if (!is_numeric(substr($msg, 9))) {
                     $p->sendMessage($this->getPrefix() . $this->getMsg('setmoney_help'));
                 }
-                $arena->setMoney(substr($msg, 15));
+                $arena->setMoney(substr($msg, 9));
             } elseif (strpos($msg, 'signupdatetime') === 0) {
                 if (!is_numeric(substr($msg, 15))) {
                     $p->sendMessage($this->getPrefix() . $this->getMsg('signupdatetime_help'));
