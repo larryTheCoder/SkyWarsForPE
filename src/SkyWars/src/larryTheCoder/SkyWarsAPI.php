@@ -235,8 +235,8 @@ class SkyWarsAPI extends PluginBase implements Listener {
     }
 
     public function getMsg($key) {
-        $msg = $this->msg;
-        return \str_replace("&", "§", $msg->get($key));
+		$msg = str_replace("&","§",$this->msg->get($key));
+        return $msg;
     }
 
     public function getPrefix() {
