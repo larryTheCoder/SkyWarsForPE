@@ -9,9 +9,6 @@ Most codes are made by CreeperFace and licensed under GPLv3, copy is prohibited.
 * One Core to rule anything
 * Feel free to create a Pull Request or open an Issue. English and Chinese are both welcome. Use English to communicate with more people.
 
-### Servers
-This server IP will be changed every hour please see at [here] (https://server.pro/server/4414534/).Please [donate] (https://server.pro/server/4414534/donate/) to keep the server running. Thanks who donating.
-
 ## Features
 * Will **NOT** crash your server anymore
 * Best Performance for servers
@@ -43,7 +40,7 @@ This server IP will be changed every hour please see at [here] (https://server.p
 | /sw join | `<Arena Name>` | Reload the plugin | `All` |
 | /sw kick | `<Player Name>` | Kick a Player from arena | `OP` |
 | /sw ban | `<Player Name>`| Prevent a player from joining an arena| `OP` |
-| /sw unban | `<Player Name>`| unban player to prevent joining area | `OP` |
+| /sw unban | `<Player Name>`| unban a player to join arena | `OP` |
 
 ### To-Do list
 * Portal join
