@@ -23,6 +23,7 @@ namespace larryTheCoder;
 use larryTheCoder\SkyWarsAPI;
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
+use pocketmine\item\Item;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 use pocketmine\plugin\Plugin;
