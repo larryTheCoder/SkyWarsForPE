@@ -5,6 +5,7 @@ namespace larryTheCoder;
 use pocketmine\Player;
 use larryTheCoder\SkyWarsAPI;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerItemHeldEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\player\PlayerDropItemEvent;
@@ -61,6 +62,14 @@ class SkyWarsListener implements Listener {
         }
     }
 
+    public function onPlayerQuit(PlayerQuitEvent $ev) {
+	    $p = $ev->getPlayer();
+	    if ($this->arena->inArena($p)) {
+		    $this->plugin->getPlayerArena($p)->leaveArena($p);
+            return;
+        }
+    }
+    
     public function onPickUp(InventoryPickupItemEvent $ev) {
         if (($p = $ev->getInventory()->getHolder()) instanceof Player) {
             foreach ($this->plugin->ins as $a) {
