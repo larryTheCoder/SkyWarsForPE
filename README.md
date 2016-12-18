@@ -32,12 +32,12 @@ Most codes are made by CreeperFace and licensed under GPLv3, copy is prohibited.
 | /sw help | | Get command map | `All` |
 | /sw create | `<Arena Name>` | create an arena for SkyWars | `OP` |
 | /sw reload | | Reload the plugin | `OP` |
-| /sw start | `<Arena Name>` | Reload the plugin | `OP` |
+| /sw start | `<Arena Name>` | Start the game | `OP` |
 | /sw stop | `<Arena Name>` | Stop an arena | `OP` |
 | /sw delete | `<Arena Name>` | delete an existing arena | `OP` |
 | /sw setlobby | | Set world main lobby | `OP` |
 | /sw set | `<Arena Name>` | Setup an arena | `OP` |
-| /sw join | `<Arena Name>` | Reload the plugin | `All` |
+| /sw join | `<Arena Name>` | join an arena | `All` |
 | /sw kick | `<Player Name>` | Kick a Player from arena | `OP` |
 | /sw ban | `<Player Name>`| Prevent a player from joining an arena| `OP` |
 | /sw unban | `<Player Name>`| unban a player to join arena | `OP` |
