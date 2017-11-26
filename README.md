@@ -1,6 +1,6 @@
 # SkyWarsForPE
 
-Download is available! [Click Here] (https://github.com/larryTheCoder/SkyWarsForPE/releases/download/v1.9.2/SkyWarsForPE.Galaxy.Edition.phar)
+[![Poggit-CI Status](https://poggit.pmmp.io/ci.badge/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE)
 ### License
 Most codes are made by CreeperFace and licensed under GPLv3, copy is prohibited.
 
@@ -45,8 +45,4 @@ Most codes are made by CreeperFace and licensed under GPLv3, copy is prohibited.
 ### To-Do list
 * Portal join
 * More Effects
-
-**NOTICE**: Use Genisys for a better performance
-
-Not understand yet? use [Wiki] (https://github.com/larryTheCoder/SkyWarsForPE/wiki)
 
