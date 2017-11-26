@@ -39,6 +39,7 @@ chest:
     refill: "true"
     # chest refill time
     refill_rate: "240"
+    # Chest
 arena:
     # The weather in arena
     # available weather: clear, rain , thunder, rain_thunder.
@@ -75,7 +76,7 @@ arena:
     start_when_full: "true"
     #max players in arena
     max_players: 12
-    #max VIP(s) in arena
+    #max VIP(src) in arena
     #max_players_VIP: 12
     #min player in arena
     min_players: 1

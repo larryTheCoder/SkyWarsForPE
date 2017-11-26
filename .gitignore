@@ -1,0 +1,7 @@
+# Common IDEs
+.idea/
+nbproject/*
+
+# Mac crap
+.DS_Store
+/nbproject/private/
