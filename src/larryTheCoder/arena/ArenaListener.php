@@ -197,6 +197,9 @@ class ArenaListener implements Listener {
 					$deaths = $conf->get("deaths");
 					$conf->set("deaths", $deaths + 1);
 			                $conf->save();
+					$losses = $conf->get("lose");
+					$conf->set("lose", $losses + 1);
+			                $conf->save();
 		                }
 				$this->arena->messageArenaPlayers(str_replace(['%2', '%1'], [count($this->arena->players), $n], $this->plugin->getMsg('death')));
 				$this->arena->checkAlive();
