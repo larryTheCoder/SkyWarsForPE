@@ -64,6 +64,7 @@ final class ArenaSchedule extends Task {
 		if ($this->arena->game === 0) {
 			if (count($this->arena->players) > $this->arena->getMinPlayers() - 1) {
 				$this->startTime--;
+				$this->mainTime = $this->arena->data['arena']['max_game_time'];
 				foreach ($this->arena->players as $p) {
 					if ($p instanceof Player) {
 						$p->sendPopup(str_replace("%1", $this->startTime, $this->arena->plugin->getMsg('starting')));
