@@ -192,6 +192,12 @@ class ArenaListener implements Listener {
 				$this->arena->dead[strtolower($n)] = true;
 				unset($this->arena->players[strtolower($n)]);
 				Utils::strikeLightning($p);
+				if (!file_exists($this->getDataFolder() . "players/{$p->getName()}.yml")) {
+					$conf = new Config($this->getDataFolder() . "players/{$p->getName()}.yml", Config::YAML);
+					$deaths = $conf->get("deaths");
+					$conf->set("deaths", $deaths + 1);
+			                $conf->save();
+		                }
 				$this->arena->messageArenaPlayers(str_replace(['%2', '%1'], [count($this->arena->players), $n], $this->plugin->getMsg('death')));
 				$this->arena->checkAlive();
 			}
