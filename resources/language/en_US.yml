@@ -1,0 +1,101 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+# English-Rewrite by larryTheCoder,
+---
+# No reason to edit this
+config-version: 3
+
+low-permission: "&eHmm, some new command, too bad its not available yet."
+no-permission: "&cThe society of illuminati blocked your request."
+subtitle-splashes:
+- "§6Win this game!"
+- "§6Good luck!"
+- "§6Show your skill!"
+
+# Arena-Game behaviour language.
+arena-disabled: "&cArena is currently disabled."
+arena-insetup: "&cArena is currently under maintenance."
+arena-full: "&cArena is now full of players."
+arena-running: "&cThe arena is currently running!"
+arena-wait-players: "&6Waiting more players..."
+arena-low-players: "&eNot enough players, cancelling countdown."
+arena-starting: "&aStarting in..."
+arena-subtitle: "&aEnjoy"
+arena-game-started: "§aGame had started!"
+arena-delete: "&cDeleted the arena &d{ARENA}."
+arena-exists: "&cThe arena with that name already exists!"
+arena-not-exist: "&cThe arena doesn't exists!"
+arena-not-running: "&cThat arena not in game."
+arena-start: "&aMatch has started."
+chest-refilled: "&aArena chests has been refilled."
+admin-kick: "&cYou have been kicked from the game."
+player-join: "&c{PLAYER}&a, Welcome to the match."
+player-join-2: "&7-> &c{PLAYER}, &7just joined the match."
+player-leave: "&e{PLAYER} &7just leave the arena."
+player-leave-2: "&cLeaving the arena now."
+player-spectate: "&7You are now a spectator."
+player-receive-money: "&aYou earned &d${VALUE}&a from the game."
+command-banned: "&cPlease do not use that command here."
+finish-broadcast-message: "&a{PLAYER}&e had won arena &a{ARENA}!"
+messageEffectIsComing: "Guys, effects are now propagated for all!"
+
+# Kill message
+death-message-void: "§7- §e{PLAYER} §cwere killed by void"
+death-message-suicide: "§7- §e{PLAYER} §cjust committed suicide."
+death-message-suffocated: "§7- §e{PLAYER} §csuffocated to death."
+death-message-burned: "§7- §e{PLAYER} §cwere burned to death."
+death-message-catused: "§7- §e{PLAYER} §ckilled by a cactus. Silly?"
+death-message-fall: "§7- §e{PLAYER} §chad fall from the sky."
+death-message-toasted: "§7- §e{PLAYER} §cwere toasted by lava"
+death-message-drowned: "§7- §e{PLAYER} §cwere drowned"
+death-message-nature: "§7- §e{PLAYER} §cwere killed by nature"
+death-message-explode: "§7- §e{PLAYER} §cexploded to pieces"
+death-message-magic: "§7- §e{PLAYER} §cwere killed by some kind of magic"
+death-message-unknown: "§7- §e{PLAYER} is a member of the illuminati"
+death-message: "§7- §e{PLAYER}were killed by §e{KILLER}"
+
+# Command help message
+help-main: "&cPlease use /sw help for a list of commands"
+lobby-help: "&2/lobby §l§5»§r§f Teleport to lobby."
+random-help: "&2/sw random §l§5»§r§f Randomly teleport to an arena."
+stats-help: "&2/sw stats §l§5»§r§f Show your game status."
+reload-help: "&2/sw reload §l§5»§r§f Reload the plugin, make new start."
+create-help: "&2/sw create §l§5»§r§f Create a new arena."
+cage-help: "&2/sw cage §l§5»§r§f Set your custom cages."
+start-help: "&2/sw start §b[Arena Name] §l§5»§r§f Force to start the arena."
+stop-help: "&2/sw stop §b[Arena Name] §l§5»§r§f Forcefully stop the arena."
+join-help: "&2/sw join §b[Arena Name] §l§5»§r§f Join to the arena."
+settings-help: "&2/sw settings §l§5»§r§f Setup or modify the arena."
+setlobby-help: "&2/sw setlobby §l§5»§r§f Set the main lobby for the plugin."
+about-help: "&2/sw about §l§5»§r§f About and notes from author."
+npc-help: "&2/sw npc §l§5»§r§f Create an NPC for TopWinners."
+kit-help: "&2/sw kit §l§5»§r§f Show all of the available kits."
+
+# Command false usage help message
+start-usage: "&6Usage: &2/sw start §b[Arena Name]."
+stop-usage: "&6Usage: &2/sw start §b[Arena Name]."
+join-usage: "&6Usage: &2/sw start §b[Arena Name]."
+
+# Command messages, Here the messages
+arena-unavailable: "&cNo available arena, please try again later."
+plugin-reloading: "&eReloading the plugin, this may take a while..."
+plugin-reload: "&aPlugin has been successfully loaded."
+arena-started: "&aStarted the arena &d{ARENA}."
+main-lobby-set: "&aMarked the location for lobby transportation."
+
+# Panel messages
+panel-low-arguments: "&cCannot create arena, missing some arguments."
+panel-cancelled: "&cYour request had been cancelled."
+panel-choose-cage: "&aYou chosen the cage, &d{CAGE}"
+panel-spawn-wand: "&aBreak a block with the wand in your inventory."
+panel-join-spect: "&aSpectator spawn location has been marked."
+panel-join-sign: "&aJoin sign location has been marked."
+panel-spawn-pos: "&aMarked spawn location &e#{COUNT}."
+panel-spawn-set: "&sSuccessfully marked the spawn locations."
+
+# Top winners
+top-winner-1: "&r&lTop winner #{VAL}"
+top-winner-2: "&r&2{PLAYER}"
+top-winner-3: "&r&7{WINS} Victories"

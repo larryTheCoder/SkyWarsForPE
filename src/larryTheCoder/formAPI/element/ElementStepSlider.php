@@ -26,38 +26,63 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\formAPI\element;
 
-namespace larryTheCoder\events;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+class ElementStepSlider extends Element {
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+    /** @var string */
+    private $text = "";
+    /** @var string[] */
+    private $steps = [];
+    /** @var int */
+    private $defaultStepIndex = 0;
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(string $text, array $steps, int $defaultStep) {
+        $this->text = $text;
+        $this->steps = $steps;
+        $this->defaultStepIndex = $defaultStep;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    /**
+     * @return string
+     */
+    public function getText(): string {
+        return $this->text;
     }
 
-    public function getArena() {
-        return $this->arena;
+    /**
+     * @param string $text
+     */
+    public function setText(string $text): void {
+        $this->text = $text;
     }
 
+    /**
+     * @return string[]
+     */
+    public function getSteps(): array {
+        return $this->steps;
+    }
+
+    /**
+     * @param string[] $steps
+     */
+    public function setSteps(array $steps): void {
+        $this->steps = $steps;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDefaultStepIndex(): int {
+        return $this->defaultStepIndex;
+    }
+
+    /**
+     * @param int $defaultStepIndex
+     */
+    public function setDefaultStepIndex(int $defaultStepIndex): void {
+        $this->defaultStepIndex = $defaultStepIndex;
+    }
 }

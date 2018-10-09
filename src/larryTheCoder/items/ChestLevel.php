@@ -27,37 +27,36 @@
  */
 
 
-namespace larryTheCoder\events;
+namespace larryTheCoder\items;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+use pocketmine\item\Item;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+class ChestLevel {
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
+    /** @var string */
+    public $name;
+    /** @var int */
+    public $itemValue;
+    /** @var int */
+    public $chance;
+    /** @var Item[] */
+    public $items;
 
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    /**
+     * ChestLevel constructor.
+     * @param string $name
+     * @param int $itemValue
+     * @param int $chance
+     * @param Item[] $items
+     */
+    public function __construct(string $name, int $itemValue, int $chance, array $items) {
+        $this->name = $name;
+        $this->itemValue = $itemValue;
+        $this->chance = $chance;
+        $this->items = $items;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    public function __toString() {
+        return "(ChestLevel) $this->name, $this->itemValue, $this->chance";
     }
-
-    public function getArena() {
-        return $this->arena;
-    }
-
 }

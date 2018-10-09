@@ -26,38 +26,62 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\formAPI\element;
 
-namespace larryTheCoder\events;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+class ElementInput extends Element {
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+    private $text = "";
+    private $placeholder = "";
+    private $defaultText = "";
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(string $text, string $placeholder = "", string $defaultText = "") {
+        $this->text = $text;
+        $this->placeholder = $placeholder;
+        $this->defaultText = $defaultText;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    /**
+     * @return string
+     */
+    public function getText(): string {
+        return $this->text;
     }
 
-    public function getArena() {
-        return $this->arena;
+    /**
+     * @param string $text
+     */
+    public function setText(string $text): void {
+        $this->text = $text;
     }
+
+    /**
+     * @return string
+     */
+    public function getPlaceholder(): string {
+        return $this->placeholder;
+    }
+
+    /**
+     * @param string $placeholder
+     */
+    public function setPlaceholder(string $placeholder): void {
+        $this->placeholder = $placeholder;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDefaultText(): string {
+        return $this->defaultText;
+    }
+
+    /**
+     * @param string $defaultText
+     */
+    public function setDefaultText(string $defaultText): void {
+        $this->defaultText = $defaultText;
+    }
+
 
 }

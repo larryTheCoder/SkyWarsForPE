@@ -27,37 +27,28 @@
  */
 
 
-namespace larryTheCoder\events;
+namespace larryTheCoder\player;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+class PlayerData {
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+    /** @var integer */
+    public $kill = 0;
+    /** @var integer */
+    public $death = 0;
+    /** @var integer */
+    public $wins;
+    /** @var integer */
+    public $lost = 0;
+    /** @var string */
+    public $player = "";
+    /** @var integer */
+    public $time = 0;
+    /** @var string[] */
+    public $cages = [];
+    /** @var int[] */
+    public $kitId = [];
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __toString() {
+        return "PlayerData(player= " . $this->player . ",kill=" . $this->kill . ",death=" . $this->death . ",wins=" . $this->wins . ",lost=" . $this->lost . ", " . implode(":", $this->cages) . ", time=" . $this->time . ") ";
     }
-
-    public function getPlayers() {
-        return $this->players;
-    }
-
-    public function getArena() {
-        return $this->arena;
-    }
-
 }

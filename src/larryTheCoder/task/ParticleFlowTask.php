@@ -26,38 +26,49 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\task;
 
-namespace larryTheCoder\events;
+use pocketmine\level\particle\GenericParticle;
+use pocketmine\level\Position;
+use pocketmine\math\Vector3;
+use pocketmine\scheduler\Task;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+class ParticleFlowTask extends Task {
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+    /** @var Position */
+    private $location;
+    /** @var int */
+    private $time = 0;
+    /** @var int */
+    private $aroundHelix = 0;
+    /** @var int */
+    private $particleID;
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(Position $loc, int $particleID) {
+        $this->location = $loc;
+        $this->particleID = $particleID;
     }
 
-    public function getPlayers() {
-        return $this->players;
-    }
+    /**
+     * Actions to execute when run
+     *
+     * @param int $currentTick
+     *
+     * @return void
+     */
+    public function onRun(int $currentTick) {
+        $loc = $this->location;
+        $x = sin(-0.39269908169872414 * $this->time) * -0.5;
+        $y = 0.01 * $this->aroundHelix;
+        $z = cos(-0.39269908169872414 * $this->time) * -0.5;
+        $v = new Vector3($x, $y, $z);
+        $loc2 = $loc->add($v);
+        ++$this->time;
+        ++$this->aroundHelix;
+        if ($this->aroundHelix >= 100) {
+            $this->aroundHelix = 0.0;
+        }
 
-    public function getArena() {
-        return $this->arena;
+        $this->location->getLevel()->addParticle(new GenericParticle($loc2, $this->particleID));
     }
-
 }

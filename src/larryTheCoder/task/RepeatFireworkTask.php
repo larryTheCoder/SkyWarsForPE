@@ -26,38 +26,41 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\task;
 
-namespace larryTheCoder\events;
-
-use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+use larryTheCoder\utils\Utils;
+use pocketmine\level\Location;
+use pocketmine\scheduler\Task;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+class RepeatFireworkTask extends Task {
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
+    /** @var Location */
+    public $loc = [];
 
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(array $loc) {
+        $this->loc = $loc;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    /**
+     * Actions to execute when run
+     *
+     * @param int $currentTick
+     *
+     * @return void
+     */
+    public function onRun(int $currentTick) {
+        $i = 0;
+        foreach ($this->loc as $key => $val) {
+            if ($i === 2) {
+                break;
+            }
+            Utils::addFireworks($val);
+            unset($this->loc[$key]);
+            $i++;
+        }
+        if (empty($this->loc)) {
+            SkyWarsPE::getInstance()->getScheduler()->cancelTask($this->getTaskId());
+        }
     }
-
-    public function getArena() {
-        return $this->arena;
-    }
-
 }

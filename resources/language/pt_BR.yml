@@ -1,0 +1,80 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+# English-Rewrite by larryTheCoder,
+---
+
+# No reason to edit this
+config-version: 3
+
+low-permission: "&eVocê não tem permissão suficiente para realizar este comando :/"
+no-permission: "&cA sociedade dos Illuminati bloqueou seu comando."
+
+# Arena-Game behaviour language.
+arena-disabled: "&cA Arena está desativada."
+arena-insetup: "&cArena está em manutenção."
+arena-full: "&cA arena está cheia no momento"
+arena-running: "&cO jogo já começou nessa Arena"
+arena-wait-players: "&6Esperando por mais jogadores..."
+arena-low-players: "&ePlayers insuficientes, cancelando temporizador."
+arena-starting: "&aComeçando em..."
+arena-subtitle: "&aDivirta-se"
+arena-delete: "&cArena &d{ARENA} deletada."
+arena-exists: "&cA arena com esse nome não existe"
+arena-not-exist: "&cA arena não existe!"
+arena-not-running: "&cEsta arena nao está em game."
+arena-start: "&aComeçou."
+chest-refilled: "&aOs báus foram reabastecidos."
+admin-kick: "&cVocê foi chutado dessa partida"
+player-join: "&c{PLAYER}&a, Bem vindo à essa partida"
+player-join-2: "&7-> &c{PLAYER}, &7entrou."
+player-leave: "&e{PLAYER} &7saiu."
+player-leave-2: "&cSaindo da arena.."
+player-spectate: "&7Você entrou no modo espectador."
+player-receive-money: "&aVocê ganhou &d${VALUE}."
+command-banned: "&cPor favor não use esse comando aqui."
+
+# Command help message
+help-main: "&cUse /sw help para obter a lista de comandos"
+lobby-help: "&2/lobby §l§5»§r§f Voltar ao lobby."
+kit-help: "&2/kshop §l§5»§r§f Mostrar a lista de kits."
+random-help: "&2/sw random §l§5»§r§f Entrar em uma arena aleatória."
+stats-help: "&2/sw stats §l§5»§r§f Mostrar seu status."
+reload-help: "&2/sw reload §l§5»§r§f Recarregar plugin"
+create-help: "&2/sw create §l§5»§r§f Criar uma arena."
+cage-help: "&2/sw cage §l§5»§r§f Lista de Jaulas de espera."
+start-help: "&2/sw start §b[Nome da Arena] §l§5»§r§f Forçar o inicio da Partida."
+stop-help: "&2/sw stop §b[Nome da Arena] §l§5»§r§f Forçar a parada da Partida."
+join-help: "&2/sw join §b[Nome da Arena] §l§5»§r§f Entrar em alguma Partida."
+settings-help: "&2/sw settings §l§5»§r§f Editar ou Modificar alguma arena."
+setlobby-help: "&2/sw setlobby §l§5»§r§f Definir o lobby principal."
+about-help: "&2/sw about §l§5»§r§f Sobre o autor."
+npc-help: "&2/sw npc §l§5»§r§f Criar NPC."
+
+# Command false usage help message
+start-usage: "&6Use: &2/sw start §b[Nome da Arena]."
+stop-usage: "&6Use: &2/sw start §b[Nome da Arena]."
+join-usage: "&6Use: &2/sw start §b[Nome da Arena]."
+
+# Command messages, Here the messages
+arena-unavailable: "&cNenhuma arena disponivel, por favor tente novamente mais tarde."
+plugin-reloading: "&eRecarregando Plugin, Pode demorar um pouco..."
+plugin-reload: "&aPlugin recarregado com sucesso."
+arena-started: "&aComeçando na &d{ARENA}."
+main-lobby-set: "&aLobby definido"
+
+# Panel messages
+panel-low-arguments: "&cNao foi possivel criar, argumentos inválidos."
+panel-cancelled: "&cSua requisição foi cancelada."
+panel-choose-cage: "&aCage definida foi a: &d{CAGE}"
+panel-spawn-wand: "&aQuebre um bloco com o item que você tem em sua mão."
+panel-join-spect: "&aSpectator spawn location has been marked."
+panel-join-sign: "&aPlacas Definida com sucesso."
+panel-spawn-pos: "&aSpawn Marcado &e#{COUNT}."
+panel-spawn-set: "&sPosições dos Players definidas com sucesso."
+
+# Top winners
+top-winner-1: "&r&l{VAL}º Lugar"
+top-winner-2: "&r&2{PLAYER}"
+top-winner-3: "&r&7{WINS} Vitórias"

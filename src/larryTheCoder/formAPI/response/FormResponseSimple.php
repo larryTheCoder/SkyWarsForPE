@@ -26,38 +26,62 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\formAPI\response;
 
-namespace larryTheCoder\events;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+use larryTheCoder\formAPI\element\ElementButton;
+use larryTheCoder\formAPI\form\SimpleForm;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+class FormResponseSimple extends FormResponse {
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
+    /** @var SimpleForm */
+    private $form;
+    /** @var int */
+    private $clickedButtonId;
+    /** @var ElementButton[] */
+    private $buttons;
+    /** @var ElementButton */
+    private $clickedButton;
 
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(SimpleForm $form, array $buttons) {
+        $this->form = $form;
+        $this->buttons = $buttons;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    /**
+     * @return int
+     */
+    public function getClickedButtonId(): int {
+        return $this->clickedButtonId;
     }
 
-    public function getArena() {
-        return $this->arena;
+    /**
+     * @return bool
+     */
+    public function isClosed(): bool {
+        return $this->closed;
     }
 
+    /**
+     * Get the clicked button
+     *
+     * @return ElementButton
+     */
+    public function getClickedButton(): ElementButton {
+        return $this->clickedButton;
+    }
+
+    /**
+     * @param string $data
+     */
+    public function setData(string $data) {
+        if ($data === "null") {
+            $this->closed = true;
+            return;
+        }
+        // It quite impossible if we sent a lot of data
+        // Or button on this.
+        $this->clickedButtonId = (int)$data;
+        $this->clickedButton = $this->buttons[$data];
+    }
 }

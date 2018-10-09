@@ -26,38 +26,43 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\formAPI\response;
 
-namespace larryTheCoder\events;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+use larryTheCoder\formAPI\form\ModalForm;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+class FormResponseModal extends FormResponse {
+    /** @var int */
+    private $clickedButtonId;
+    /** @var string */
+    private $clickedButtonText;
+    /** @var ModalForm */
+    private $form;
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(ModalForm $form) {
+        $this->form = $form;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    public function getClickedButtonId(): int {
+        return $this->clickedButtonId;
     }
 
-    public function getArena() {
-        return $this->arena;
+    public function getClickedButtonText(): string {
+        return $this->clickedButtonText;
     }
 
+    public function setData(string $data) {
+        if ($data === "null") {
+            $this->closed = true;
+            return;
+        }
+
+        if ($data === "true") {
+            $this->clickedButtonId = 0;
+            $this->clickedButtonText = $this->form->data["button1"];
+        } else {
+            $this->clickedButtonId = 1;
+            $this->clickedButtonText = $this->form->data["button2"];
+        }
+    }
 }

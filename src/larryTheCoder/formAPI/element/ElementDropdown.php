@@ -26,38 +26,53 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\formAPI\element;
 
-namespace larryTheCoder\events;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+class ElementDropdown extends Element {
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+    /** @var string */
+    private $text = "";
+    /** @var array|string[] */
+    private $options;
+    /** @var int */
+    private $defaultOptionIndex = 0;
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    /**
+     * @param string $text
+     * @param string[] $options
+     * @param int $defaultOption
+     */
+    public function __construct(string $text, array $options = [], int $defaultOption = 0) {
+        $this->text = $text;
+        $this->options = $options;
+        $this->defaultOptionIndex = $defaultOption;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    public function getDefaultOptionIndex() {
+        return $this->defaultOptionIndex;
     }
 
-    public function getArena() {
-        return $this->arena;
+    public function setDefaultOptionIndex(int $index) {
+        if ($index >= count($this->options)) return;
+        $this->defaultOptionIndex = $index;
+    }
+
+    public function getOptions(): array {
+        return $this->options;
+    }
+
+    public function getText() {
+        return $this->text;
+    }
+
+    public function setText(String $text) {
+        $this->text = $text;
+    }
+
+    public function addOption(String $option, bool $isDefault = false) {
+        $this->options[] = $option;
+        if ($isDefault) $this->defaultOptionIndex = count($this->options) - 1;
     }
 
 }

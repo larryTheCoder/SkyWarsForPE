@@ -27,37 +27,21 @@
  */
 
 
-namespace larryTheCoder\events;
+namespace larryTheCoder\panel;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
-
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
-    }
-
-    public function getPlayers() {
-        return $this->players;
-    }
-
-    public function getArena() {
-        return $this->arena;
-    }
-
+class SkyWarsData {
+    public $arenaName = "";
+    public $arenaLevel = "";
+    public $maxPlayer = 12;
+    public $minPlayer = 4;
+    public $spectator = false;
+    public $startWhenFull = false;
+    public $graceTimer = 10;
+    public $time = 360;
+    public $enabled = false;
+    public $line1 = "";
+    public $line2 = "";
+    public $line3 = "";
+    public $line4 = "";
 }

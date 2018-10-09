@@ -27,37 +27,31 @@
  */
 
 
-namespace larryTheCoder\events;
+namespace larryTheCoder\task;
 
-use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+use pocketmine\scheduler\Task;
+use pocketmine\Server;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+class StartLoadArena extends Task {
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
+    private $plugin;
 
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(SkyWarsPE $plugin) {
+        $this->plugin = $plugin;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    /**
+     * Actions to execute when run
+     *
+     * @param $currentTick
+     *
+     * @return void
+     */
+    public function onRun(int $currentTick) {
+        Server::getInstance()->getLogger()->info($this->plugin->getPrefix() . "§aStarted to load arenas worlds...");
+        foreach ($this->plugin->getArenaManager()->getArenas() as $arenas) {
+            $arenas->recheckArena();
+        }
     }
-
-    public function getArena() {
-        return $this->arena;
-    }
-
 }

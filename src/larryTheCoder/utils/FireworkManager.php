@@ -26,38 +26,54 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\utils;
 
-namespace larryTheCoder\events;
-
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
+use pocketmine\level\Location;
 use pocketmine\Player;
 
 /**
- * This event will be called if a player wins an arena
+ * This package handle the random E-84
+ * Firework Pattern which looks awesome.
  *
- * @package larryTheCoder\events
+ * Class FireworkManager
+ * @package larryTheCoder\utils
  */
-class PlayerWinArenaEvent extends PluginEvent {
+class FireworkManager {
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
+    /** @var int */
+    public $side = 0;
+    /** @var Location[] */
+    public $conclude = [];
+    /** @var Location */
+    public $currentLoc = null;
+    /** @var Player */
+    private $player;
+    /** @var float|int */
+    private $currentY = 0;
 
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(Player $player) {
+        $this->player = $player;
+        $this->currentY = $player->getY();
     }
 
-    public function getPlayers() {
-        return $this->players;
+    public function display() {
+        $cuboid = $this->cuboidConductive()->explicit(10);
+        foreach ($cuboid as $val => $vec) {
+            $location = Location::fromObject($vec, $this->player->getLevel(), 0, 0);
+            Utils::addFireworks($location);
+            unset($cuboid[$val]);
+        }
     }
 
-    public function getArena() {
-        return $this->arena;
+    /**
+     * @return Cuboid
+     */
+    public function cuboidConductive() {
+        $facing = $this->player->getDirection();
+        $vec = $this->player->getSide($facing, 15);
+        $vec1 = $vec->asVector3()->setComponents($vec->getX() - 10, $vec->getY(), $vec->getZ() - 10);
+        $vec2 = $vec->asVector3()->setComponents($vec->getX() + 10, $vec->getY(), $vec->getZ() + 10);
+        return new Cuboid($vec1, $vec2);
     }
 
 }

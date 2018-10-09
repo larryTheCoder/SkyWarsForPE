@@ -1,63 +1,174 @@
-## SkyWars config 
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
 ---
-# Game prefix...You can use & as color
-Prefix: '&c[&r&6Sky&bWars&c]&r '
-# language for skywars
-# English by larryTheHarry
-language: English
-# The players health will be set to this value when joining a SkyWars game.
-# N.B : If greater than the player max health , max health will be used instead.
-join_health: 20
-# Players playing a SkyWars game won't be able to run these commands.
-# You can add or delete commands but make sure to respect syntax.
-banned_command_in_game: 
-- /hub
-- /lobby
-- /spawn
-- /tpa
-- /tp
-- /tpaccept
-- /back
-- /home
-- /f
-- /kill
-# If this option is "true" , the game will start once all the spawns 
-# will be finished, regardless from countdown.
-start_when_full: "true"
-# lobby position, where will be players 
-# teleported when they die or leave
-# if this function is not set 
-# the players will teleported to nowhere
-lobby:
-  spawn_x: 291
-  spawn_y: 78
-  spawn_z: 213
-  world: "world"
-# allow to drop items
-allow_drop_item: true
-# This is new function: Reward command handler
-# return to "false" will not give out any money
-# This can be used if u dont have economy plugin and avoid
-# crahing!
-use_economy: false
-# Reset world from ZIP Archive
-# this is not supported yet
-reset_zip: false
-# chat
+# Config version node. Unique Config name.
+# No reason to edit this
+config-version: "CrazyDave"
+
+# General in-game configuration.
+general:
+  # Game language.
+  # Current available languages:
+  # - English: Adam Matthew
+  language: 'English'
+  # The game prefix. Which will be used for command sending, Messaging
+  # And Console usage. Use `&` for `§`
+  prefix: '§d[§eSkyWars§d] &a'
+  # This is a node for Economy where you can control if
+  # You really want to use Economy for this plugin or not.
+  # Supported Economy's: `EconomyAPI`, `PocketMoney`, `MassiveEconomy`, `GoldStd`.
+  use-economy: true
+  # This is a node for Kits plugin which you can control
+  # If you don't need a Kits plugin. Only a Soft Depends
+  use-kits: false
+  # Join health for player when joining an arena.
+  # If the health is greater than the player max health,
+  # max health will be used instead.
+  join-health: 20
+  # Players can use varieties of commands, so make
+  # Sure that player can use the command in game
+  # and making sure that no cheat while in game.
+  accepted-cmd: "leave:stats:kits"
+  # This function is to start after the arena is full
+  # Setting this to true will set the arena to started
+  # And regardless from countdown.
+  start-when-full: true
+  # Allow items interaction from arena while it isn't starting.
+  # Interact: Pickup, Drop
+  item-interact: false
+  # Use the zipping method to save arena
+  # Using this will result a better performance
+  # on saving arena world. Otherwise let the system
+  # Do it work to reset the world..
+  zip-archive: true
+  # The world zipping method.
+  # You can choose to compress the archive or not
+  # This method is not available yet to be used on
+  # Public servers, bugs will be shown if you set this to true
+  zip-compression: false
+  # This Settings Control Messages in Arena
+  # If you don't want send message about Kills and others, set 0
+  # If you want send as a Type Message, set 1
+  # If you want send as a BossBar Message, set 2
+  typeMessageSendArena: 1
+  # Modded Type:
+  # If you use this option, players will give effects in match
+  # They will be more challenged when playing.
+  isModded: false
+
+# Chat configuration
 chat:
-   # Enable chat listener
-   enable_chat: true
-   # chat format
-   chat_format_player: "&b[Player] &a%1 > &f%2"
-   chat_format_spectator: "&7[Spectator] &8%1 > &f%2"
-# items
+  # Enable this features. Treat all features to be
+  # On this plugin
+  chat-listener: true
+  # Chatting format (You can edit your own chat format)
+  # With this function you can use `&` as `§`
+  # Variables: `%1` => Player Name | `%2` => Player message
+  chat-format-player: "&a%1 &0-> &f%2"
+  chat-format-spectate: "&7[DEAD] %1 &0-> &7%2"
+  # Allow spy. This will ensure player with the permission
+  # node, `sw.chat.spy`, can get a messages from players
+  # Recommended to avoid users in trouble.
+  chat-spy: true
+
+# Item handling configuration.
+# Support 1.1 -> 1.2
 item:
-  # Enable leave item
-  # TRUE or FALSE
-  enable_leave_item: true
-  # Enable double tap
-  enable_double_tap: true
-  # Spectate leave item
-  # Example: leave_item: "META:DATA"
-  leave_item: "120:0"
+  # Enable this function to add an awesome
+  # Items with command without editing The sources
+  enable-special-item: true
+  # Double tapping the item
+  # This feature can be used for player
+  # That using an invalid command or decision
+  enable-double-tap: true
+  # The double tap interval (seconds)
+  double-tap-interval: 5
+  # This can hold a item with a valid
+  # Value. A player in cages or spectators
+  # can be used too. Put any names,
+  # Make sure that your name IS NOT THE SAME
+  slot-spectator-1:
+    item-name: "&aTeleport to nearest player"
+    item-id: "345:0"
+    item-place: 0
+    item-cmd: "sw execute teleportNearest"
+    show-after-win: false
+    item-spectate: true
+
+  slot-spectator-2:
+    item-name: "&aJoin to other arena"
+    item-id: "339:0"
+    item-cmd: "sw random"
+    item-place: 4
+    item-spectate: true
+    double-tap-message: "&aAre you sure to exit? Tap again to confirm"
+
+  slot-public-1:
+    item-name: "&cLeave"
+    item-place: 8
+    item-id: "355:14"
+    item-cmd: "leave"
+    item-spectate: true
+    double-tap-message: "&aAre you sure to exit? Tap again to confirm"
+
+  slot-public-2:
+    item-name: "&cLeave"
+    item-place: 8
+    item-id: "355:14"
+    item-cmd: "leave"
+    double-tap-message: "&aAre you sure to exit? Tap again to confirm"
+
+  slot-join-1:
+    item-name: "&aKits"
+    bypass-double-tap: true
+    show-after-win: false
+    item-id: "268:0"
+    item-place: 0
+    item-cmd: "kit"
+
+# Database for SkyWars
+database:
+  # Choose your database. Make sure its fit
+  # With your configurations. Non-Case-Sensitive
+  # Database solutions: MySQL, SQLite
+  selected-database: "SQLite"
+  # Data configuration for selected database
+  # MySQL and sqlite
+  mysql:
+    # Listen carefully to the directed host
+    # IP-Address. 0.0.0.0 is a localhost
+    hostname: "0.0.0.0"
+    # The port of the mysql host
+    # Default: 3306
+    port: 3306
+    # Your username of the database
+    user: "root"
+    # Your username password
+    password: "1234IsNotAGoodPassword"
+    # Your preferred database
+    database: "database"
+    # Your preferred prefix, this can be used to separate
+    # The (available) table in your mysql server.
+    prefix: "Server01"
+  sqlite:
+    # Simple sqlite connection
+    # The file of the location to save the SkyWars
+    # Database, must include .db otherwise it wont work.
+    # The path must be available and assessable otherwise it will not create a new database.
+    # Variables: %1 => The server absolute path %2 => The plugin absolute path
+    path: "%2/SkyWars.db"
+
+# Trailer for SkyWars (lifeboat)
+# Implementation. Edit the config in trailer.yml
+trailer:
+  # Enable the trailer
+  # This will show to player that isn't know how to play the game
+  # Tutor
+  enable-trailer: true
+  # To next location interval
+  # Will be used to allocate when the player
+  # Will go to next location
+  next-location-interval: 5
 ...

@@ -25,39 +25,63 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+declare(strict_types=1);
 
+namespace larryTheCoder\formAPI\form;
 
-namespace larryTheCoder\events;
-
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
+use larryTheCoder\formAPI\response\FormResponse;
+use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
 use pocketmine\Player;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+abstract class Form {
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
+    /** @var int */
+    public $id;
+    /** @var string */
+    public $playerName;
+    /** @var array */
+    private $data = [];
+    /** @var callable */
+    private $callable;
 
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    /**
+     * @param int $id
+     * @param callable $callable
+     */
+    public function __construct(int $id, ?callable $callable) {
+        $this->id = $id;
+        $this->callable = $callable;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    /**
+     * @return int
+     */
+    public function getId(): int {
+        return $this->id;
     }
 
-    public function getArena() {
-        return $this->arena;
+    /**
+     * @param Player $player
+     */
+    public function sendToPlayer(Player $player): void {
+        $pk = new ModalFormRequestPacket();
+        $pk->formId = $this->id;
+        $pk->formData = json_encode($this->data);
+        $player->dataPacket($pk);
+        $this->playerName = $player->getName();
     }
+
+    public function isRecipient(Player $player): bool {
+        return $player->getName() === $this->playerName;
+    }
+
+    public function getCallable(): ?callable {
+        return $this->callable;
+    }
+
+    /**
+     * @return FormResponse
+     */
+    public abstract function getResponseModal();
 
 }

@@ -1,19 +1,23 @@
-#############################################
-## Arena utils:
-## TO-DO: add glass blocks like status block behind the
-## signs to make it beautiful like PikaNetwork
-#############################################
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
 ---
-# if enabled is false arena wont load
-enabled: "true"
-# game lobby location
+# You can disable this arena by setting this to false
+enabled: false
+
+# The game sign section
 signs:
+    # These are the coordinates for your
+    # Join sign, including the world name
     join_sign_x: 89
     join_sign_y: 78
     join_sign_z: -487
     join_sign_world: "world"
-    #enable status sign
-    enable_status: "true"
+    # To enable the status sign
+    # Please ensure that this will be enabled
+    # Otherwise the sign wont tick
+    enable_status: true
     #status lines
     #variables:
     #   &a &b &c = you can use color with "&"
@@ -26,60 +30,66 @@ signs:
     status_line_2: "&a%alive/%max"
     status_line_3: "%status"
     status_line_4: "&6%world"
-    #sign update every X seconds
+    # Sign will update every 'x" seconds
+    # The 'x' is depends on this section
     sign_update_time: 2
     #returns player to main level/lobby
     #world is same like arena_world
     return_sign_x: 566
     return_sign_y: 57
     return_sign_z: 890
+
+# The chest configuration config
 chest:
-    # refill the chests
-    # true or false
-    refill: "true"
-    # chest refill time
+    # You can set either want to refill
+    # The chest arena after 'refill_rate' or
+    # Not
+    refill: true
+    # Refill rate will depends on the arena
+    # Time. The plugin wont check this if your
+    # Arena time is above this refill rate
     refill_rate: "240"
-    # Chest
+
+# The arena section
 arena:
-    # The weather in arena
-    # available weather: clear, rain , thunder, rain_thunder.
-    weather: "clear"
-    # Is arena is for VIP
-    # arena_vip: "false"
-    # game world location
+    # Arena game location
+    # Make sure you put the name correctly!
     arena_world: "SkyWarsForPE"
-    # Spectator spawn
+    # The spectator spawn
+    # No level were given here because the
+    # Spectator usually be summon at 'arena_world"
     spec_spawn_x: 320
     spec_spawn_y: 50
     spec_spawn_z: 32
-    # Grace timer
-    # Avoid player be killed when
-    # falling off the spawn [Glass]
+    # The Grace timer
+    # This can avoid the player to be killed too
+    # Soon, when falling from spawn pedestals
     grace_time: 5
-    # if spectator_mode is true 
-    # player to be spectator if they
-    # die true/false
-    spectator_mode: "true"
-    # enable time cycle - true / day / night / [ticks] 
+    # Spectator mode
+    # You can have spectators in the arena
+    # Otherwise set this to false
+    spectator_mode: true
+    # Daytime cycle
+    # This 'Daytime Cycle' can determinate
+    # If you want the arena to 'tick' the level
+    # Or not. Set to true if you want to 'tick' the level.
+    # USE-ONLY: (true / day / night / [ticks])
     time: "day"
-    # Item reward for win put ID:DAMAGE:COUNT ->  17:5:1,17:4:9,4:0:1  
-    # 0 if you don´t want reward
-    item_reward: 0
-    #coin rewars put number of money
-    money_reward: 0
+    #coin rewards put number of money
+    money_reward: 20
     # Finish message level / world
     # ex: world,SkyWars,{{YOUR_MAIN_WORLD}}
     # You can use " , " 
-    finish_msg_levels: world,SkyWars,lobby
+    finish_msg_levels: "world, SkyWars, lobby"
     # Start when the arena is full
-    # for me i will do "true"
-    start_when_full: "true"
+    # for me i will do `true`
+    start_when_full: true
     #max players in arena
     max_players: 12
     #max VIP(src) in arena
     #max_players_VIP: 12
     #min player in arena
-    min_players: 1
+    min_players: 2
     #Max game time
     max_game_time: 390
     #starting time (seconds)

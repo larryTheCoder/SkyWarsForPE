@@ -26,38 +26,47 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\formAPI\event;
 
-namespace larryTheCoder\events;
-
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
+use larryTheCoder\formAPI\{
+    form\Form, response\FormResponse
+};
+use pocketmine\event\player\PlayerEvent;
 use pocketmine\Player;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
-
+class FormRespondedEvent extends PlayerEvent {
     public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
+    /** @var int */
+    private $id;
+    /** @var Form */
+    private $form;
+    /** @var FormResponse */
+    private $formResponse;
+    /** @var bool */
+    private $closed;
 
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(Player $player, Form $form, FormResponse $formResponse) {
+        $this->id = $form->getId();
+        $this->form = $form;
+        $this->formResponse = $formResponse;
+        $this->closed = $formResponse->closed;
+        $this->player = $player;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    public function getId(): int {
+        return $this->id;
     }
 
-    public function getArena() {
-        return $this->arena;
+    public function isClosed() {
+        return $this->closed;
+    }
+
+    public function getForm(): Form {
+        return $this->form;
+    }
+
+    public function getResponse(): FormResponse {
+        return $this->formResponse;
     }
 
 }

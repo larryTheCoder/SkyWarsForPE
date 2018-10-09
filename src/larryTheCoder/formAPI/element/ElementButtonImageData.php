@@ -26,38 +26,38 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\formAPI\element;
 
-namespace larryTheCoder\events;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+class ElementButtonImageData {
+    const IMAGE_DATA_TYPE_PATH = "path";
+    const IMAGE_DATA_TYPE_URL = "url";
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+    /** @var string */
+    private $type;
+    /** @var string */
+    private $data;
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(string $type, string $data) {
+        if (!$type === ElementButtonImageData::IMAGE_DATA_TYPE_URL && !$type === ElementButtonImageData::IMAGE_DATA_TYPE_PATH) return;
+        $this->type = $type;
+        $this->data = $data;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    public function getType(): string {
+        return $this->type;
     }
 
-    public function getArena() {
-        return $this->arena;
+    public function setType(String $type) {
+        $this->type = $type;
+    }
+
+    public function getData(): string {
+        return $this->data;
+    }
+
+    public function setData(String $data) {
+        $this->data = $data;
     }
 
 }

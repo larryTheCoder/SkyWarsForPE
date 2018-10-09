@@ -26,38 +26,28 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\formAPI\element;
 
-namespace larryTheCoder\events;
 
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
-use pocketmine\Player;
+class ElementLabel extends Element {
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+    private $text = "";
 
-    public static $handlerList = null;
-    /** @var Player[] */
-    protected $players = [];
-    protected $arena;
-
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->players = $player;
-        $this->arena = $arena;
+    public function __construct(string $text) {
+        $this->text = $text;
     }
 
-    public function getPlayers() {
-        return $this->players;
+    /**
+     * @return string
+     */
+    public function getText(): string {
+        return $this->text;
     }
 
-    public function getArena() {
-        return $this->arena;
+    /**
+     * @param string $text
+     */
+    public function setText(string $text): void {
+        $this->text = $text;
     }
-
 }
