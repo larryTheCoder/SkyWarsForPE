@@ -33,26 +33,26 @@ use larryTheCoder\formAPI\FormAPI;
 use larryTheCoder\items\RandomChest;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\{
-    MySqliteDatabase, SkyWarsDatabase, SQLite3Database
+	MySqliteDatabase, SkyWarsDatabase, SQLite3Database
 };
 use larryTheCoder\task\StartLoadArena;
 use larryTheCoder\utils\{
-    Settings, Utils
+	Settings, Utils
 };
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{
-    Command, CommandSender
+	Command, CommandSender
 };
 use pocketmine\event\{
-    Listener, player\PlayerJoinEvent
+	Listener, player\PlayerJoinEvent
 };
 use pocketmine\item\Item;
 use pocketmine\Player;
 use pocketmine\plugin\{
-    Plugin, PluginBase
+	Plugin, PluginBase
 };
 use pocketmine\utils\{
-    Config, TextFormat
+	Config, TextFormat
 };
 
 /**
@@ -67,7 +67,7 @@ class SkyWarsPE extends PluginBase implements Listener {
     /** @var SkyWarsPE */
     public static $instance;
     /** @var array */
-    public $translation;
+	public $translation = [];
     /** @var Config */
     public $msg;
     /** @var SkyWarsCommand */
@@ -99,7 +99,7 @@ class SkyWarsPE extends PluginBase implements Listener {
         $this->initConfig();
         $this->initDatabase();
     }
-
+// [![Poggit-CI Status](https://poggit.pmmp.io/ci.badge/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE)
     public function initConfig() {
         Utils::ensureDirectory();
         Utils::ensureDirectory("image/");
@@ -128,7 +128,12 @@ class SkyWarsPE extends PluginBase implements Listener {
             }
             $this->translation[$localeCode] = $locale;
         }
-        $this->getServer()->getLogger()->info($this->getPrefix() . "§aTracked and flashed §e" . count($this->translation) . " §alocales");
+		if(empty($this->translation)){
+			$this->getServer()->getLogger()->info($this->getPrefix() . "§cNo locales been found, this is discouraged.");
+
+			return;
+		}
+        $this->getServer()->getLogger()->info($this->getPrefix() . "§aTracked and flashed §e" . count($this->translation) . "§a locales");
     }
 
     public function getPrefix() {

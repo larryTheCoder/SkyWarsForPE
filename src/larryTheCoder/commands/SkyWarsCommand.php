@@ -296,28 +296,6 @@ final class SkyWarsCommand {
                         break;
                     }
                     break;
-                case "pos":
-                    if (!$sender->hasPermission('sw.command.pos')) {
-                        $sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-                        break;
-                    }
-                    if (!$sender instanceof Player) {
-                        $this->consoleSender($sender);
-                        break;
-                    }
-                    $this->plugin->getLogger()->info($sender->getLocation());
-                    break;
-                case "tp":
-                    if (!$sender->isOp()) {
-                        $sender->sendMessage($this->plugin->getMsg($sender, 'help-main'));
-                        break;
-                    }
-                    if (!$sender instanceof Player) {
-                        $this->consoleSender($sender);
-                        break;
-                    }
-
-                    break;
                 case "about":
                     $sender->sendMessage("§aSkyWarsPE-Rewrite §e(C) §c2018,§d larryTheCoder, NycuRO");
                     $sender->sendMessage("§aGitHub:§d https://www.github.com/larryTheCoder");
