@@ -40,40 +40,41 @@ use pocketmine\Player;
  */
 class FireworkManager {
 
-    /** @var int */
-    public $side = 0;
-    /** @var Location[] */
-    public $conclude = [];
-    /** @var Location */
-    public $currentLoc = null;
-    /** @var Player */
-    private $player;
-    /** @var float|int */
-    private $currentY = 0;
+	/** @var int */
+	public $side = 0;
+	/** @var Location[] */
+	public $conclude = [];
+	/** @var Location */
+	public $currentLoc = null;
+	/** @var Player */
+	private $player;
+	/** @var float|int */
+	private $currentY = 0;
 
-    public function __construct(Player $player) {
-        $this->player = $player;
-        $this->currentY = $player->getY();
-    }
+	public function __construct(Player $player){
+		$this->player = $player;
+		$this->currentY = $player->getY();
+	}
 
-    public function display() {
-        $cuboid = $this->cuboidConductive()->explicit(10);
-        foreach ($cuboid as $val => $vec) {
-            $location = Location::fromObject($vec, $this->player->getLevel(), 0, 0);
-            Utils::addFireworks($location);
-            unset($cuboid[$val]);
-        }
-    }
+	public function display(){
+		$cuboid = $this->cuboidConductive()->explicit(10);
+		foreach($cuboid as $val => $vec){
+			$location = Location::fromObject($vec, $this->player->getLevel(), 0, 0);
+			Utils::addFireworks($location);
+			unset($cuboid[$val]);
+		}
+	}
 
-    /**
-     * @return Cuboid
-     */
-    public function cuboidConductive() {
-        $facing = $this->player->getDirection();
-        $vec = $this->player->getSide($facing, 15);
-        $vec1 = $vec->asVector3()->setComponents($vec->getX() - 10, $vec->getY(), $vec->getZ() - 10);
-        $vec2 = $vec->asVector3()->setComponents($vec->getX() + 10, $vec->getY(), $vec->getZ() + 10);
-        return new Cuboid($vec1, $vec2);
-    }
+	/**
+	 * @return Cuboid
+	 */
+	public function cuboidConductive(){
+		$facing = $this->player->getDirection();
+		$vec = $this->player->getSide($facing, 15);
+		$vec1 = $vec->asVector3()->setComponents($vec->getX() - 10, $vec->getY(), $vec->getZ() - 10);
+		$vec2 = $vec->asVector3()->setComponents($vec->getX() + 10, $vec->getY(), $vec->getZ() + 10);
+
+		return new Cuboid($vec1, $vec2);
+	}
 
 }

@@ -482,7 +482,6 @@ class ArenaListener implements Listener {
 				if(!in_array($cmd, Settings::$acceptedCommand) && $cmd !== "sw"){
 					$ev->getPlayer()->sendMessage($this->plugin->getMsg($p, "banned-command"));
 					$ev->setCancelled(true);
-					echo "EXECUTED";
 				}
 			}
 		}

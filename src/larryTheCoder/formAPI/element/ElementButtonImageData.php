@@ -30,34 +30,34 @@ namespace larryTheCoder\formAPI\element;
 
 
 class ElementButtonImageData {
-    const IMAGE_DATA_TYPE_PATH = "path";
-    const IMAGE_DATA_TYPE_URL = "url";
+	const IMAGE_DATA_TYPE_PATH = "path";
+	const IMAGE_DATA_TYPE_URL = "url";
 
-    /** @var string */
-    private $type;
-    /** @var string */
-    private $data;
+	/** @var string */
+	private $type;
+	/** @var string */
+	private $data;
 
-    public function __construct(string $type, string $data) {
-        if (!$type === ElementButtonImageData::IMAGE_DATA_TYPE_URL && !$type === ElementButtonImageData::IMAGE_DATA_TYPE_PATH) return;
-        $this->type = $type;
-        $this->data = $data;
-    }
+	public function __construct(string $type, string $data){
+		if(!$type === ElementButtonImageData::IMAGE_DATA_TYPE_URL && !$type === ElementButtonImageData::IMAGE_DATA_TYPE_PATH) return;
+		$this->type = $type;
+		$this->data = $data;
+	}
 
-    public function getType(): string {
-        return $this->type;
-    }
+	public function getType(): string{
+		return $this->type;
+	}
 
-    public function setType(String $type) {
-        $this->type = $type;
-    }
+	public function setType(String $type){
+		$this->type = $type;
+	}
 
-    public function getData(): string {
-        return $this->data;
-    }
+	public function getData(): string{
+		return $this->data;
+	}
 
-    public function setData(String $data) {
-        $this->data = $data;
-    }
+	public function setData(String $data){
+		$this->data = $data;
+	}
 
 }

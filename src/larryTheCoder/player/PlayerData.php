@@ -31,24 +31,24 @@ namespace larryTheCoder\player;
 
 class PlayerData {
 
-    /** @var integer */
-    public $kill = 0;
-    /** @var integer */
-    public $death = 0;
-    /** @var integer */
-    public $wins;
-    /** @var integer */
-    public $lost = 0;
-    /** @var string */
-    public $player = "";
-    /** @var integer */
-    public $time = 0;
-    /** @var string[] */
-    public $cages = [];
-    /** @var int[] */
-    public $kitId = [];
+	/** @var integer */
+	public $kill = 0;
+	/** @var integer */
+	public $death = 0;
+	/** @var integer */
+	public $wins;
+	/** @var integer */
+	public $lost = 0;
+	/** @var string */
+	public $player = "";
+	/** @var integer */
+	public $time = 0;
+	/** @var string[] */
+	public $cages = [];
+	/** @var int[] */
+	public $kitId = [];
 
-    public function __toString() {
-        return "PlayerData(player= " . $this->player . ",kill=" . $this->kill . ",death=" . $this->death . ",wins=" . $this->wins . ",lost=" . $this->lost . ", " . implode(":", $this->cages) . ", time=" . $this->time . ") ";
-    }
+	public function __toString(){
+		return "PlayerData(player= " . $this->player . ",kill=" . $this->kill . ",death=" . $this->death . ",wins=" . $this->wins . ",lost=" . $this->lost . ", " . implode(":", $this->cages) . ", time=" . $this->time . ") ";
+	}
 }

@@ -35,23 +35,23 @@ use pocketmine\Server;
 
 class StartLoadArena extends Task {
 
-    private $plugin;
+	private $plugin;
 
-    public function __construct(SkyWarsPE $plugin) {
-        $this->plugin = $plugin;
-    }
+	public function __construct(SkyWarsPE $plugin){
+		$this->plugin = $plugin;
+	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @param $currentTick
-     *
-     * @return void
-     */
-    public function onRun(int $currentTick) {
-        Server::getInstance()->getLogger()->info($this->plugin->getPrefix() . "§aStarted to load arenas worlds...");
-        foreach ($this->plugin->getArenaManager()->getArenas() as $arenas) {
-            $arenas->recheckArena();
-        }
-    }
+	/**
+	 * Actions to execute when run
+	 *
+	 * @param $currentTick
+	 *
+	 * @return void
+	 */
+	public function onRun(int $currentTick){
+		Server::getInstance()->getLogger()->info($this->plugin->getPrefix() . "§aStarted to load arenas worlds...");
+		foreach($this->plugin->getArenaManager()->getArenas() as $arenas){
+			$arenas->recheckArena();
+		}
+	}
 }

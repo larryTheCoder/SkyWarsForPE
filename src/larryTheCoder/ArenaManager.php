@@ -35,185 +35,205 @@ use pocketmine\utils\Config;
 
 final class ArenaManager {
 
-    /** @var string[] */
-    public $arenaRealName = [];
-    /** @var Arena[] */
-    private $arenas = [];
-    /** @var array */
-    private $arenaConfig = [];
-    /** @var SkyWarsPE */
-    private $pl;
+	/** @var string[] */
+	public $arenaRealName = [];
+	/** @var Arena[] */
+	private $arenas = [];
+	/** @var array */
+	private $arenaConfig = [];
+	/** @var SkyWarsPE */
+	private $pl;
 
-    public function __construct(SkyWarsPE $plugin) {
-        $this->pl = $plugin;
-    }
+	public function __construct(SkyWarsPE $plugin){
+		$this->pl = $plugin;
+	}
 
-    /**
-     * Load the arenas
-     */
-    public final function checkArenas() {
-        $this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§dChecking arena files...");
-        foreach (glob($this->pl->getDataFolder() . "arenas/*.yml") as $file) {
-            $arena = new Config($file, Config::YAML);
-            $arenaName = basename($file, ".yml");
-            # How this could possibly been?
-            if (Utils::checkFile($arena) === false) {
-                $this->pl->getServer()->getLogger()->warning($this->pl->getPrefix() . "§eFile $arenaName could not be loaded.");
-                continue;
-            }
-            $this->arenaRealName[strtolower($arenaName)] = $arenaName;
-            $this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
-            $this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
-            # Two function (Enabled | Disabled)
-            if ($arena->get("enabled") === true) {
-                $this->arenas[strtolower($arenaName)]->disabled = false;
-                $this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§d$arenaName §a§l-§r§a Arena loaded and enabled");
-            } else {
-                $this->arenas[strtolower($arenaName)]->disabled = true;
-                $this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§d$arenaName §a§l-§r§c Arena disabled");
-            }
-        }
-    }
+	/**
+	 * Load the arenas
+	 */
+	public final function checkArenas(){
+		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§dChecking arena files...");
+		foreach(glob($this->pl->getDataFolder() . "arenas/*.yml") as $file){
+			$arena = new Config($file, Config::YAML);
+			$arenaName = basename($file, ".yml");
+			# How this could possibly been?
+			if(Utils::checkFile($arena) === false){
+				$this->pl->getServer()->getLogger()->warning("§cFile §7$arenaName §ccould not be loaded.");
+				continue;
+			}
+			$this->arenaRealName[strtolower($arenaName)] = $arenaName;
+			$this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
+			$this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
+			# Two function (Enabled | Disabled)
+			if($arena->get("enabled") === true){
+				$this->arenas[strtolower($arenaName)]->disabled = false;
+				$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§d$arenaName §a§l-§r§a Arena loaded and enabled");
+			}else{
+				$this->arenas[strtolower($arenaName)]->disabled = true;
+				$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§d$arenaName §a§l-§r§c Arena disabled");
+			}
+		}
+	}
 
-    public function reloadArena($arenaF): bool {
-        $arenaName = $this->getRealArenaName($arenaF);
-        $this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§aReloading arena $arenaName");
-        if (!$this->arenaExist($arenaName)) {
-            $this->pl->getLogger()->debug("[reloadArena] Arena $arenaName doesn't exists.");
-            return false;
-        }
-        $arenaConfig = new Config($this->pl->getDataFolder() . "arenas/$arenaName.yml");
-        $game = $this->getArena($arenaName);
-        # Arena is null but how?
-        if (is_null($game) || is_null($arenaConfig)) {
-            $this->pl->getLogger()->debug("[reloadArena] Arena $arenaName exists but null.");
-            return false;
-        }
-        # Check if they want to enable this arena
-        if (!Utils::checkFile($arenaConfig) || $arenaConfig->get('enabled') === false) {
-            $this->arenaConfig[strtolower($arenaName)] = $arenaConfig->getAll();
-            $game->disabled = true;
-        }
-        # unbind others setup parameters
-        $game->setup = false;
-        $game->data = $this->arenaConfig[strtolower($arenaName)];
-        $game->recheckArena();
-        return true;
-    }
+	public function reloadArena($arenaF): bool{
+		$arenaName = $this->getRealArenaName($arenaF);
+		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§aReloading arena§e $arenaName");
+		if(!$this->arenaExist($arenaName)){
+			$this->pl->getLogger()->debug("[reloadArena] §cArena§e $arenaName doesn't exists.");
 
-    public function getRealArenaName($lowerCasedArena) {
-        if (!isset($this->arenaRealName[strtolower($lowerCasedArena)])) {
-            return $lowerCasedArena;
-        }
-        return $this->arenaRealName[strtolower($lowerCasedArena)];
-    }
+			return false;
+		}
+		$arenaConfig = new Config($this->pl->getDataFolder() . "arenas/$arenaName.yml");
+		$game = $this->getArena($arenaName);
+		# Arena is null but how?
+		if(is_null($game) || is_null($arenaConfig)){
+			$this->pl->getLogger()->debug("[reloadArena] §cArena§e $arenaName exists but null.");
 
-    public function arenaExist(string $arena): bool {
-        return isset($this->arenas[strtolower($arena)]);
-    }
+			return false;
+		}
+		# Check if they want to enable this arena
+		if(!Utils::checkFile($arenaConfig) || $arenaConfig->get('enabled') === false){
+			$this->arenaConfig[strtolower($arenaName)] = $arenaConfig->getAll();
+			$game->disabled = true;
+		}
+		# unbind others setup parameters
+		$game->setup = false;
+		$game->data = $this->arenaConfig[strtolower($arenaName)];
+		$game->recheckArena();
 
-    /**
-     * Get the arena by string
-     *
-     * @param string $arena
-     * @return Arena|null
-     */
-    public function getArena($arena) {
-        if (!$this->arenaExist($arena)) {
-            return null;
-        }
-        return $this->arenas[strtolower($arena)];
-    }
+		return true;
+	}
 
-    public function setArenaData(Config $arena, $arenaName): bool {
-        $arenaName = $this->getRealArenaName($arenaName);
-        # How this could possibly been?
-        if (Utils::checkFile($arena) === false) {
-            $this->pl->getServer()->getLogger()->warning($this->pl->getPrefix() . "§eFile $arenaName could not be loaded.");
-            return false;
-        }
-        # Two function (Enabled | Disabled)
-        if ($arena->get("enabled") === true) {
-            $this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
-            $this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
-            $this->arenas[strtolower($arenaName)]->disabled = false;
-            $this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6$arenaName §7§l-§r§a Arena loaded and enabled");
-        } else {
-            $this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
-            $this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
-            $this->arenas[strtolower($arenaName)]->disabled = true;
-            $this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6$arenaName §7§l-§r§e Arena disabled");
-        }
-        return true;
-    }
+	public function getRealArenaName($lowerCasedArena){
+		if(!isset($this->arenaRealName[strtolower($lowerCasedArena)])){
+			return $lowerCasedArena;
+		}
 
-    public function deleteArena($arena) {
-        if ($this->arenaExist($arena)) {
-            $this->getArena($arena)->forceShutdown();
-            unset($this->arenas[strtolower($arena)]);
-            unset($this->arenaConfig[strtolower($arena)]);
-        }
-    }
+		return $this->arenaRealName[strtolower($lowerCasedArena)];
+	}
 
-    public function getPlayerArena(Entity $p): ?Arena {
-        foreach ($this->arenas as $arena) {
-            if ($arena->inArena($p)) {
-                return $arena;
-            }
-        }
-        return null;
-    }
+	public function arenaExist(string $arena): bool{
+		return isset($this->arenas[strtolower($arena)]);
+	}
 
-    public function getArenaConfig($arenaName) {
-        if (!isset($this->arenaConfig[strtolower($arenaName)])) {
-            return null;
-        }
-        return $this->arenaConfig[strtolower($arenaName)];
-    }
+	/**
+	 * Get the arena by string
+	 *
+	 * @param string $arena
+	 * @return Arena|null
+	 */
+	public function getArena($arena){
+		if(!$this->arenaExist($arena)){
+			return null;
+		}
 
-    /**
-     * Get the available arena. Used to randomize with a calculation where
-     * There is a player in arena, without using normal <b>array_rand()</b>
-     *
-     * @return Arena|null
-     */
-    public function getAvailableArena(): ?Arena {
-        $arena = $this->getArenas();
-        # Check if there is a player in one of the arenas
-        foreach ($arena as $selector) {
-            if (!empty($selector->getPlayers()) && $selector->getMode() === Arena::ARENA_WAITING_PLAYERS) {
-                return $selector;
-            }
-        }
-        # Otherwise we need to randomize the arena
-        # By not letting the player to join a started arena
-        $arenas = [];
-        foreach ($arena as $selector) {
-            if ($selector->getMode() === Arena::ARENA_WAITING_PLAYERS && $selector->disabled === false) {
-                $arenas[] = $selector;
-            }
-        }
-        # There were 0 arenas found
-        if (empty($arenas)) {
-            return null;
-        }
-        # Otherwise randomize it and put it into return
-        # arena.
-        /** @var Arena $arenaC */
-        $arenaC = $arenas[mt_rand(0, count($arenas) - 1)];
+		return $this->arenas[strtolower($arena)];
+	}
 
-        return $arenaC;
-    }
+	public function setArenaData(Config $arena, $arenaName): bool{
+		$arenaName = $this->getRealArenaName($arenaName);
+		# How this could possibly been?
+		if(Utils::checkFile($arena) === false){
+			$this->pl->getServer()->getLogger()->warning("§cFile §7$arenaName §ccould not be loaded.");
 
-    public function getArenas() {
-        return $this->arenas;
-    }
+			return false;
+		}
+		# Two function (Enabled | Disabled)
+		if($arena->get("enabled") === true){
+			$this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
+			$this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
+			$this->arenas[strtolower($arenaName)]->disabled = false;
+			$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6$arenaName §7§l-§r§a Arena loaded and enabled");
+		}else{
+			$this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
+			$this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
+			$this->arenas[strtolower($arenaName)]->disabled = true;
+			$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6$arenaName §7§l-§r§e Arena disabled");
+		}
 
-    public function getArenaByInt(int $id): Arena {
-        $arenas = [];
-        foreach ($this->getArenas() as $arena) {
-            $arenas[] = $arena;
-        }
-        return $arenas[$id];
-    }
+		return true;
+	}
+
+	public function deleteArena($arena){
+		if($this->arenaExist($arena)){
+			$this->getArena($arena)->forceShutdown();
+			unset($this->arenas[strtolower($arena)]);
+			unset($this->arenaConfig[strtolower($arena)]);
+		}
+	}
+
+	public function getPlayerArena(Entity $p): ?Arena{
+		foreach($this->arenas as $arena){
+			if($arena->inArena($p)){
+				return $arena;
+			}
+		}
+
+		return null;
+	}
+
+	public function getArenaConfig($arenaName){
+		if(!isset($this->arenaConfig[strtolower($arenaName)])){
+			return null;
+		}
+
+		return $this->arenaConfig[strtolower($arenaName)];
+	}
+
+	/**
+	 * Get the available arena. Used to randomize with a calculation where
+	 * There is a player in arena, without using normal <b>array_rand()</b>
+	 *
+	 * @return Arena|null
+	 */
+	public function getAvailableArena(): ?Arena{
+		$arena = $this->getArenas();
+		# Check if there is a player in one of the arenas
+		foreach($arena as $selector){
+			if(!empty($selector->getPlayers()) && $selector->getMode() === Arena::ARENA_WAITING_PLAYERS){
+				return $selector;
+			}
+		}
+		# Otherwise we need to randomize the arena
+		# By not letting the player to join a started arena
+		$arenas = [];
+		foreach($arena as $selector){
+			if($selector->getMode() === Arena::ARENA_WAITING_PLAYERS && $selector->disabled === false){
+				$arenas[] = $selector;
+			}
+		}
+		# There were 0 arenas found
+		if(empty($arenas)){
+			return null;
+		}
+		# Otherwise randomize it and put it into return
+		# arena.
+		/** @var Arena $arenaC */
+		$arenaC = $arenas[mt_rand(0, count($arenas) - 1)];
+
+		return $arenaC;
+	}
+
+	public function getArenas(){
+		return $this->arenas;
+	}
+
+	public function getArenaByInt(int $id): Arena{
+		$arenas = [];
+		foreach($this->getArenas() as $arena){
+			$arenas[] = $arena;
+		}
+
+		return $arenas[$id];
+	}
+
+	public function isInLevel(Entity $sender): bool{
+		foreach($this->arenas as $arena){
+			if($arena->getLevelName() === $sender->getLevel()->getName()){
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

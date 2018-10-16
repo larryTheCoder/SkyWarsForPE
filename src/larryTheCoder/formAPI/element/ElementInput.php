@@ -31,57 +31,57 @@ namespace larryTheCoder\formAPI\element;
 
 class ElementInput extends Element {
 
-    private $text = "";
-    private $placeholder = "";
-    private $defaultText = "";
+	private $text = "";
+	private $placeholder = "";
+	private $defaultText = "";
 
-    public function __construct(string $text, string $placeholder = "", string $defaultText = "") {
-        $this->text = $text;
-        $this->placeholder = $placeholder;
-        $this->defaultText = $defaultText;
-    }
+	public function __construct(string $text, string $placeholder = "", string $defaultText = ""){
+		$this->text = $text;
+		$this->placeholder = $placeholder;
+		$this->defaultText = $defaultText;
+	}
 
-    /**
-     * @return string
-     */
-    public function getText(): string {
-        return $this->text;
-    }
+	/**
+	 * @return string
+	 */
+	public function getText(): string{
+		return $this->text;
+	}
 
-    /**
-     * @param string $text
-     */
-    public function setText(string $text): void {
-        $this->text = $text;
-    }
+	/**
+	 * @param string $text
+	 */
+	public function setText(string $text): void{
+		$this->text = $text;
+	}
 
-    /**
-     * @return string
-     */
-    public function getPlaceholder(): string {
-        return $this->placeholder;
-    }
+	/**
+	 * @return string
+	 */
+	public function getPlaceholder(): string{
+		return $this->placeholder;
+	}
 
-    /**
-     * @param string $placeholder
-     */
-    public function setPlaceholder(string $placeholder): void {
-        $this->placeholder = $placeholder;
-    }
+	/**
+	 * @param string $placeholder
+	 */
+	public function setPlaceholder(string $placeholder): void{
+		$this->placeholder = $placeholder;
+	}
 
-    /**
-     * @return string
-     */
-    public function getDefaultText(): string {
-        return $this->defaultText;
-    }
+	/**
+	 * @return string
+	 */
+	public function getDefaultText(): string{
+		return $this->defaultText;
+	}
 
-    /**
-     * @param string $defaultText
-     */
-    public function setDefaultText(string $defaultText): void {
-        $this->defaultText = $defaultText;
-    }
+	/**
+	 * @param string $defaultText
+	 */
+	public function setDefaultText(string $defaultText): void{
+		$this->defaultText = $defaultText;
+	}
 
 
 }

@@ -1,5 +1,5 @@
 # SkyWarsForPE
-![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)
+[![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE) [![Discord](https://img.shields.io/discord/350333413737365522.svg?style=flat-square&label=discord&colorB=7289da)](https://discord.gg/t5NsTyj)
 
 ## Introduction
 SkyWarsForPE is a plugin build for HyrulePE minigames, this source has been moved to open sourced again due to some inactivity in project, as the result, this plugin will be continued to compete

@@ -31,17 +31,17 @@ namespace larryTheCoder\panel;
 
 
 class SkyWarsData {
-    public $arenaName = "";
-    public $arenaLevel = "";
-    public $maxPlayer = 12;
-    public $minPlayer = 4;
-    public $spectator = false;
-    public $startWhenFull = false;
-    public $graceTimer = 10;
-    public $time = 360;
-    public $enabled = false;
-    public $line1 = "";
-    public $line2 = "";
-    public $line3 = "";
-    public $line4 = "";
+	public $arenaName = "";
+	public $arenaLevel = "";
+	public $maxPlayer = 12;
+	public $minPlayer = 4;
+	public $spectator = false;
+	public $startWhenFull = false;
+	public $graceTimer = 10;
+	public $time = 360;
+	public $enabled = false;
+	public $line1 = "";
+	public $line2 = "";
+	public $line3 = "";
+	public $line4 = "";
 }

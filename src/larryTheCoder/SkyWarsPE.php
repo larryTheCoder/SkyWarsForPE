@@ -63,64 +63,64 @@ use pocketmine\utils\{
  */
 class SkyWarsPE extends PluginBase implements Listener {
 
-    const CONFIG_VERSION = "CrazyDave";
-    /** @var SkyWarsPE */
-    public static $instance;
-    /** @var array */
+	const CONFIG_VERSION = "CrazyDave";
+	/** @var SkyWarsPE */
+	public static $instance;
+	/** @var Config */
+	public $msg;
+	/** @var SkyWarsCommand */
+	public $cmd;
+	/** @var Item[] */
+	public $inv = [];
+	/** @var array */
+	public $setters = [];
+	/** @var EconomyAPI|Plugin */
+	public $economy;
+	/** @var FormAPI */
+	public $formAPI;
+	/** @var FormPanel */
+	public $panel;
+	/** @var RandomChest */
+	public $chest;
+	/** @var array */
 	private $translation = [];
-    /** @var Config */
-    public $msg;
-    /** @var SkyWarsCommand */
-    public $cmd;
-    /** @var Item[] */
-    public $inv = [];
-    /** @var array */
-    public $setters = [];
-    /** @var EconomyAPI|Plugin */
-    public $economy;
-    /** @var FormAPI */
-    public $formAPI;
-    /** @var FormPanel */
-    public $panel;
-    /** @var RandomChest */
-    public $chest;
-    /** @var ArenaManager */
-    private $arenaManager;
-    /** @var SkyWarsDatabase */
-    private $database;
+	/** @var ArenaManager */
+	private $arenaManager;
+	/** @var SkyWarsDatabase */
+	private $database;
 	/** @var bool */
 	private $disabled;
 
 	public static function getInstance(){
-        return self::$instance;
-    }
+		return self::$instance;
+	}
 
-    public function onLoad() {
-        self::$instance = $this;
+	public function onLoad(){
+		self::$instance = $this;
 
-        $this->initConfig();
-        $this->initDatabase();
-    }
+		$this->initConfig();
+		$this->initDatabase();
+	}
 
-    public function initConfig() {
-        Utils::ensureDirectory();
-        Utils::ensureDirectory("image/");
-        Utils::ensureDirectory("language/");
-        Utils::ensureDirectory("arenas/");
-        Utils::ensureDirectory("arenas/worlds");
-        $this->saveResource("chests.yml");
-        $this->saveResource("config.yml");
-        $this->saveResource("image/map.png");
-        $this->saveResource("arenas/default.yml");
-        $this->saveResource("language/en_US.yml", true);
-        $this->saveResource("language/pt_BR.yml", true);
+	public function initConfig(){
+		Utils::ensureDirectory();
+		Utils::ensureDirectory("image/");
+		Utils::ensureDirectory("language/");
+		Utils::ensureDirectory("arenas/");
+		Utils::ensureDirectory("arenas/worlds");
+		$this->saveResource("chests.yml");
+		$this->saveResource("config.yml");
+		$this->saveResource("image/map.png");
+		$this->saveResource("arenas/default.yml");
+		$this->saveResource("language/en_US.yml", true);
+		$this->saveResource("language/pt_BR.yml", true);
 
-        $cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
-        if ($cfg->get("config-version") !== SkyWarsPE::CONFIG_VERSION) {
-            rename($this->getDataFolder() . "config.yml", $this->getDataFolder() . "config.yml.old");
-            $this->saveResource("config.yml");
-        }
-        Settings::init(new Config($this->getDataFolder() . "config.yml", Config::YAML));
+		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+		if($cfg->get("config-version") !== SkyWarsPE::CONFIG_VERSION){
+			rename($this->getDataFolder() . "config.yml", $this->getDataFolder() . "config.yml.old");
+			$this->saveResource("config.yml");
+		}
+		Settings::init(new Config($this->getDataFolder() . "config.yml", Config::YAML));
 		foreach(glob($this->getDataFolder() . "language/*.yml") as $file){
 			$locale = new Config($file, Config::YAML);
 			$localeCode = basename($file, ".yml");
@@ -139,102 +139,103 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 			return;
 		}
-        $this->getServer()->getLogger()->info($this->getPrefix() . "§aTracked and flashed §e" . count($this->translation) . "§a locales");
-    }
+		$this->getServer()->getLogger()->info($this->getPrefix() . "§aTracked and flashed §e" . count($this->translation) . "§a locales");
+	}
 
-    public function getPrefix() {
-        return Settings::$prefix;
-    }
+	public function getPrefix(){
+		return Settings::$prefix;
+	}
 
-    private function initDatabase() {
-        switch (strtolower(Settings::$selectedDatabase)) {
-            case "sqlite":
-                $this->database = new SQLite3Database($this);
-                break;
-            case "mysql":
-                $this->database = new MySqliteDatabase($this);
-                break;
-            default:
-                $this->getServer()->getLogger()->warning($this->getPrefix() . "§cUnknown database §e" . Settings::$selectedDatabase);
-                $this->getServer()->getLogger()->warning($this->getPrefix() . "§aUsing default database: sqlite");
-                $this->database = new SQLite3Database($this);
-                break;
-        }
-    }
+	private function initDatabase(){
+		switch(strtolower(Settings::$selectedDatabase)){
+			case "sqlite":
+				$this->database = new SQLite3Database($this);
+				break;
+			case "mysql":
+				$this->database = new MySqliteDatabase($this);
+				break;
+			default:
+				$this->getServer()->getLogger()->warning($this->getPrefix() . "§cUnknown database §e" . Settings::$selectedDatabase);
+				$this->getServer()->getLogger()->warning($this->getPrefix() . "§aUsing default database: sqlite");
+				$this->database = new SQLite3Database($this);
+				break;
+		}
+	}
 
-    public function onEnable() {
+	public function onEnable(){
 		// Should not even run if the plugin is disabled
 		if($this->disabled){
 			return;
 		}
-        $this->checkPlugins();
+		$this->checkPlugins();
 
-        $this->getServer()->getPluginManager()->registerEvents($this, $this);
+		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 
-        $this->cmd = new SkyWarsCommand($this);
-        $this->arenaManager = new ArenaManager($this);
-        $this->formAPI = new FormAPI($this);
-        $this->panel = new FormPanel($this);
+		$this->cmd = new SkyWarsCommand($this);
+		$this->arenaManager = new ArenaManager($this);
+		$this->formAPI = new FormAPI($this);
+		$this->panel = new FormPanel($this);
 
-        $this->getArenaManager()->checkArenas();
-        $this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
-        $this->checkLobby();
+		$this->getArenaManager()->checkArenas();
+		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
+		$this->checkLobby();
 
-        $this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
-    }
+		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
+	}
 
-    private function checkPlugins() {
-        $ins = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
-        if ($ins instanceof Plugin) {
-            $this->economy = $ins;
-        }
-    }
+	private function checkPlugins(){
+		$ins = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
+		if($ins instanceof Plugin){
+			$this->economy = $ins;
+		}
+	}
 
-    public function getArenaManager(): ArenaManager {
-        return $this->arenaManager;
-    }
+	public function getArenaManager(): ArenaManager{
+		return $this->arenaManager;
+	}
 
-    private function checkLobby() {
-        $lobby = $this->getDatabase()->getLobby();
-        if (is_integer($lobby)) {
-            $this->getDatabase()->setLobby($this->getServer()->getDefaultLevel()->getSpawnLocation());
-            return;
-        }
-        Utils::loadFirst($lobby->getLevel()->getName());
-    }
+	private function checkLobby(){
+		$lobby = $this->getDatabase()->getLobby();
+		if(is_integer($lobby)){
+			$this->getDatabase()->setLobby($this->getServer()->getDefaultLevel()->getSpawnLocation());
 
-    public function getDatabase(): SkyWarsDatabase {
-        return $this->database;
-    }
+			return;
+		}
+		Utils::loadFirst($lobby->getLevel()->getName());
+	}
 
-    public function onDisable() {
-        Utils::unLoadGame();
-        $this->database->close();
+	public function getDatabase(): SkyWarsDatabase{
+		return $this->database;
+	}
 
-        $this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
-    }
+	public function onDisable(){
+		Utils::unLoadGame();
+		$this->database->close();
 
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
-        return $this->cmd->onCommand($sender, $command, $args);
-    }
+		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
+	}
 
-    /**
-     * Get the translation for player and console too
-     *
-     * @param null|CommandSender $p
-     * @param $key
-     * @param bool $prefix
-     * @return string
-     */
-    public function getMsg(?CommandSender $p, $key, $prefix = true) {
+	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool{
+		return $this->cmd->onCommand($sender, $command, $args);
+	}
+
+	/**
+	 * Get the translation for player and console too
+	 *
+	 * @param null|CommandSender $p
+	 * @param $key
+	 * @param bool $prefix
+	 * @return string
+	 */
+	public function getMsg(?CommandSender $p, $key, $prefix = true){
 		$msg = "Locale could not found";
 
-		if (!is_null($p) && $p instanceof Player) {
+		if(!is_null($p) && $p instanceof Player){
 			if(isset($this->translation[strtolower($p->getLocale())])){
 				$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation[strtolower($p->getLocale())]->get($key));
 			}elseif(isset($this->translation["en_us"])){
 				$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_us"]->get($key));
-            } else {
+			}else{
 				$this->getServer()->getLogger()->error($this->getPrefix() . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
 			}
 		}elseif(isset($this->translation["en_us"])){
@@ -244,22 +245,22 @@ class SkyWarsPE extends PluginBase implements Listener {
 		}
 
 		return ($prefix ? $this->getPrefix() : "") . $msg;
-    }
+	}
 
-    /**
-     * @param PlayerJoinEvent $e
-     * @priority MONITOR
-     */
-    public function onPlayerLogin(PlayerJoinEvent $e) {
-        $p = $e->getPlayer();
-        # Config configuration
-        $result = $this->getDatabase()->createNewData($p->getName());
-        if ($result !== SkyWarsDatabase::DATA_ALREADY_AVAILABLE) {
-            if ($result === SkyWarsDatabase::DATA_EXECUTE_SUCCESS) {
-                $this->getServer()->getLogger()->info("§aRegistered §e" . $p->getName() . " §aInto database...");
-            } else {
-                $this->getServer()->getLogger()->info("§cFailed to register §e" . $p->getName() . " §aInto database...");
-            }
-        }
-    }
+	/**
+	 * @param PlayerJoinEvent $e
+	 * @priority MONITOR
+	 */
+	public function onPlayerLogin(PlayerJoinEvent $e){
+		$p = $e->getPlayer();
+		# Config configuration
+		$result = $this->getDatabase()->createNewData($p->getName());
+		if($result !== SkyWarsDatabase::DATA_ALREADY_AVAILABLE){
+			if($result === SkyWarsDatabase::DATA_EXECUTE_SUCCESS){
+				$this->getServer()->getLogger()->info("§aRegistered §e" . $p->getName() . " §aInto database...");
+			}else{
+				$this->getServer()->getLogger()->info("§cFailed to register §e" . $p->getName() . " §aInto database...");
+			}
+		}
+	}
 }

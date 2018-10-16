@@ -34,69 +34,69 @@ use pocketmine\Player;
 
 class ModalForm extends Form {
 
-    /** @var array */
-    public $data = [];
+	/** @var array */
+	public $data = [];
 
-    public function __construct($id, ?callable $callable) {
-        parent::__construct($id, $callable);
-        $this->data["type"] = "modal";
-        $this->data["title"] = "Modal Form";
-        $this->data["content"] = "";
-        $this->data["button1"] = "true";
-        $this->data["button2"] = "false";
-    }
+	public function __construct($id, ?callable $callable){
+		parent::__construct($id, $callable);
+		$this->data["type"] = "modal";
+		$this->data["title"] = "Modal Form";
+		$this->data["content"] = "";
+		$this->data["button1"] = "true";
+		$this->data["button2"] = "false";
+	}
 
-    /**
-     * @return int
-     */
-    public function getId(): int {
-        return $this->id;
-    }
+	/**
+	 * @return int
+	 */
+	public function getId(): int{
+		return $this->id;
+	}
 
-    public function getTitle() {
-        return $this->data["title"];
-    }
+	public function getTitle(){
+		return $this->data["title"];
+	}
 
-    public function setTitle(string $title) {
-        $this->data["title"] = $title;
-    }
+	public function setTitle(string $title){
+		$this->data["title"] = $title;
+	}
 
-    public function getContent() {
-        return $this->data["content"];
-    }
+	public function getContent(){
+		return $this->data["content"];
+	}
 
-    public function setContent(string $content) {
-        $this->data["content"] = $content;
-    }
+	public function setContent(string $content){
+		$this->data["content"] = $content;
+	}
 
-    public function getButton1() {
-        return $this->data["button1"];
-    }
+	public function getButton1(){
+		return $this->data["button1"];
+	}
 
-    public function setButton1(string $button1) {
-        $this->data["button1"] = $button1;
-    }
+	public function setButton1(string $button1){
+		$this->data["button1"] = $button1;
+	}
 
-    public function getButton2() {
-        return $this->data["button2"];
-    }
+	public function getButton2(){
+		return $this->data["button2"];
+	}
 
-    public function setButton2(string $button2) {
-        $this->data["button2"] = $button2;
-    }
+	public function setButton2(string $button2){
+		$this->data["button2"] = $button2;
+	}
 
-    /**
-     * @param Player $player
-     */
-    public function sendToPlayer(Player $player): void {
-        $pk = new ModalFormRequestPacket();
-        $pk->formId = $this->id;
-        $pk->formData = json_encode($this->data);
-        $player->dataPacket($pk);
-        $this->playerName = $player->getName();
-    }
+	/**
+	 * @param Player $player
+	 */
+	public function sendToPlayer(Player $player): void{
+		$pk = new ModalFormRequestPacket();
+		$pk->formId = $this->id;
+		$pk->formData = json_encode($this->data);
+		$player->dataPacket($pk);
+		$this->playerName = $player->getName();
+	}
 
-    public function getResponseModal(): FormResponseModal {
-        return new FormResponseModal($this);
-    }
+	public function getResponseModal(): FormResponseModal{
+		return new FormResponseModal($this);
+	}
 }

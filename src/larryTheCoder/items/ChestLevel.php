@@ -33,30 +33,30 @@ use pocketmine\item\Item;
 
 class ChestLevel {
 
-    /** @var string */
-    public $name;
-    /** @var int */
-    public $itemValue;
-    /** @var int */
-    public $chance;
-    /** @var Item[] */
-    public $items;
+	/** @var string */
+	public $name;
+	/** @var int */
+	public $itemValue;
+	/** @var int */
+	public $chance;
+	/** @var Item[] */
+	public $items;
 
-    /**
-     * ChestLevel constructor.
-     * @param string $name
-     * @param int $itemValue
-     * @param int $chance
-     * @param Item[] $items
-     */
-    public function __construct(string $name, int $itemValue, int $chance, array $items) {
-        $this->name = $name;
-        $this->itemValue = $itemValue;
-        $this->chance = $chance;
-        $this->items = $items;
-    }
+	/**
+	 * ChestLevel constructor.
+	 * @param string $name
+	 * @param int $itemValue
+	 * @param int $chance
+	 * @param Item[] $items
+	 */
+	public function __construct(string $name, int $itemValue, int $chance, array $items){
+		$this->name = $name;
+		$this->itemValue = $itemValue;
+		$this->chance = $chance;
+		$this->items = $items;
+	}
 
-    public function __toString() {
-        return "(ChestLevel) $this->name, $this->itemValue, $this->chance";
-    }
+	public function __toString(){
+		return "(ChestLevel) $this->name, $this->itemValue, $this->chance";
+	}
 }

@@ -31,23 +31,23 @@ namespace larryTheCoder\formAPI\element;
 
 class ElementLabel extends Element {
 
-    private $text = "";
+	private $text = "";
 
-    public function __construct(string $text) {
-        $this->text = $text;
-    }
+	public function __construct(string $text){
+		$this->text = $text;
+	}
 
-    /**
-     * @return string
-     */
-    public function getText(): string {
-        return $this->text;
-    }
+	/**
+	 * @return string
+	 */
+	public function getText(): string{
+		return $this->text;
+	}
 
-    /**
-     * @param string $text
-     */
-    public function setText(string $text): void {
-        $this->text = $text;
-    }
+	/**
+	 * @param string $text
+	 */
+	public function setText(string $text): void{
+		$this->text = $text;
+	}
 }

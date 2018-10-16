@@ -25,13 +25,13 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace larryTheCoder\formAPI;
 
 use larryTheCoder\formAPI\event\FormRespondedEvent;
 use larryTheCoder\formAPI\form\{
-    CustomForm, Form, ModalForm, SimpleForm
+	CustomForm, Form, ModalForm, SimpleForm
 };
 use larryTheCoder\SkyWarsPE;
 use pocketmine\event\Listener;
@@ -42,76 +42,79 @@ use pocketmine\Server;
 
 class FormAPI implements Listener {
 
-    /** @var int */
-    public $formCount = 0;
-    /** @var Form[] */
-    public $forms = [];
+	/** @var int */
+	public $formCount = 0;
+	/** @var Form[] */
+	public $forms = [];
 
-    public function __construct(SkyWarsPE $plugin) {
-        $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
-    }
+	public function __construct(SkyWarsPE $plugin){
+		$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
+	}
 
-    /**
-     * @return CustomForm
-     */
-    public function createCustomForm(): CustomForm {
-        $this->formCount++;
-        $form = new CustomForm($this->formCount, null);
-        $this->forms[$this->formCount] = $form;
-        return $form;
-    }
+	/**
+	 * @return CustomForm
+	 */
+	public function createCustomForm(): CustomForm{
+		$this->formCount++;
+		$form = new CustomForm($this->formCount, null);
+		$this->forms[$this->formCount] = $form;
 
-    public function createModalForm(): ModalForm {
-        $this->formCount++;
-        $form = new ModalForm($this->formCount, null);
-        $this->forms[$this->formCount] = $form;
-        return $form;
-    }
+		return $form;
+	}
 
-    public function createSimpleForm(): SimpleForm {
-        $this->formCount++;
-        $form = new SimpleForm($this->formCount, null);
-        $this->forms[$this->formCount] = $form;
-        return $form;
-    }
+	public function createModalForm(): ModalForm{
+		$this->formCount++;
+		$form = new ModalForm($this->formCount, null);
+		$this->forms[$this->formCount] = $form;
 
-    /**
-     * @param DataPacketReceiveEvent $ev
-     * @priority MONITOR
-     */
-    public function onPacketReceived(DataPacketReceiveEvent $ev): void {
-        $pk = $ev->getPacket();
-        if ($pk instanceof ModalFormResponsePacket) {
-            $player = $ev->getPlayer();
-            $formId = $pk->formId;
-            if (isset($this->forms[$formId])) {
-                if (!$this->forms[$formId]->isRecipient($player)) {
-                    return;
-                }
-                $modal = $this->forms[$formId]->getResponseModal();
-                $modal->setData(trim($pk->formData));
-                $event = new FormRespondedEvent($player, $this->forms[$formId], $modal);
-                Server::getInstance()->getPluginManager()->callEvent($event);
-                $ev->setCancelled();
-            }
-        }
-    }
+		return $form;
+	}
 
-    /**
-     * @param PlayerQuitEvent $ev
-     */
-    public function onPlayerQuit(PlayerQuitEvent $ev) {
-        $player = $ev->getPlayer();
-        /**
-         * @var int $id
-         * @var Form $form
-         */
-        foreach ($this->forms as $id => $form) {
-            if ($form->isRecipient($player)) {
-                unset($this->forms[$id]);
-                break;
-            }
-        }
-    }
+	public function createSimpleForm(): SimpleForm{
+		$this->formCount++;
+		$form = new SimpleForm($this->formCount, null);
+		$this->forms[$this->formCount] = $form;
+
+		return $form;
+	}
+
+	/**
+	 * @param DataPacketReceiveEvent $ev
+	 * @priority MONITOR
+	 */
+	public function onPacketReceived(DataPacketReceiveEvent $ev): void{
+		$pk = $ev->getPacket();
+		if($pk instanceof ModalFormResponsePacket){
+			$player = $ev->getPlayer();
+			$formId = $pk->formId;
+			if(isset($this->forms[$formId])){
+				if(!$this->forms[$formId]->isRecipient($player)){
+					return;
+				}
+				$modal = $this->forms[$formId]->getResponseModal();
+				$modal->setData(trim($pk->formData));
+				$event = new FormRespondedEvent($player, $this->forms[$formId], $modal);
+				Server::getInstance()->getPluginManager()->callEvent($event);
+				$ev->setCancelled();
+			}
+		}
+	}
+
+	/**
+	 * @param PlayerQuitEvent $ev
+	 */
+	public function onPlayerQuit(PlayerQuitEvent $ev){
+		$player = $ev->getPlayer();
+		/**
+		 * @var int $id
+		 * @var Form $form
+		 */
+		foreach($this->forms as $id => $form){
+			if($form->isRecipient($player)){
+				unset($this->forms[$id]);
+				break;
+			}
+		}
+	}
 
 }

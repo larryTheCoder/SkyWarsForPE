@@ -32,37 +32,38 @@ namespace larryTheCoder\formAPI\response;
 use larryTheCoder\formAPI\form\ModalForm;
 
 class FormResponseModal extends FormResponse {
-    /** @var int */
-    private $clickedButtonId;
-    /** @var string */
-    private $clickedButtonText;
-    /** @var ModalForm */
-    private $form;
+	/** @var int */
+	private $clickedButtonId;
+	/** @var string */
+	private $clickedButtonText;
+	/** @var ModalForm */
+	private $form;
 
-    public function __construct(ModalForm $form) {
-        $this->form = $form;
-    }
+	public function __construct(ModalForm $form){
+		$this->form = $form;
+	}
 
-    public function getClickedButtonId(): int {
-        return $this->clickedButtonId;
-    }
+	public function getClickedButtonId(): int{
+		return $this->clickedButtonId;
+	}
 
-    public function getClickedButtonText(): string {
-        return $this->clickedButtonText;
-    }
+	public function getClickedButtonText(): string{
+		return $this->clickedButtonText;
+	}
 
-    public function setData(string $data) {
-        if ($data === "null") {
-            $this->closed = true;
-            return;
-        }
+	public function setData(string $data){
+		if($data === "null"){
+			$this->closed = true;
 
-        if ($data === "true") {
-            $this->clickedButtonId = 0;
-            $this->clickedButtonText = $this->form->data["button1"];
-        } else {
-            $this->clickedButtonId = 1;
-            $this->clickedButtonText = $this->form->data["button2"];
-        }
-    }
+			return;
+		}
+
+		if($data === "true"){
+			$this->clickedButtonId = 0;
+			$this->clickedButtonText = $this->form->data["button1"];
+		}else{
+			$this->clickedButtonId = 1;
+			$this->clickedButtonText = $this->form->data["button2"];
+		}
+	}
 }

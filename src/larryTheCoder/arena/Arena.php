@@ -129,16 +129,6 @@ class Arena {
 		$this->saveArenaWorld();
 	}
 
-	/**
-	 * Reset the world data
-	 */
-	public function reset(){
-		$levelName = $this->data['arena']['arena_world'];
-
-		unlink($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar');
-		$this->saveArenaWorld();
-	}
-
 	private function saveArenaWorld(){
 		$levelName = $this->data['arena']['arena_world'];
 
@@ -235,6 +225,16 @@ class Arena {
 		}
 
 		return rmdir($dir);
+	}
+
+	/**
+	 * Reset the world data
+	 */
+	public function reset(){
+		$levelName = $this->data['arena']['arena_world'];
+
+		unlink($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar');
+		$this->saveArenaWorld();
 	}
 
 	public function recheckArena(){
@@ -581,7 +581,7 @@ class Arena {
 			return "&eIn setup";
 		}
 		if($this->disabled == true){
-			return "&eDisabled";
+			return "&cDisabled";
 		}
 		if($this->getMode() === Arena::ARENA_WAITING_PLAYERS){
 			return "&fWaiting";

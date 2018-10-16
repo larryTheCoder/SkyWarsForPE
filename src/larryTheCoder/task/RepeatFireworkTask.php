@@ -35,32 +35,32 @@ use pocketmine\scheduler\Task;
 
 class RepeatFireworkTask extends Task {
 
-    /** @var Location */
-    public $loc = [];
+	/** @var Location */
+	public $loc = [];
 
-    public function __construct(array $loc) {
-        $this->loc = $loc;
-    }
+	public function __construct(array $loc){
+		$this->loc = $loc;
+	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @param int $currentTick
-     *
-     * @return void
-     */
-    public function onRun(int $currentTick) {
-        $i = 0;
-        foreach ($this->loc as $key => $val) {
-            if ($i === 2) {
-                break;
-            }
-            Utils::addFireworks($val);
-            unset($this->loc[$key]);
-            $i++;
-        }
-        if (empty($this->loc)) {
-            SkyWarsPE::getInstance()->getScheduler()->cancelTask($this->getTaskId());
-        }
-    }
+	/**
+	 * Actions to execute when run
+	 *
+	 * @param int $currentTick
+	 *
+	 * @return void
+	 */
+	public function onRun(int $currentTick){
+		$i = 0;
+		foreach($this->loc as $key => $val){
+			if($i === 2){
+				break;
+			}
+			Utils::addFireworks($val);
+			unset($this->loc[$key]);
+			$i++;
+		}
+		if(empty($this->loc)){
+			SkyWarsPE::getInstance()->getScheduler()->cancelTask($this->getTaskId());
+		}
+	}
 }

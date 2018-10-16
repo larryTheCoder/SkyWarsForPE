@@ -29,44 +29,44 @@
 namespace larryTheCoder\formAPI\event;
 
 use larryTheCoder\formAPI\{
-    form\Form, response\FormResponse
+	form\Form, response\FormResponse
 };
 use pocketmine\event\player\PlayerEvent;
 use pocketmine\Player;
 
 class FormRespondedEvent extends PlayerEvent {
-    public static $handlerList = null;
-    /** @var int */
-    private $id;
-    /** @var Form */
-    private $form;
-    /** @var FormResponse */
-    private $formResponse;
-    /** @var bool */
-    private $closed;
+	public static $handlerList = null;
+	/** @var int */
+	private $id;
+	/** @var Form */
+	private $form;
+	/** @var FormResponse */
+	private $formResponse;
+	/** @var bool */
+	private $closed;
 
-    public function __construct(Player $player, Form $form, FormResponse $formResponse) {
-        $this->id = $form->getId();
-        $this->form = $form;
-        $this->formResponse = $formResponse;
-        $this->closed = $formResponse->closed;
-        $this->player = $player;
-    }
+	public function __construct(Player $player, Form $form, FormResponse $formResponse){
+		$this->id = $form->getId();
+		$this->form = $form;
+		$this->formResponse = $formResponse;
+		$this->closed = $formResponse->closed;
+		$this->player = $player;
+	}
 
-    public function getId(): int {
-        return $this->id;
-    }
+	public function getId(): int{
+		return $this->id;
+	}
 
-    public function isClosed() {
-        return $this->closed;
-    }
+	public function isClosed(){
+		return $this->closed;
+	}
 
-    public function getForm(): Form {
-        return $this->form;
-    }
+	public function getForm(): Form{
+		return $this->form;
+	}
 
-    public function getResponse(): FormResponse {
-        return $this->formResponse;
-    }
+	public function getResponse(): FormResponse{
+		return $this->formResponse;
+	}
 
 }

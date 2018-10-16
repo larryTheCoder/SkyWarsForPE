@@ -5,6 +5,8 @@
 ---
 # You can disable this arena by setting this to false
 enabled: false
+# Pick your own arena name.
+arena-name: "Beast"
 
 # The game sign section
 signs:
@@ -26,13 +28,16 @@ signs:
     #   %status = game status
     #   %world = world name of arena
     #   %max = max players per arena
-    status_line_1: "&3[SkyWars]"
-    status_line_2: "&a%alive/%max"
-    status_line_3: "%status"
-    status_line_4: "&6%world"
+    #   %name = The name of this arena as 'arena-name'
+    status_line_1: "&8[&cSkyWars&8]"
+    status_line_2: "&a%name"
+    status_line_3: "&7Players: &2%alive&3/&2%max"
+    status_line_4: "&6Click to join!"
+
     # Sign will update every 'x" seconds
-    # The 'x' is depends on this section
-    sign_update_time: 2
+    # The 'x' is depends on this section.
+    # This effects the client connections.
+    sign_update_time: 10
     #returns player to main level/lobby
     #world is same like arena_world
     return_sign_x: 566

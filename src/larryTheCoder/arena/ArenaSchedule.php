@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\arena;
 
+use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\ParticleTask;
 use larryTheCoder\utils\{
 	Settings, Utils
@@ -92,8 +93,8 @@ class ArenaSchedule extends Task {
 		if($this->arena->data['signs']['enable_status'] === true){
 			$this->updateTime++;
 			if($this->updateTime >= $this->arena->data['signs']['sign_update_time']){
-				$vars = ['%alive', '%status', '%max', '&', '%world'];
-				$replace = [count($this->arena->players), $this->arena->getStatus(), $this->arena->getMaxPlayers(), "§", $this->arena->data['arena']['arena_world']];
+				$vars = ['%alive', '%status', '%max', '&', '%world', '%prefix', '%name'];
+				$replace = [count($this->arena->players), $this->arena->getStatus(), $this->arena->getMaxPlayers(), "§", $this->arena->data['arena']['arena_world'], SkyWarsPE::getInstance()->getPrefix(), $this->arena->data['arena-name']];
 				$tile = $this->arena->plugin->getServer()->getLevelByName($this->arena->data['signs']['join_sign_world'])->getTile(new Vector3($this->arena->data['signs']['join_sign_x'], $this->arena->data['signs']['join_sign_y'], $this->arena->data['signs']['join_sign_z']));
 				if($tile instanceof Sign){
 					$block = $tile->getLevel()->getBlock($tile);
@@ -102,8 +103,6 @@ class ArenaSchedule extends Task {
 						$tile->getLevel()->setBlock($vec, $this->arena->getBlockStatus());
 					}
 					$tile->setText(str_replace($vars, $replace, $this->line1), str_replace($vars, $replace, $this->line2), str_replace($vars, $replace, $this->line3), str_replace($vars, $replace, $this->line4));
-					$tile->spawnToAll();
-					$tile->getLevel()->addTile($tile);
 				}
 				$this->updateTime = 0;
 			}

@@ -29,139 +29,140 @@
 namespace larryTheCoder\formAPI\response;
 
 use larryTheCoder\formAPI\element\{
-    ElementDropdown, ElementInput, ElementLabel, ElementSlider, ElementStepSlider, ElementToggle
+	ElementDropdown, ElementInput, ElementLabel, ElementSlider, ElementStepSlider, ElementToggle
 };
 use larryTheCoder\formAPI\form\CustomForm;
 
 class FormResponseCustom extends FormResponse {
 
-    /** @var array */
-    private $responses = [];
-    /** @var FormResponseData[] */
-    private $dropdownResponses = [];
-    /** @var string[] */
-    private $inputResponses = [];
-    /** @var integer[] */
-    private $sliderResponses = [];
-    /** @var FormResponseData[] */
-    private $stepSliderResponses = [];
-    /** @var boolean[] */
-    private $toggleResponses = [];
-    /** @var CustomForm */
-    private $form;
+	/** @var array */
+	private $responses = [];
+	/** @var FormResponseData[] */
+	private $dropdownResponses = [];
+	/** @var string[] */
+	private $inputResponses = [];
+	/** @var integer[] */
+	private $sliderResponses = [];
+	/** @var FormResponseData[] */
+	private $stepSliderResponses = [];
+	/** @var boolean[] */
+	private $toggleResponses = [];
+	/** @var CustomForm */
+	private $form;
 
-    public function __construct(CustomForm $form) {
-        $this->form = $form;
-    }
+	public function __construct(CustomForm $form){
+		$this->form = $form;
+	}
 
-    /**
-     * @return array
-     */
-    public function getResponses(): array {
-        return $this->responses;
-    }
+	/**
+	 * @return array
+	 */
+	public function getResponses(): array{
+		return $this->responses;
+	}
 
-    /**
-     * @param int $id
-     * @return mixed
-     */
-    public function getResponse(int $id) {
-        return $this->responses[$id];
-    }
+	/**
+	 * @param int $id
+	 * @return mixed
+	 */
+	public function getResponse(int $id){
+		return $this->responses[$id];
+	}
 
-    /**
-     * @param int $id
-     * @return FormResponseData
-     */
-    public function getDropdownResponse(int $id): FormResponseData {
-        return $this->dropdownResponses[$id];
-    }
+	/**
+	 * @param int $id
+	 * @return FormResponseData
+	 */
+	public function getDropdownResponse(int $id): FormResponseData{
+		return $this->dropdownResponses[$id];
+	}
 
-    /**
-     * @param int $id
-     * @return string
-     */
-    public function getInputResponse(int $id): string {
-        return $this->inputResponses[$id];
-    }
+	/**
+	 * @param int $id
+	 * @return string
+	 */
+	public function getInputResponse(int $id): string{
+		return $this->inputResponses[$id];
+	}
 
-    /**
-     * @param int $id
-     * @return int
-     */
-    public function getSliderResponse(int $id): int {
-        return $this->sliderResponses[$id];
-    }
+	/**
+	 * @param int $id
+	 * @return int
+	 */
+	public function getSliderResponse(int $id): int{
+		return $this->sliderResponses[$id];
+	}
 
-    /**
-     * @param int $id
-     * @return FormResponseData
-     */
-    public function getStepSliderResponse(int $id): FormResponseData {
-        return $this->stepSliderResponses[$id];
-    }
+	/**
+	 * @param int $id
+	 * @return FormResponseData
+	 */
+	public function getStepSliderResponse(int $id): FormResponseData{
+		return $this->stepSliderResponses[$id];
+	}
 
-    /**
-     * @param int $id
-     * @return bool
-     */
-    public function getToggleResponse(int $id): bool {
-        return $this->toggleResponses[$id];
-    }
+	/**
+	 * @param int $id
+	 * @return bool
+	 */
+	public function getToggleResponse(int $id): bool{
+		return $this->toggleResponses[$id];
+	}
 
-    public function setData(string $data) {
-        if ($data === "null") {
-            $this->closed = true;
-            return;
-        }
-        $json = json_decode($data);
+	public function setData(string $data){
+		if($data === "null"){
+			$this->closed = true;
 
-        $dropdownResponses = [];
-        $inputResponses = [];
-        $sliderResponses = [];
-        $stepSliderResponses = [];
-        $toggleResponses = [];
-        $responses = [];
+			return;
+		}
+		$json = json_decode($data);
 
-        $i = 0;
-        $contents = $this->form->elements;
-        foreach ($json as $elementData) {
-            if ($i >= count($this->form->elements)) {
-                break;
-            }
-            $e = $contents[$i];
-            if ($e === null) break;
-            if ($e instanceof ElementLabel) {
-                $i++;
-                continue;
-            }
-            if ($e instanceof ElementDropdown) {
-                $answer = $e->getOptions()[intval($elementData)];
-                $dropdownResponses[$i] = new FormResponseData(intval($elementData), $answer);
-                $responses[$i] = $answer;
-            } else if ($e instanceof ElementInput) {
-                $inputResponses[$i] = $elementData;
-                $responses[$i] = $elementData;
-            } else if ($e instanceof ElementSlider) {
-                $sliderResponses[$i] = $elementData;
-                $responses[$i] = $elementData;
-            } else if ($e instanceof ElementStepSlider) {
-                $answer = $e->getSteps()[intval($elementData)];
-                $stepSliderResponses[$i] = new FormResponseData(intval($elementData), $answer);
-                $responses[$i] = $answer;
-            } else if ($e instanceof ElementToggle) {
-                $answer = boolval($elementData);
-                $toggleResponses[$i] = $answer;
-                $responses[$i] = $answer;
-            }
-            $i++;
-        }
+		$dropdownResponses = [];
+		$inputResponses = [];
+		$sliderResponses = [];
+		$stepSliderResponses = [];
+		$toggleResponses = [];
+		$responses = [];
 
-        $this->dropdownResponses = $dropdownResponses;
-        $this->inputResponses = $inputResponses;
-        $this->sliderResponses = $sliderResponses;
-        $this->stepSliderResponses = $stepSliderResponses;
-        $this->toggleResponses = $toggleResponses;
-        $this->responses = $responses;
-    }
+		$i = 0;
+		$contents = $this->form->elements;
+		foreach($json as $elementData){
+			if($i >= count($this->form->elements)){
+				break;
+			}
+			$e = $contents[$i];
+			if($e === null) break;
+			if($e instanceof ElementLabel){
+				$i++;
+				continue;
+			}
+			if($e instanceof ElementDropdown){
+				$answer = $e->getOptions()[intval($elementData)];
+				$dropdownResponses[$i] = new FormResponseData(intval($elementData), $answer);
+				$responses[$i] = $answer;
+			}elseif($e instanceof ElementInput){
+				$inputResponses[$i] = $elementData;
+				$responses[$i] = $elementData;
+			}elseif($e instanceof ElementSlider){
+				$sliderResponses[$i] = $elementData;
+				$responses[$i] = $elementData;
+			}elseif($e instanceof ElementStepSlider){
+				$answer = $e->getSteps()[intval($elementData)];
+				$stepSliderResponses[$i] = new FormResponseData(intval($elementData), $answer);
+				$responses[$i] = $answer;
+			}elseif($e instanceof ElementToggle){
+				$answer = boolval($elementData);
+				$toggleResponses[$i] = $answer;
+				$responses[$i] = $answer;
+			}
+			$i++;
+		}
+
+		$this->dropdownResponses = $dropdownResponses;
+		$this->inputResponses = $inputResponses;
+		$this->sliderResponses = $sliderResponses;
+		$this->stepSliderResponses = $stepSliderResponses;
+		$this->toggleResponses = $toggleResponses;
+		$this->responses = $responses;
+	}
 }

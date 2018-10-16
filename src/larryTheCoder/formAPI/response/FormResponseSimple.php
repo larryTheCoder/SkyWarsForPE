@@ -34,54 +34,55 @@ use larryTheCoder\formAPI\form\SimpleForm;
 
 class FormResponseSimple extends FormResponse {
 
-    /** @var SimpleForm */
-    private $form;
-    /** @var int */
-    private $clickedButtonId;
-    /** @var ElementButton[] */
-    private $buttons;
-    /** @var ElementButton */
-    private $clickedButton;
+	/** @var SimpleForm */
+	private $form;
+	/** @var int */
+	private $clickedButtonId;
+	/** @var ElementButton[] */
+	private $buttons;
+	/** @var ElementButton */
+	private $clickedButton;
 
-    public function __construct(SimpleForm $form, array $buttons) {
-        $this->form = $form;
-        $this->buttons = $buttons;
-    }
+	public function __construct(SimpleForm $form, array $buttons){
+		$this->form = $form;
+		$this->buttons = $buttons;
+	}
 
-    /**
-     * @return int
-     */
-    public function getClickedButtonId(): int {
-        return $this->clickedButtonId;
-    }
+	/**
+	 * @return int
+	 */
+	public function getClickedButtonId(): int{
+		return $this->clickedButtonId;
+	}
 
-    /**
-     * @return bool
-     */
-    public function isClosed(): bool {
-        return $this->closed;
-    }
+	/**
+	 * @return bool
+	 */
+	public function isClosed(): bool{
+		return $this->closed;
+	}
 
-    /**
-     * Get the clicked button
-     *
-     * @return ElementButton
-     */
-    public function getClickedButton(): ElementButton {
-        return $this->clickedButton;
-    }
+	/**
+	 * Get the clicked button
+	 *
+	 * @return ElementButton
+	 */
+	public function getClickedButton(): ElementButton{
+		return $this->clickedButton;
+	}
 
-    /**
-     * @param string $data
-     */
-    public function setData(string $data) {
-        if ($data === "null") {
-            $this->closed = true;
-            return;
-        }
-        // It quite impossible if we sent a lot of data
-        // Or button on this.
-        $this->clickedButtonId = (int)$data;
-        $this->clickedButton = $this->buttons[$data];
-    }
+	/**
+	 * @param string $data
+	 */
+	public function setData(string $data){
+		if($data === "null"){
+			$this->closed = true;
+
+			return;
+		}
+		// It quite impossible if we sent a lot of data
+		// Or button on this.
+		$this->clickedButtonId = (int)$data;
+		$this->clickedButton = $this->buttons[$data];
+	}
 }

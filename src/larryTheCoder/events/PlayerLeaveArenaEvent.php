@@ -33,7 +33,7 @@ namespace larryTheCoder\events;
 use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
 use pocketmine\event\{
-    Cancellable, plugin\PluginEvent
+	Cancellable, plugin\PluginEvent
 };
 use pocketmine\Player;
 
@@ -44,22 +44,22 @@ use pocketmine\Player;
  * @package larryTheCoder\events
  */
 class PlayerLeaveArenaEvent extends PluginEvent implements Cancellable {
-    public static $handlerList = null;
-    protected $player;
-    protected $arena;
+	public static $handlerList = null;
+	protected $player;
+	protected $arena;
 
-    public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena) {
-        parent::__construct($plugin);
-        $this->player = $player;
-        $this->arena = $arena;
-    }
+	public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena){
+		parent::__construct($plugin);
+		$this->player = $player;
+		$this->arena = $arena;
+	}
 
-    public function getPlayer() {
-        return $this->player;
-    }
+	public function getPlayer(){
+		return $this->player;
+	}
 
-    public function getArena() {
-        return $this->arena;
-    }
+	public function getArena(){
+		return $this->arena;
+	}
 
 }

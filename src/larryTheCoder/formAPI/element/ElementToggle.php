@@ -31,40 +31,40 @@ namespace larryTheCoder\formAPI\element;
 
 class ElementToggle extends Element {
 
-    private $text = "";
-    private $defaultValue = false;
+	private $text = "";
+	private $defaultValue = false;
 
-    public function __construct(string $text, bool $defaultValue) {
-        $this->text = $text;
-        $this->defaultValue = $defaultValue;
-    }
+	public function __construct(string $text, bool $defaultValue){
+		$this->text = $text;
+		$this->defaultValue = $defaultValue;
+	}
 
-    /**
-     * @return string
-     */
-    public function getText(): string {
-        return $this->text;
-    }
+	/**
+	 * @return string
+	 */
+	public function getText(): string{
+		return $this->text;
+	}
 
-    /**
-     * @param string $text
-     */
-    public function setText(string $text): void {
-        $this->text = $text;
-    }
+	/**
+	 * @param string $text
+	 */
+	public function setText(string $text): void{
+		$this->text = $text;
+	}
 
-    /**
-     * @return bool
-     */
-    public function isDefaultValue(): bool {
-        return $this->defaultValue;
-    }
+	/**
+	 * @return bool
+	 */
+	public function isDefaultValue(): bool{
+		return $this->defaultValue;
+	}
 
-    /**
-     * @param bool $defaultValue
-     */
-    public function setDefaultValue(bool $defaultValue): void {
-        $this->defaultValue = $defaultValue;
-    }
+	/**
+	 * @param bool $defaultValue
+	 */
+	public function setDefaultValue(bool $defaultValue): void{
+		$this->defaultValue = $defaultValue;
+	}
 
 }

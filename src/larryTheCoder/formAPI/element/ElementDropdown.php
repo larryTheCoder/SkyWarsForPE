@@ -31,48 +31,48 @@ namespace larryTheCoder\formAPI\element;
 
 class ElementDropdown extends Element {
 
-    /** @var string */
-    private $text = "";
-    /** @var array|string[] */
-    private $options;
-    /** @var int */
-    private $defaultOptionIndex = 0;
+	/** @var string */
+	private $text = "";
+	/** @var array|string[] */
+	private $options;
+	/** @var int */
+	private $defaultOptionIndex = 0;
 
-    /**
-     * @param string $text
-     * @param string[] $options
-     * @param int $defaultOption
-     */
-    public function __construct(string $text, array $options = [], int $defaultOption = 0) {
-        $this->text = $text;
-        $this->options = $options;
-        $this->defaultOptionIndex = $defaultOption;
-    }
+	/**
+	 * @param string $text
+	 * @param string[] $options
+	 * @param int $defaultOption
+	 */
+	public function __construct(string $text, array $options = [], int $defaultOption = 0){
+		$this->text = $text;
+		$this->options = $options;
+		$this->defaultOptionIndex = $defaultOption;
+	}
 
-    public function getDefaultOptionIndex() {
-        return $this->defaultOptionIndex;
-    }
+	public function getDefaultOptionIndex(){
+		return $this->defaultOptionIndex;
+	}
 
-    public function setDefaultOptionIndex(int $index) {
-        if ($index >= count($this->options)) return;
-        $this->defaultOptionIndex = $index;
-    }
+	public function setDefaultOptionIndex(int $index){
+		if($index >= count($this->options)) return;
+		$this->defaultOptionIndex = $index;
+	}
 
-    public function getOptions(): array {
-        return $this->options;
-    }
+	public function getOptions(): array{
+		return $this->options;
+	}
 
-    public function getText() {
-        return $this->text;
-    }
+	public function getText(){
+		return $this->text;
+	}
 
-    public function setText(String $text) {
-        $this->text = $text;
-    }
+	public function setText(String $text){
+		$this->text = $text;
+	}
 
-    public function addOption(String $option, bool $isDefault = false) {
-        $this->options[] = $option;
-        if ($isDefault) $this->defaultOptionIndex = count($this->options) - 1;
-    }
+	public function addOption(String $option, bool $isDefault = false){
+		$this->options[] = $option;
+		if($isDefault) $this->defaultOptionIndex = count($this->options) - 1;
+	}
 
 }

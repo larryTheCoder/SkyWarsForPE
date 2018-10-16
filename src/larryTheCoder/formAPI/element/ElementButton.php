@@ -30,27 +30,27 @@ namespace larryTheCoder\formAPI\element;
 
 
 class ElementButton extends Element {
-    private $text = "";
-    private $image;
+	private $text = "";
+	private $image;
 
-    public function __construct(string $text, ElementButtonImageData $image) {
-        $this->text = $text;
-        if (!empty($image->getData()) && !empty($image->getType())) $this->image = $image;
-    }
+	public function __construct(string $text, ElementButtonImageData $image){
+		$this->text = $text;
+		if(!empty($image->getData()) && !empty($image->getType())) $this->image = $image;
+	}
 
-    public function getText() {
-        return $this->text;
-    }
+	public function getText(){
+		return $this->text;
+	}
 
-    public function setText(string $text) {
-        $this->text = $text;
-    }
+	public function setText(string $text){
+		$this->text = $text;
+	}
 
-    public function getImage() {
-        return $this->image;
-    }
+	public function getImage(){
+		return $this->image;
+	}
 
-    public function addImage(ElementButtonImageData $image) {
-        if (!empty($image->getData()) && !empty($image->getType())) $this->image = $image;
-    }
+	public function addImage(ElementButtonImageData $image){
+		if(!empty($image->getData()) && !empty($image->getType())) $this->image = $image;
+	}
 }

@@ -31,58 +31,58 @@ namespace larryTheCoder\formAPI\element;
 
 class ElementStepSlider extends Element {
 
-    /** @var string */
-    private $text = "";
-    /** @var string[] */
-    private $steps = [];
-    /** @var int */
-    private $defaultStepIndex = 0;
+	/** @var string */
+	private $text = "";
+	/** @var string[] */
+	private $steps = [];
+	/** @var int */
+	private $defaultStepIndex = 0;
 
-    public function __construct(string $text, array $steps, int $defaultStep) {
-        $this->text = $text;
-        $this->steps = $steps;
-        $this->defaultStepIndex = $defaultStep;
-    }
+	public function __construct(string $text, array $steps, int $defaultStep){
+		$this->text = $text;
+		$this->steps = $steps;
+		$this->defaultStepIndex = $defaultStep;
+	}
 
-    /**
-     * @return string
-     */
-    public function getText(): string {
-        return $this->text;
-    }
+	/**
+	 * @return string
+	 */
+	public function getText(): string{
+		return $this->text;
+	}
 
-    /**
-     * @param string $text
-     */
-    public function setText(string $text): void {
-        $this->text = $text;
-    }
+	/**
+	 * @param string $text
+	 */
+	public function setText(string $text): void{
+		$this->text = $text;
+	}
 
-    /**
-     * @return string[]
-     */
-    public function getSteps(): array {
-        return $this->steps;
-    }
+	/**
+	 * @return string[]
+	 */
+	public function getSteps(): array{
+		return $this->steps;
+	}
 
-    /**
-     * @param string[] $steps
-     */
-    public function setSteps(array $steps): void {
-        $this->steps = $steps;
-    }
+	/**
+	 * @param string[] $steps
+	 */
+	public function setSteps(array $steps): void{
+		$this->steps = $steps;
+	}
 
-    /**
-     * @return int
-     */
-    public function getDefaultStepIndex(): int {
-        return $this->defaultStepIndex;
-    }
+	/**
+	 * @return int
+	 */
+	public function getDefaultStepIndex(): int{
+		return $this->defaultStepIndex;
+	}
 
-    /**
-     * @param int $defaultStepIndex
-     */
-    public function setDefaultStepIndex(int $defaultStepIndex): void {
-        $this->defaultStepIndex = $defaultStepIndex;
-    }
+	/**
+	 * @param int $defaultStepIndex
+	 */
+	public function setDefaultStepIndex(int $defaultStepIndex): void{
+		$this->defaultStepIndex = $defaultStepIndex;
+	}
 }
