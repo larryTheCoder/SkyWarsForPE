@@ -67,7 +67,7 @@ class SkyWarsPE extends PluginBase implements Listener {
     /** @var SkyWarsPE */
     public static $instance;
     /** @var array */
-	public $translation = [];
+	private $translation = [];
     /** @var Config */
     public $msg;
     /** @var SkyWarsCommand */
@@ -88,8 +88,10 @@ class SkyWarsPE extends PluginBase implements Listener {
     private $arenaManager;
     /** @var SkyWarsDatabase */
     private $database;
+	/** @var bool */
+	private $disabled;
 
-    public static function getInstance() {
+	public static function getInstance(){
         return self::$instance;
     }
 
@@ -99,7 +101,7 @@ class SkyWarsPE extends PluginBase implements Listener {
         $this->initConfig();
         $this->initDatabase();
     }
-// [![Poggit-CI Status](https://poggit.pmmp.io/ci.badge/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE)
+
     public function initConfig() {
         Utils::ensureDirectory();
         Utils::ensureDirectory("image/");
@@ -129,7 +131,10 @@ class SkyWarsPE extends PluginBase implements Listener {
             $this->translation[$localeCode] = $locale;
         }
 		if(empty($this->translation)){
-			$this->getServer()->getLogger()->info($this->getPrefix() . "§cNo locales been found, this is discouraged.");
+			$this->getServer()->getLogger()->error($this->getPrefix() . "§cNo locales been found, this is discouraged.");
+			$this->getServer()->getPluginManager()->disablePlugin($this);
+			$this->disabled = true;
+			self::$instance = null;
 
 			return;
 		}
@@ -157,6 +162,10 @@ class SkyWarsPE extends PluginBase implements Listener {
     }
 
     public function onEnable() {
+		// Should not even run if the plugin is disabled
+		if($this->disabled){
+			return;
+		}
         $this->checkPlugins();
 
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -218,13 +227,13 @@ class SkyWarsPE extends PluginBase implements Listener {
      */
     public function getMsg(?CommandSender $p, $key, $prefix = true) {
         if (!is_null($p) && $p instanceof Player) {
-            if (isset($this->translation[$p->getLocale()])) {
-                $msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation[$p->getLocale()]->get($key));
+			if(isset($this->translation[strtolower($p->getLocale())])){
+				$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation[strtolower($p->getLocale())]->get($key));
             } else {
-                $msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_US"]->get($key));
+				$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_us"]->get($key));
             }
         } else {
-            $msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_US"]->get($key));
+			$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_us"]->get($key));
         }
         return ($prefix ? $this->getPrefix() : "") . $msg;
     }

@@ -134,7 +134,9 @@ class ArenaListener implements Listener {
 	}
 
 	/**
-	 * Priority is the MONITOR so it can pass PureChat plugin priority.
+	 * This event priority been set to monitor
+	 * to make sure it pass from the PureChat plugin
+	 * priority.
 	 *
 	 * @param PlayerChatEvent $e
 	 * @priority MONITOR
