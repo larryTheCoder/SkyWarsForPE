@@ -41,6 +41,7 @@ abstract class SkyWarsDatabase {
     const DATA_ALREADY_AVAILABLE = 2;
     const DATA_EXECUTE_FAILED = 1;
     const DATA_EXECUTE_EMPTY = 0;
+
     /** @var MainLogger */
     protected $logger;
     /** @var SkyWarsPE */

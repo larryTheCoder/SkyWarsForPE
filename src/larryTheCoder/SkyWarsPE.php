@@ -112,8 +112,8 @@ class SkyWarsPE extends PluginBase implements Listener {
         $this->saveResource("config.yml");
         $this->saveResource("image/map.png");
         $this->saveResource("arenas/default.yml");
-        $this->saveResource("language/en_US.yml");
-        $this->saveResource("language/pt_BR.yml");
+        $this->saveResource("language/en_US.yml", true);
+        $this->saveResource("language/pt_BR.yml", true);
 
         $cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
         if ($cfg->get("config-version") !== SkyWarsPE::CONFIG_VERSION) {
@@ -121,15 +121,16 @@ class SkyWarsPE extends PluginBase implements Listener {
             $this->saveResource("config.yml");
         }
         Settings::init(new Config($this->getDataFolder() . "config.yml", Config::YAML));
-        foreach (glob($this->getDataFolder() . "language/*.yml") as $file) {
-            $locale = new Config($file, Config::YAML);
-            $localeCode = basename($file, ".yml");
-            if ($locale->get("config-version") < 3) {
-                $this->getServer()->getLogger()->info($this->getPrefix() . "§cLanguage '" . Settings::$lang . "' is old, using new one");
-                $this->saveResource("language/" . Settings::$lang . ".yml", true);
-            }
-            $this->translation[strtolower($localeCode)] = $locale;
-        }
+		foreach(glob($this->getDataFolder() . "language/*.yml") as $file){
+			$locale = new Config($file, Config::YAML);
+			$localeCode = basename($file, ".yml");
+			if($locale->get("config-version") < 3){
+				$this->getServer()->getLogger()->info($this->getPrefix() . "§cLanguage '" . Settings::$lang . "' is old, using new one");
+				$this->saveResource("language/" . Settings::$lang . ".yml", true);
+			}
+			$this->translation[strtolower($localeCode)] = $locale;
+		}
+
 		if(empty($this->translation)){
 			$this->getServer()->getLogger()->error($this->getPrefix() . "§cNo locales been found, this is discouraged.");
 			$this->getServer()->getPluginManager()->disablePlugin($this);
@@ -226,16 +227,23 @@ class SkyWarsPE extends PluginBase implements Listener {
      * @return string
      */
     public function getMsg(?CommandSender $p, $key, $prefix = true) {
-        if (!is_null($p) && $p instanceof Player) {
+		$msg = "Locale could not found";
+
+		if (!is_null($p) && $p instanceof Player) {
 			if(isset($this->translation[strtolower($p->getLocale())])){
 				$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation[strtolower($p->getLocale())]->get($key));
-            } else {
+			}elseif(isset($this->translation["en_us"])){
 				$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_us"]->get($key));
-            }
-        } else {
+            } else {
+				$this->getServer()->getLogger()->error($this->getPrefix() . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
+			}
+		}elseif(isset($this->translation["en_us"])){
 			$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_us"]->get($key));
-        }
-        return ($prefix ? $this->getPrefix() : "") . $msg;
+		}else{
+			$this->getServer()->getLogger()->error($this->getPrefix() . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
+		}
+
+		return ($prefix ? $this->getPrefix() : "") . $msg;
     }
 
     /**
