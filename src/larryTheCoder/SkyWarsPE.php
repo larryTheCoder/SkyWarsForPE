@@ -128,7 +128,7 @@ class SkyWarsPE extends PluginBase implements Listener {
                 $this->getServer()->getLogger()->info($this->getPrefix() . "§cLanguage '" . Settings::$lang . "' is old, using new one");
                 $this->saveResource("language/" . Settings::$lang . ".yml", true);
             }
-            $this->translation[$localeCode] = $locale;
+            $this->translation[strtolower($localeCode)] = $locale;
         }
 		if(empty($this->translation)){
 			$this->getServer()->getLogger()->error($this->getPrefix() . "§cNo locales been found, this is discouraged.");
