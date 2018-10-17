@@ -1,0 +1,140 @@
+# ####### chests.yml #######
+#
+# Random Chest Item Configuration
+#
+# For documentation, please visit
+# https://dabo.guru/projects/skywars/configuring-chests
+# #########
+
+# Config file version - no reason to change this.
+version: 1
+
+# Items are stored under a number of "levels". You are free to add any different levels you want.
+# Each level has a "value" and a "chance" percentage. When filling a chest, SkyWars will pick a
+# level according to it's percentage chance, add a random item from that level to the chest, and
+# then add the level's "item-value" to the total value in the chest. When the total value in the
+# chest reaches the chest's level, SkyWars will stop adding items.
+levels:
+  level-1:
+    item-value: 1
+    chance: 35
+  level-2:
+    item-value: 3
+    chance: 35
+  level-3:
+    item-value: 5
+    chance: 10
+  level-4:
+    item-value: 7
+    chance: 5
+  level-5:
+    item-value: 10
+    chance: 15
+
+items:
+  # Each item under a level-x list is level x.
+  level-1:
+  - {
+    # For this kind of section, you must include '- {'
+    # For every new list like these, otherwise it will
+    # break.
+    type: PLANKS,
+    meta: 3
+  }
+  - {
+    type: RAW_PORKCHOP,
+    amount: 3
+  }
+  - {
+    type: RAW_FISH,
+    amount: 3
+  }
+  - {
+    type: APPLE,
+    amount: 3
+  }
+  - {
+    type: ARROW,
+    amount: 7
+  }
+  - type: WOODEN_SWORD
+  - type: LEATHER_HELMET
+  - type: LEATHER_CHESTPLATE
+  - type: LEATHER_LEGGINGS
+  - type: LEATHER_BOOTS
+  level-2:
+  - {
+    type: WOODEN_SWORD,
+    # Here, you can either pick to use the name
+    # Of the enchantment, you can't put the ID of it
+    # It would not work great.
+    # 'ENCHANTMENT:LEVEL'
+    enchantments: "SHARPNESS:3 15:3"
+  }
+  - {
+    type: COOKED_PORKCHOP,
+    amount: 3,
+  }
+  - {
+    type: BOWL,
+    amount: 4
+  }
+  - {
+    type: APPLE,
+    amount: 2
+  }
+  - {
+    type: RAW_BEEF,
+    amount: 4
+  }
+  - {
+    type: COOKED_BEEF,
+    amount: 2
+  }
+  - {
+    type: RAW_CHICKEN,
+    amount: 4
+  }
+  - {
+    type: COOKED_CHICKEN,
+    amount: 2
+  }
+  - {
+    type: ENDER_PEARL,
+    amount: 2
+  }
+  - type: GOLD_HELMET
+  - type: GOLD_CHESTPLATE
+  - type: GOLD_LEGGINGS
+  - type: GOLD_BOOTS
+  level-3:
+  - {
+    type: MELON_BLOCK,
+    amount: 4
+  }
+  - {
+    type: GOLDEN_APPLE,
+    amount: 2
+  }
+  - type: IRON_HELMET
+  - type: IRON_CHESTPLATE
+  - type: IRON_LEGGINGS
+  - type: IRON_BOOTS
+  - type: GOLD_SWORD
+  - type: CHAINMAIL_HELMET
+  - type: CHAINMAIL_CHESTPLATE
+  - type: CHAINMAIL_BOOTS
+  - type: FLINT_AND_STEEL
+  - type: GOLD_SWORD
+  level-4:
+  - type: IRON_SWORD
+  level-5:
+  - {
+      type: CAKE,
+      amount: 2
+  }
+  - type: DIAMOND_SWORD
+  - type: DIAMOND_HELMET
+  - type: DIAMOND_CHESTPLATE
+  - type: DIAMOND_LEGGINGS
+  - type: DIAMOND_BOOTS

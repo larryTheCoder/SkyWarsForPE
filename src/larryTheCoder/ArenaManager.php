@@ -52,7 +52,7 @@ final class ArenaManager {
 	 * Load the arenas
 	 */
 	public final function checkArenas(){
-		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§dChecking arena files...");
+		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6Locating arena files...");
 		foreach(glob($this->pl->getDataFolder() . "arenas/*.yml") as $file){
 			$arena = new Config($file, Config::YAML);
 			$arenaName = basename($file, ".yml");
@@ -67,10 +67,10 @@ final class ArenaManager {
 			# Two function (Enabled | Disabled)
 			if($arena->get("enabled") === true){
 				$this->arenas[strtolower($arenaName)]->disabled = false;
-				$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§d$arenaName §a§l-§r§a Arena loaded and enabled");
+				$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6" . ucwords($arenaName) . " §a§l-§r§a Arena loaded and enabled");
 			}else{
 				$this->arenas[strtolower($arenaName)]->disabled = true;
-				$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§d$arenaName §a§l-§r§c Arena disabled");
+				$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6" . ucwords($arenaName) . " §a§l-§r§c Arena disabled");
 			}
 		}
 	}
@@ -143,12 +143,12 @@ final class ArenaManager {
 			$this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
 			$this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
 			$this->arenas[strtolower($arenaName)]->disabled = false;
-			$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6$arenaName §7§l-§r§a Arena loaded and enabled");
+			$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6" . ucwords($arenaName) . " §a§l-§r§a Arena loaded and enabled");
 		}else{
 			$this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
 			$this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
 			$this->arenas[strtolower($arenaName)]->disabled = true;
-			$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6$arenaName §7§l-§r§e Arena disabled");
+			$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6" . ucwords($arenaName) . " §a§l-§r§c Arena disabled");
 		}
 
 		return true;

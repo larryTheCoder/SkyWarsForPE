@@ -112,8 +112,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->saveResource("config.yml");
 		$this->saveResource("image/map.png");
 		$this->saveResource("arenas/default.yml");
-		$this->saveResource("language/en_US.yml", true);
-		$this->saveResource("language/pt_BR.yml", true);
+		$this->saveResource("language/en_US.yml");
+		$this->saveResource("language/pt_BR.yml");
 
 		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
 		if($cfg->get("config-version") !== SkyWarsPE::CONFIG_VERSION){
@@ -167,6 +167,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 		if($this->disabled){
 			return;
 		}
+		$this->getServer()->getLogger()->info($this->getPrefix() . "§eStarting SkyWarsForPE modules...");
+
 		$this->checkPlugins();
 
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -175,6 +177,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->arenaManager = new ArenaManager($this);
 		$this->formAPI = new FormAPI($this);
 		$this->panel = new FormPanel($this);
+		$this->chest = new RandomChest($this);
 
 		$this->getArenaManager()->checkArenas();
 		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);

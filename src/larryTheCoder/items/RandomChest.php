@@ -31,8 +31,9 @@ namespace larryTheCoder\items;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
+use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
-use pocketmine\Server;
 use pocketmine\utils\{
 	Config, MainLogger
 };
@@ -49,18 +50,16 @@ class RandomChest {
 	public function __construct(SkyWarsPE $plugin){
 		$this->plugin = $plugin;
 		$this->logger = $plugin->getServer()->getLogger();
-		/** @noinspection PhpUnhandledExceptionInspection */
 		$this->load();
 	}
 
-	/**
-	 * @throws \Exception
-	 */
 	public function load(){
 		$config = new Config($this->plugin->getDataFolder() . "chests.yml", Config::YAML);
 
 		if($config->get("version") > 1){
-			throw new \Exception("Future version in chests.yml!");
+			$this->errorLog($this->plugin->getPrefix() . "Future version in chests.yml!");
+
+			return;
 		}
 		$config->set("version", 1);
 
@@ -74,13 +73,13 @@ class RandomChest {
 		}
 		# Is null? WTF!
 		if($levelsSection === null){
-			$this->getLogger()->warning("Not loading chests.yml: no levels section found");
+			$this->errorLog("Not loading chests.yml: no levels section found");
 
 			return;
 		}
 		# Hmm someone modded this plugin
 		if($itemsSection === null){
-			$this->getLogger()->warning("Not loading chests.yml: no items section found");
+			$this->errorLog("Not loading chests.yml: no items section found");
 
 			return;
 		}
@@ -90,11 +89,10 @@ class RandomChest {
 		foreach(array_keys($levelsSection) as $key){
 			$itemValue = $config->getNested("levels.$key.item-value");
 			$chance = $config->getNested("levels.$key.chance");
-			if(!is_int($itemValue)){
-				throw new \Exception("Invalid chests.yml: level `" . $key . "` is missing item-value!");
-			}
-			if(!is_int($chance)){
-				throw new \Exception("Invalid chests.yml: level `" . $key . "` is missing item-value!");
+			if(!is_int($itemValue) || !is_int($chance)){
+				$this->errorLog("Invalid chests.yml: level `" . $key . "` is missing item-value!");
+
+				return;
 			}
 			$incompleteChestLevel[$key] = new ChestLevel($key, $itemValue, $chance, []);
 		}
@@ -102,6 +100,7 @@ class RandomChest {
 		foreach(array_keys($itemsSection) as $key){
 			if(!isset($incompleteChestLevel[$key])){
 				$this->logger->warning("Invalid chests.yml: level `" . $key . "` has a section under items, but no section under levels! skipping");
+
 				continue;
 			}
 			$chestLevel = $incompleteChestLevel[$key];
@@ -125,19 +124,55 @@ class RandomChest {
 					}else{
 						$item = Item::get($split['type'], $meta);
 					}
+					if(isset($split['enchantments']) && is_string($split['enchantments'])){
+						$encAll = explode(" ", $split['enchantments']);
+						foreach($encAll as $value){
+							$encType = explode(":", $value);
+							if(count($encType) > 1 && count($encType) < 3){
+								if(is_string($encType[0])){
+									$encConfirm = Enchantment::getEnchantmentByName($encType[0]);
+								}elseif(is_numeric($encType[0])){
+									$encConfirm = Enchantment::getEnchantment(intval($encType[0]));
+								}else{
+									$this->errorLog("Invalid chests.yml: enchantment `" . $encType[0] . "` in `" . $key . "` doesn't appears to be correct.");
+									continue;
+								}
+								// I swear, if they can't do this correctly, I will need to warn them.
+								// Just skips it and move to another block.
+								$level = $encType[1];
+								if(is_null($encConfirm)){
+									$this->errorLog("Invalid chests.yml: enchantment `" . $encType[0] . "` in `" . $key . "` doesn't appears to be exists.");
+									continue;
+								}
+								if(!is_numeric($level)){
+									$this->errorLog("Invalid chests.yml: enchantment `" . $key . "` have an invalid level number.");
+									continue;
+								}
+								$validEnchantment = new EnchantmentInstance($encConfirm, $level);
+								$item->addEnchantment($validEnchantment);
+							}else{
+								$this->errorLog("Invalid chests.yml: enchantment `" . $key . "` should have more than 2 values.");
+							}
+						}
+					}
 					$item->setCount($amount);
 					$itemList[] = $item;
 				}
 
 				if(empty($itemList)){
-					throw new \Exception("Invalid chests.yml: level `" . $key . "` items list is empty!");
+					$this->errorLog("Invalid chests.yml: level `" . $key . "` items list item-value!");
+
+					continue;
 				}
 				$this->chestLevels[$key] = new ChestLevel($key, $chestLevel->itemValue, $chestLevel->chance, $itemList);
 			}else{
-				throw new \Exception("Invalid chests.yml: non-list thing in items: " . $itemsSection[$key]);
+				$this->errorLog("Invalid chests.yml: non-list thing in items: " . $itemsSection[$key]);
+
+				continue;
 			}
 		}
-		Server::getInstance()->getLogger()->info($this->plugin->getPrefix() . "§aStarted the chest random");
+
+		$this->getLogger()->info($this->plugin->getPrefix() . "§6Loaded chest random configuration.");
 	}
 
 	/**
@@ -145,6 +180,10 @@ class RandomChest {
 	 */
 	public function getLogger(){
 		return $this->plugin->getServer()->getLogger();
+	}
+
+	public function errorLog(string $errLog){
+		return $this->getLogger()->info(">> §c" . $errLog);
 	}
 
 	/**
