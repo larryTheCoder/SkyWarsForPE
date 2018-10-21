@@ -56,7 +56,7 @@ class FormAPI implements Listener {
 	 */
 	public function createCustomForm(): CustomForm{
 		$this->formCount++;
-		$form = new CustomForm($this->formCount, null);
+		$form = new CustomForm($this->formCount);
 		$this->forms[$this->formCount] = $form;
 
 		return $form;
@@ -64,7 +64,7 @@ class FormAPI implements Listener {
 
 	public function createModalForm(): ModalForm{
 		$this->formCount++;
-		$form = new ModalForm($this->formCount, null);
+		$form = new ModalForm($this->formCount);
 		$this->forms[$this->formCount] = $form;
 
 		return $form;
@@ -72,7 +72,7 @@ class FormAPI implements Listener {
 
 	public function createSimpleForm(): SimpleForm{
 		$this->formCount++;
-		$form = new SimpleForm($this->formCount, null);
+		$form = new SimpleForm($this->formCount);
 		$this->forms[$this->formCount] = $form;
 
 		return $form;

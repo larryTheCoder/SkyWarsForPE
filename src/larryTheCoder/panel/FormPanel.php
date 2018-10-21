@@ -38,7 +38,7 @@ use larryTheCoder\utils\{
 	ConfigManager, Utils
 };
 use pocketmine\{
-	Player, Server
+	event\player\PlayerChatEvent, Player, Server
 };
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -79,6 +79,8 @@ class FormPanel implements Listener {
 	private $mode = [];
 	/** @var Player[]|string[] */
 	private $command = [];
+	/** @var array */
+	private $lastHoldIndex;
 
 	public function __construct(SkyWarsPE $plugin){
 		$this->plugin = $plugin;
@@ -146,10 +148,15 @@ class FormPanel implements Listener {
 				}
 			}
 		}
+		if(empty($files)){
+			$player->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg($player, "no-world"));
+
+			return;
+		}
 
 		$form->setTitle("§eSkyWars Setup.");
 		# What the player want to name the arena
-		$form->addInput("§aGive your arena name, Warning: NO SPACES", "Arena Name");
+		$form->addInput("§aChoose a great arena name", "Arena Name");
 		# What is the level for input 'Arena Name'
 		$form->addDropdown("§aChoose the level you want to use", $files);
 		# How much player do that this arena need
@@ -183,17 +190,13 @@ class FormPanel implements Listener {
 					$data = new SkyWarsData();
 					/** @var FormResponseCustom $responseCustom */
 					$responseCustom = $response;
-					$data->arenaName = $responseCustom->getInputResponse(0);
+					$data->arenaName = str_replace(" ", "-", $responseCustom->getInputResponse(0));
 					$data->arenaLevel = $responseCustom->getDropdownResponse(1)->getElementContent();
 					$data->maxPlayer = $responseCustom->getSliderResponse(2);
 					$data->minPlayer = $responseCustom->getSliderResponse(3);
 					$data->spectator = $responseCustom->getToggleResponse(4);
 					$data->startWhenFull = $responseCustom->getToggleResponse(5);
 					$this->data[$p->getName()] = $data;
-					if(empty($data->arenaName)){
-						$p->sendMessage($this->plugin->getMsg($p, 'panel-low-arguments'));
-						break;
-					}
 					if($this->plugin->getArenaManager()->arenaExist($data->arenaName)){
 						$p->sendMessage($this->plugin->getMsg($p, 'arena-exists'));
 						break;
@@ -202,6 +205,7 @@ class FormPanel implements Listener {
 					file_put_contents($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", $this->plugin->getResource('arenas/default.yml'));
 					$a = new Config($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", Config::YAML);
 					$a->reload();
+					$a->set('arena-name', $responseCustom->getInputResponse(0));
 					$a->setNested('arena.arena_world', $data->arenaLevel);
 					$a->setNested('arena.spectator_mode', $data->spectator);
 					$a->setNested('arena.max_players', $data->maxPlayer > $data->minPlayer ? $data->maxPlayer : $data->minPlayer);
@@ -381,14 +385,30 @@ class FormPanel implements Listener {
 		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
 		$player->teleport($level->getSpawnLocation());
 		$player->sendMessage($this->plugin->getMsg($player, 'panel-spawn-wand'));
-		$player->getInventory()->setItemInHand(new BlazeRod());
+		$this->setMagicWand($player);
+	}
+
+	private function setMagicWand(Player $p){
+		$this->lastHoldIndex[$p->getName()] = [$p->getInventory()->getHeldItemIndex(), $p->getInventory()->getHotbarSlotItem(0)];
+		$p->getInventory()->setHeldItemIndex(0);
+		$p->getInventory()->setItemInHand(new BlazeRod());
 	}
 
 	private function cleanupArray(Player $player){
-		$this->plugin->getArenaManager()->reloadArena($this->data[$player->getName()]->arenaName);
-		unset($this->data[$player->getName()]);
+		if(isset($this->data[$player->getName()])){
+			$this->plugin->getArenaManager()->reloadArena($this->data[$player->getName()]->arenaName);
+			unset($this->data[$player->getName()]);
+		}
 		if(isset($this->command[$player->getName()])){
 			unset($this->command[$player->getName()]);
+		}
+		// Now, its more reliable.
+		if(isset($this->lastHoldIndex[$player->getName()])){
+			$holdIndex = $this->lastHoldIndex[$player->getName()][0];
+			$lastItem = $this->lastHoldIndex[$player->getName()][1];
+			$player->getInventory()->setItem(0, $lastItem);
+			$player->getInventory()->setHeldItemIndex($holdIndex);
+			unset($this->lastHoldIndex[$player->getName()]);
 		}
 	}
 
@@ -469,7 +489,7 @@ class FormPanel implements Listener {
 		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
 		$player->teleport($level->getSpawnLocation());
 		$player->sendMessage($this->plugin->getMsg($player, 'panel-spawn-wand'));
-		$player->getInventory()->setItemInHand(new BlazeRod());
+		$this->setMagicWand($player);
 	}
 
 	private function arenaBehaviour(Player $player, SkyWarsData $arena){
@@ -507,7 +527,7 @@ class FormPanel implements Listener {
 		Utils::loadFirst($data->arenaLevel);
 		$this->setters[strtolower($player->getName())]['type'] = 'setjoinsign';
 		$player->sendMessage($this->plugin->getMsg($player, 'panel-spawn-wand'));
-		$player->getInventory()->setItemInHand(new BlazeRod());
+		$this->setMagicWand($player);
 	}
 
 	private function teleportWorld(Player $p){
@@ -604,10 +624,11 @@ class FormPanel implements Listener {
 				$this->mode[strtolower($p->getName())]++;
 			}
 			if($this->mode[strtolower($p->getName())] === 4){
-				$p->sendMessage($this->plugin->getMsg($p, "panel-spawn-set"));
+				$p->sendMessage("§eNow stand on the location where you want your NPC to look at, then say 'done'");
 				unset($this->mode[strtolower($p->getName())]);
 				unset($this->setters[strtolower($p->getName())]['NPC']);
 				$this->cleanupArray($p);
+				$this->setters[strtolower($p->getName())]['NPC-yaw'] = true;
 			}
 			$cfg->save();
 		}
@@ -620,13 +641,35 @@ class FormPanel implements Listener {
 		}
 	}
 
+	/**
+	 * @param PlayerChatEvent $e
+	 * @priority LOWEST
+	 */
+	public function onPlayerChat(PlayerChatEvent $e){
+		$p = $e->getPlayer();
+		if(isset($this->setters[strtolower($p->getName())]['NPC-yaw'])){
+			if(strtolower($e->getMessage()) === "done"){
+				$cfg = new Config($this->plugin->getDataFolder() . "npc.yml", Config::YAML);
+
+				$cfg->set("npc-look-position", [$p->getX() + 0.5, $p->getY() + 1, $p->getZ() + 0.5, $p->getLevel()->getName()]);
+				$cfg->save();
+
+				unset($this->setters[strtolower($p->getName())]['NPC-yaw']);
+				$p->sendMessage($this->plugin->getPrefix() . "§aPosition marked.");
+				$e->setCancelled();
+
+				return;
+			}
+			$p->sendMessage($this->plugin->getPrefix() . "§7Say 'done' if you stand on the right location");
+		}
+	}
+
 	public function showNPCConfiguration(Player $p){
 		$p->setGamemode(1);
 		$this->setters[strtolower($p->getName())]['NPC'] = "SETUP-NPC";
 		$this->mode[strtolower($p->getName())] = 1;
 		$p->sendMessage($this->plugin->getMsg($p, 'panel-spawn-wand'));
-		$p->getInventory()->setHeldItemIndex(0);
-		$p->getInventory()->setItemInHand(new BlazeRod());
+		$this->setMagicWand($p);
 	}
 
 }

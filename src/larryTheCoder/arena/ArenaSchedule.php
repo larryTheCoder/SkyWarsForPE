@@ -211,7 +211,7 @@ class ArenaSchedule extends Task {
 						$p->getInventory()->setItem(8, $toGive, true);
 					}
 
-					return;
+					break;
 				}
 
 				$space = str_repeat(" ", 78); // 55 default
@@ -253,7 +253,7 @@ class ArenaSchedule extends Task {
 					$this->arena->stopGame(true);
 					$this->endTime = 0;
 
-					return;
+					break;
 				}
 
 				foreach($this->arena->players as $player){
@@ -312,4 +312,7 @@ class ArenaSchedule extends Task {
 		}
 	}
 
+	public function addScoreboard(){
+		// TODO: Check the API for this fucking thing
+	}
 }

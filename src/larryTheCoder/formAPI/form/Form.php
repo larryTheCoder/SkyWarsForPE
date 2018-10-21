@@ -41,16 +41,12 @@ abstract class Form {
 	public $playerName;
 	/** @var array */
 	private $data = [];
-	/** @var callable */
-	private $callable;
 
 	/**
 	 * @param int $id
-	 * @param callable $callable
 	 */
-	public function __construct(int $id, ?callable $callable){
+	public function __construct(int $id){
 		$this->id = $id;
-		$this->callable = $callable;
 	}
 
 	/**
@@ -73,10 +69,6 @@ abstract class Form {
 
 	public function isRecipient(Player $player): bool{
 		return $player->getName() === $this->playerName;
-	}
-
-	public function getCallable(): ?callable{
-		return $this->callable;
 	}
 
 	/**

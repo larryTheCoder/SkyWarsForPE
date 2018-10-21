@@ -5,10 +5,10 @@
 # English-Rewrite by larryTheCoder,
 ---
 # No reason to edit this
-config-version: 3
+config-version: 4
 
 low-permission: "&eHmm, some new command, too bad its not available yet."
-no-permission: "&cThe society of illuminati blocked your request."
+no-permission: "&cYou don't have the right permission to do this."
 subtitle-splashes:
 - "§6Win this game!"
 - "§6Good luck!"
@@ -84,6 +84,7 @@ plugin-reloading: "&eReloading the plugin, this may take a while..."
 plugin-reload: "&aPlugin has been successfully loaded."
 arena-started: "&aStarted the arena &d{ARENA}."
 main-lobby-set: "&aMarked the location for lobby transportation."
+no-world: "&cSorry, you don't have any levels left to create an arena."
 
 # Panel messages
 panel-low-arguments: "&cCannot create arena, missing some arguments."
@@ -93,7 +94,8 @@ panel-spawn-wand: "&aBreak a block with the wand in your inventory."
 panel-join-spect: "&aSpectator spawn location has been marked."
 panel-join-sign: "&aJoin sign location has been marked."
 panel-spawn-pos: "&aMarked spawn location &e#{COUNT}."
-panel-spawn-set: "&sSuccessfully marked the spawn locations."
+panel-spawn-set: "&eSuccessfully marked the spawn locations."
+panel-npc-next: "&eNow stand on the location where you want your NPC to look at, then say 'done'"
 
 # Top winners
 top-winner-1: "&r&lTop winner #{VAL}"

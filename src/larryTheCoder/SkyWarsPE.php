@@ -31,6 +31,7 @@ namespace larryTheCoder;
 use larryTheCoder\commands\SkyWarsCommand;
 use larryTheCoder\formAPI\FormAPI;
 use larryTheCoder\items\RandomChest;
+use larryTheCoder\npc\TopWinners;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\{
 	MySqliteDatabase, SkyWarsDatabase, SQLite3Database
@@ -90,6 +91,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private $database;
 	/** @var bool */
 	private $disabled;
+	/** @var TopWinners */
+	private $npc = null;
 
 	public static function getInstance(){
 		return self::$instance;
@@ -124,9 +127,9 @@ class SkyWarsPE extends PluginBase implements Listener {
 		foreach(glob($this->getDataFolder() . "language/*.yml") as $file){
 			$locale = new Config($file, Config::YAML);
 			$localeCode = basename($file, ".yml");
-			if($locale->get("config-version") < 3){
-				$this->getServer()->getLogger()->info($this->getPrefix() . "§cLanguage '" . Settings::$lang . "' is old, using new one");
-				$this->saveResource("language/" . Settings::$lang . ".yml", true);
+			if($locale->get("config-version") < 4){
+				$this->getServer()->getLogger()->info($this->getPrefix() . "§cLanguage '" . $localeCode . "' is old, using new one");
+				$this->saveResource("language/" . $localeCode . ".yml", true);
 			}
 			$this->translation[strtolower($localeCode)] = $locale;
 		}
@@ -181,6 +184,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->getArenaManager()->checkArenas();
 		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
+		$this->getScheduler()->scheduleRepeatingTask(new TopWinners($this), 20);
 		$this->checkLobby();
 
 		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");

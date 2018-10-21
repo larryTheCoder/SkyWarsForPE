@@ -37,8 +37,8 @@ class ModalForm extends Form {
 	/** @var array */
 	public $data = [];
 
-	public function __construct($id, ?callable $callable){
-		parent::__construct($id, $callable);
+	public function __construct($id){
+		parent::__construct($id);
 		$this->data["type"] = "modal";
 		$this->data["title"] = "Modal Form";
 		$this->data["content"] = "";

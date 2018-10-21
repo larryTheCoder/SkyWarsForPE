@@ -53,10 +53,9 @@ class SimpleForm extends Form {
 
 	/**
 	 * @param int $id
-	 * @param callable $callable
 	 */
-	public function __construct(int $id, ?callable $callable){
-		parent::__construct($id, $callable);
+	public function __construct(int $id){
+		parent::__construct($id);
 		$this->data["type"] = "form";
 		$this->data["title"] = "";
 		$this->data["content"] = $this->content;

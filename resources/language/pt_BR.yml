@@ -6,7 +6,7 @@
 ---
 
 # No reason to edit this
-config-version: 3
+config-version: 4
 
 low-permission: "&eVocê não tem permissão suficiente para realizar este comando :/"
 no-permission: "&cA sociedade dos Illuminati bloqueou seu comando."

@@ -11,8 +11,8 @@ config-version: "CrazyDave"
 general:
   # Game language.
   # Current available languages:
-  # - English: Adam Matthew
-  language: 'English'
+  # - en_US: Adam Matthew
+  language: 'en_US'
   # The game prefix. Which will be used for command sending, Messaging
   # And Console usage. Use `&` for `§`
   prefix: '§d[§eSkyWars§d] &a'
