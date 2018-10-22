@@ -184,7 +184,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->getArenaManager()->checkArenas();
 		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
-		$this->getScheduler()->scheduleRepeatingTask(new TopWinners($this), 20);
+		$this->getScheduler()->scheduleRepeatingTask(new TopWinners($this), 1);
 		$this->checkLobby();
 
 		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");

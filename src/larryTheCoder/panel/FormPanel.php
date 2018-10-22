@@ -38,7 +38,7 @@ use larryTheCoder\utils\{
 	ConfigManager, Utils
 };
 use pocketmine\{
-	event\player\PlayerChatEvent, Player, Server
+	Player, Server
 };
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -624,11 +624,9 @@ class FormPanel implements Listener {
 				$this->mode[strtolower($p->getName())]++;
 			}
 			if($this->mode[strtolower($p->getName())] === 4){
-				$p->sendMessage("§eNow stand on the location where you want your NPC to look at, then say 'done'");
 				unset($this->mode[strtolower($p->getName())]);
 				unset($this->setters[strtolower($p->getName())]['NPC']);
 				$this->cleanupArray($p);
-				$this->setters[strtolower($p->getName())]['NPC-yaw'] = true;
 			}
 			$cfg->save();
 		}
@@ -638,29 +636,6 @@ class FormPanel implements Listener {
 			&& $e->getItem()->getId() === Item::BLAZE_ROD){
 
 			unset($this->setters[strtolower($p->getName())]['WORLD']);
-		}
-	}
-
-	/**
-	 * @param PlayerChatEvent $e
-	 * @priority LOWEST
-	 */
-	public function onPlayerChat(PlayerChatEvent $e){
-		$p = $e->getPlayer();
-		if(isset($this->setters[strtolower($p->getName())]['NPC-yaw'])){
-			if(strtolower($e->getMessage()) === "done"){
-				$cfg = new Config($this->plugin->getDataFolder() . "npc.yml", Config::YAML);
-
-				$cfg->set("npc-look-position", [$p->getX() + 0.5, $p->getY() + 1, $p->getZ() + 0.5, $p->getLevel()->getName()]);
-				$cfg->save();
-
-				unset($this->setters[strtolower($p->getName())]['NPC-yaw']);
-				$p->sendMessage($this->plugin->getPrefix() . "§aPosition marked.");
-				$e->setCancelled();
-
-				return;
-			}
-			$p->sendMessage($this->plugin->getPrefix() . "§7Say 'done' if you stand on the right location");
 		}
 	}
 

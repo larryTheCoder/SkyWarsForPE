@@ -86,9 +86,9 @@ class NPC extends Particle {
 	 * Changes the entity's yaw and pitch to make it look at the specified Vector3 position. For mobs, this will cause
 	 * their heads to turn.
 	 *
-	 * @param Vector3 $target
+	 * @param Player $target
 	 */
-	public function lookAt(Vector3 $target): void{
+	public function lookAt(Player $target): void{
 		$horizontal = sqrt(($target->x - $this->x) ** 2 + ($target->z - $this->z) ** 2);
 		$vertical = ($target->y - $this->y) + 0.6; // 0.6 is the player offset.
 		$this->pitch = -atan2($vertical, $horizontal) / M_PI * 180; //negative is up, positive is down
@@ -99,10 +99,10 @@ class NPC extends Particle {
 		if($this->yaw < 0){
 			$this->yaw += 360.0;
 		}
-		$this->updateMovement();
+		$this->updateMovement($target);
 	}
 
-	public function updateMovement(){
+	public function updateMovement(Player $player){
 		$pk = new MoveEntityAbsolutePacket();
 
 		$pk->entityRuntimeId = $this->entityId;
@@ -112,15 +112,15 @@ class NPC extends Particle {
 		$pk->yRot = $this->yaw; //TODO: head yaw
 		$pk->zRot = $this->yaw;
 
-		$this->level->addChunkPacket($this->x >> 4, $this->z >> 4, $pk);
+		$player->sendDataPacket($pk);
 	}
 
 	public function setSkin(?Skin $skin){
 		$this->skin = $skin;
-		$hasSpawned = [];
 		if($skin === null){
 			return;
 		}
+		$hasSpawned = [];
 		foreach($this->level->getChunkPlayers($this->getX() >> 4, $this->getZ() >> 4) as $player){
 			if($player->isOnline()){
 				$hasSpawned[$player->getLoaderId()] = $player;
@@ -153,7 +153,7 @@ class NPC extends Particle {
 
 		$add = new PlayerListPacket();
 		$add->type = PlayerListPacket::TYPE_ADD;
-		$add->entries = [PlayerListEntry::createAdditionEntry($this->uuid, $this->entityId, $name, $name, 0, $this->skin)];
+		$add->entries = [PlayerListEntry::createAdditionEntry($this->uuid, $this->entityId, $name, $this->skin)];
 		$p[] = $add;
 
 		$pk = new AddPlayerPacket();
@@ -197,7 +197,7 @@ class NPC extends Particle {
 		$pk->item = ItemFactory::get(Item::AIR, 0, 0);
 
 		$pk->metadata = [
-			Entity::DATA_SCALE => [Entity::DATA_TYPE_FLOAT, 0.5] //zero causes problems on debug builds
+			Entity::DATA_SCALE => [Entity::DATA_TYPE_FLOAT, 0.75] //zero causes problems on debug builds
 		];
 
 		$player->sendDataPacket($pk);

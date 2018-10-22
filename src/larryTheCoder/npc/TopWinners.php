@@ -85,15 +85,13 @@ class TopWinners extends Task implements Listener {
 		$npc1E = $this->cfg->get("npc-1", []);
 		$npc2E = $this->cfg->get("npc-2", []);
 		$npc3E = $this->cfg->get("npc-3", []);
-		$lookAt = $this->cfg->get("npc-look-position", []);
-		if(count($npc1E) < 1 || count($npc2E) < 1 || count($npc3E) < 1 || count($lookAt) < 1){
+		if(count($npc1E) < 1 || count($npc2E) < 1 || count($npc3E) < 1){
 			return;
 		}
 
 		$npc1 = new Position($npc1E[0], $npc1E[1], $npc1E[2], Server::getInstance()->getLevelByName($npc1E[3]));
 		$npc2 = new Position($npc2E[0], $npc2E[1], $npc2E[2], Server::getInstance()->getLevelByName($npc2E[3]));
 		$npc3 = new Position($npc3E[0], $npc3E[1], $npc3E[2], Server::getInstance()->getLevelByName($npc3E[3]));
-		$lookAt = new Position($lookAt[0], $lookAt[1], $lookAt[2], Server::getInstance()->getLevelByName($lookAt[3]));
 
 		if(is_null($this->npc1)){
 			$entity = new NPC($npc1, $npc1->getLevel());
@@ -112,7 +110,7 @@ class TopWinners extends Task implements Listener {
 		}
 
 		$i = 0;
-		if($this->tickNPCSkin >= 300){
+		if($this->tickNPCSkin >= 200){
 			$db = $this->plugin->getDatabase()->getPlayers();
 			// Avoid nulls and other consequences
 			$player = []; // PlayerName => Kills
@@ -172,13 +170,21 @@ class TopWinners extends Task implements Listener {
 		}
 		$this->tickNPCSkin++;
 
-		$this->npc1->lookAt($lookAt);
-		$this->npc2->lookAt($lookAt);
-		$this->npc3->lookAt($lookAt);
+		foreach(Server::getInstance()->getOnlinePlayers() as $p){
+			if($p->distance($this->npc1) <= 10){
+				$this->npc1->lookAt($p);
+			}
+			if($p->distance($this->npc2) <= 10){
+				$this->npc2->lookAt($p);
+			}
+			if($p->distance($this->npc3) <= 10){
+				$this->npc3->lookAt($p);
+			}
+		}
 	}
 
 	private function sendText(int $id, Vector3 $vec, array $text, Level $level){
-		$i = 1.6;
+		$i = 1.85;
 		$obj = 0;
 		foreach($text as $value){
 			if(isset($this->tags[$id][$obj])){

@@ -37,7 +37,7 @@ use pocketmine\item\{
 use pocketmine\level\particle\Particle;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\{
-	AddPlayerPacket, PlayerSkinPacket, RemoveEntityPacket
+	AddPlayerPacket, PlayerListPacket, PlayerSkinPacket, RemoveEntityPacket, types\PlayerListEntry
 };
 use pocketmine\Server;
 use pocketmine\utils\UUID;
@@ -104,8 +104,15 @@ class FloatingText extends Particle {
 		}
 
 		if(!$this->invisible){
+			$uuid = UUID::fromRandom();
+
+			$add = new PlayerListPacket();
+			$add->type = PlayerListPacket::TYPE_ADD;
+			$add->entries = [PlayerListEntry::createAdditionEntry($uuid, $this->entityId, "", new Skin("Standard_Custom", \str_repeat("\x00", 8192)))];
+			$p[] = $add;
+
 			$pk = new AddPlayerPacket();
-			$pk->uuid = $uuid = UUID::fromRandom();
+			$pk->uuid = $uuid;
 			$pk->username = $this->title . ($this->text !== "" ? "\n" . $this->text : "");
 			$pk->entityRuntimeId = $this->entityId;
 			$pk->position = $this->asVector3(); //TODO: check offset
@@ -125,6 +132,11 @@ class FloatingText extends Particle {
 			$skinPk->uuid = $uuid;
 			$skinPk->skin = new Skin("Standard_Custom", str_repeat("\x00", 8192));
 			$p[] = $skinPk;
+
+			$remove = new PlayerListPacket();
+			$remove->type = PlayerListPacket::TYPE_REMOVE;
+			$remove->entries = [PlayerListEntry::createRemovalEntry($uuid)];
+			$p[] = $remove;
 		}
 
 		return $p;
