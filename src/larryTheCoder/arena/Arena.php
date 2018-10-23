@@ -71,6 +71,8 @@ class Arena {
 	public $players = [];
 	/** @var Player[] */
 	public $spec = [];
+	/** @var Position */
+	public $cageToRemove = [];
 	/** @var integer[] */
 	public $claimedPedestals = [];
 	/** @var Position[] */
@@ -268,6 +270,7 @@ class Arena {
 					$this->messageArenaPlayers('leave-others', true, ["%1", "%2"], [$p->getName(), count($this->players)]);
 				}
 				$this->checkAlive();
+				$this->removeCage($p);
 				unset($this->spawnPedestals[$p->getName()]);
 			}else{
 				$p->sendMessage($this->plugin->getMsg($p, 'arena-running'));
@@ -540,6 +543,24 @@ class Arena {
 	}
 
 	/**
+	 * Remove cage of the player
+	 *
+	 * @param Player $p
+	 * @return bool
+	 */
+	public function removeCage(Player $p): bool{
+		if(!isset($this->cageToRemove[strtolower($p->getName())])){
+			return false;
+		}
+		foreach($this->cageToRemove[strtolower($p->getName())] as $pos){
+			$this->level->setBlock($pos, Block::get(0));
+		}
+		unset($this->cageToRemove[strtolower($p->getName())]);
+
+		return true;
+	}
+
+	/**
 	 * Re-update the status list from data, this will ensure that
 	 * the highest kills will be recorded
 	 */
@@ -712,6 +733,13 @@ class Arena {
 		$spawn = $this->getNextPedestals($p);
 		$this->spawnPedestals[$p->getName()] = $spawn;
 
+		# Get the custom cages
+		$cageLib = $this->plugin->getCage();
+		if($cageLib){
+			$cage = $cageLib->getPlayerCage($p);
+			$this->cageToRemove[strtolower($p->getName())] = $cage->build($spawn);
+		}
+
 		# Teleport them to the arena
 		$this->plugin->getServer()->getLogger()->info($spawn);
 		$p->teleport($spawn, 0, 0);
@@ -767,9 +795,15 @@ class Arena {
 					$p->setFood(20);
 				}
 
-				# Set the block into an air
-				$pos = $p->getPosition()->add(0, -1, 0);
-				$p->getLevel()->setBlock($pos, Block::get(Block::AIR));
+				$cageLib = $this->plugin->getCage();
+				if($cageLib){
+					$this->removeCage($p);
+					unset($this->spawnPedestals[$p->getName()]);
+				}else{
+					# Set the block into an air
+					$pos = $p->getPosition()->add(0, -1, 0);
+					$p->getLevel()->setBlock($pos, Block::get(Block::AIR));
+				}
 
 				$p->addTitle($this->plugin->getMsg($p, "arena-game-started", false));
 				$p->setXpLevel(0);

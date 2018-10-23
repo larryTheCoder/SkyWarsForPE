@@ -50,7 +50,6 @@ use pocketmine\network\mcpe\protocol\{
 };
 use pocketmine\utils\UUID;
 
-
 /**
  * This is an NPC class that used by Particles
  * Which is a hack to force the server to NOT
@@ -119,9 +118,8 @@ class NPC extends Particle {
 	public function setSkin(?Skin $skin){
 		$this->skin = $skin;
 		if($skin === null){
-			$skin = $this->skin = new Skin("Standard_Custom", str_repeat("\x00", 8192));
+			return;
 		}
-		$skin->debloatGeometryData();
 
 		$hasSpawned = [];
 		foreach($this->level->getChunkPlayers($this->getX() >> 4, $this->getZ() >> 4) as $player){

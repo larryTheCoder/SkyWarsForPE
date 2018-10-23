@@ -30,7 +30,7 @@ namespace larryTheCoder\npc;
 
 use larryTheCoder\SkyWarsPE;
 use pocketmine\{
-	event\entity\EntityLevelChangeEvent, event\player\PlayerJoinEvent, Player, Server
+	event\entity\EntityLevelChangeEvent, event\player\PlayerJoinEvent, nbt\tag\StringTag, Player, Server
 };
 use pocketmine\entity\Skin;
 use pocketmine\event\Listener;
@@ -130,13 +130,17 @@ class TopWinners extends Task implements Listener {
 				if(Server::getInstance()->getPlayer($p) === null){
 					if(file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($p) . ".dat")){
 						$nbt = Server::getInstance()->getOfflinePlayerData($p);
-						$skinData = $nbt->getCompoundTag("Skin");
-						$skin = new Skin(
-							'Standard_Custom',
-							$skinData->getByteArray("Data"),
-							$skinData->getByteArray("CapeData"),
-							$skinData->getString("GeometryName"),
-							$skinData->getByteArray("GeometryData"));
+						$skin = $nbt->getCompoundTag("Skin");
+						if($skin !== \null){
+							$skin = new Skin(
+								$skin->getString("Name"),
+								$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
+								$skin->getByteArray("CapeData", ""),
+								$skin->getString("GeometryName", ""),
+								$skin->getByteArray("GeometryData", "")
+							);
+						}
+						$skin->debloatGeometryData();
 					}else{
 						$skin = null;
 					}

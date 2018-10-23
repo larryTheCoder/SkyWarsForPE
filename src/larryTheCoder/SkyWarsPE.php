@@ -31,6 +31,8 @@ namespace larryTheCoder;
 use larryTheCoder\commands\SkyWarsCommand;
 use larryTheCoder\formAPI\FormAPI;
 use larryTheCoder\items\RandomChest;
+use larryTheCoder\libs\cages\ArenaCage;
+use larryTheCoder\libs\kits\Kits;
 use larryTheCoder\npc\TopWinners;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\{
@@ -91,8 +93,10 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private $database;
 	/** @var bool */
 	private $disabled;
-	/** @var TopWinners */
-	private $npc = null;
+	/** @var ArenaCage */
+	private $cage;
+	/** @var Kits */
+	private $kits;
 
 	public static function getInstance(){
 		return self::$instance;
@@ -182,6 +186,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->panel = new FormPanel($this);
 		$this->chest = new RandomChest($this);
 
+		$this->checkLibraries();
 		$this->getArenaManager()->checkArenas();
 		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
 		$this->getScheduler()->scheduleRepeatingTask(new TopWinners($this), 1);
@@ -269,5 +274,38 @@ class SkyWarsPE extends PluginBase implements Listener {
 				$this->getServer()->getLogger()->info("§cFailed to register §e" . $p->getName() . " §aInto database...");
 			}
 		}
+	}
+
+	/**
+	 * Check private libraries for this plugin.
+	 * The features are private. The features are:
+	 * - Cages
+	 * - Kits
+	 * - Diagnostics
+	 */
+	private function checkLibraries(){
+		// No its private, you can't have it, do not open an issue about that.
+		$cagesModule = class_exists("\larryTheCoder\libs\cages\ArenaCage");
+		$kitsModule = class_exists("\larryTheCoder\libs\kits\Kits");
+		if($cagesModule){
+			$this->cage = new ArenaCage($this);
+		}
+		if($kitsModule){
+			$this->kits = new Kits($this);
+		}
+	}
+
+	/**
+	 * @return ArenaCage
+	 */
+	public function getCage(): ArenaCage{
+		return $this->cage;
+	}
+
+	/**
+	 * @return Kits
+	 */
+	public function getKits(): Kits{
+		return $this->kits;
 	}
 }
