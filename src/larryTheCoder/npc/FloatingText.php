@@ -37,7 +37,7 @@ use pocketmine\item\{
 use pocketmine\level\particle\Particle;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\{
-	AddPlayerPacket, PlayerListPacket, PlayerSkinPacket, RemoveEntityPacket, types\PlayerListEntry
+	AddPlayerPacket, PlayerListPacket, RemoveEntityPacket, types\PlayerListEntry
 };
 use pocketmine\Server;
 use pocketmine\utils\UUID;
@@ -127,11 +127,6 @@ class FloatingText extends Particle {
 			];
 
 			$p[] = $pk;
-
-			$skinPk = new PlayerSkinPacket();
-			$skinPk->uuid = $uuid;
-			$skinPk->skin = new Skin("Standard_Custom", str_repeat("\x00", 8192));
-			$p[] = $skinPk;
 
 			$remove = new PlayerListPacket();
 			$remove->type = PlayerListPacket::TYPE_REMOVE;

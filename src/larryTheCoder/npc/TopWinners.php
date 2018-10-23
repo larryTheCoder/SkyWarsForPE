@@ -137,7 +137,6 @@ class TopWinners extends Task implements Listener {
 							$skinData->getByteArray("CapeData"),
 							$skinData->getString("GeometryName"),
 							$skinData->getByteArray("GeometryData"));
-						$skin->debloatGeometryData();
 					}else{
 						$skin = null;
 					}
@@ -171,13 +170,13 @@ class TopWinners extends Task implements Listener {
 		$this->tickNPCSkin++;
 
 		foreach(Server::getInstance()->getOnlinePlayers() as $p){
-			if($p->distance($this->npc1) <= 10){
+			if($p->distance($this->npc1) <= 5){
 				$this->npc1->lookAt($p);
 			}
-			if($p->distance($this->npc2) <= 10){
+			if($p->distance($this->npc2) <= 5){
 				$this->npc2->lookAt($p);
 			}
-			if($p->distance($this->npc3) <= 10){
+			if($p->distance($this->npc3) <= 5){
 				$this->npc3->lookAt($p);
 			}
 		}

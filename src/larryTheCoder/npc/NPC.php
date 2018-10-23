@@ -80,6 +80,7 @@ class NPC extends Particle {
 		$this->level = $level;
 		$this->uuid = UUID::fromRandom();
 		$this->skin = new Skin("Standard_Custom", str_repeat("\x00", 8192));
+		$this->skin->debloatGeometryData();
 	}
 
 	/**
@@ -118,8 +119,10 @@ class NPC extends Particle {
 	public function setSkin(?Skin $skin){
 		$this->skin = $skin;
 		if($skin === null){
-			return;
+			$skin = $this->skin = new Skin("Standard_Custom", str_repeat("\x00", 8192));
 		}
+		$skin->debloatGeometryData();
+
 		$hasSpawned = [];
 		foreach($this->level->getChunkPlayers($this->getX() >> 4, $this->getZ() >> 4) as $player){
 			if($player->isOnline()){
