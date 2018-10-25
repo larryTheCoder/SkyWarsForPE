@@ -94,9 +94,9 @@ class SkyWarsPE extends PluginBase implements Listener {
 	/** @var bool */
 	private $disabled;
 	/** @var ArenaCage */
-	private $cage;
+	private $cage = null;
 	/** @var Kits */
-	private $kits;
+	private $kits = null;
 
 	public static function getInstance(){
 		return self::$instance;
@@ -296,16 +296,16 @@ class SkyWarsPE extends PluginBase implements Listener {
 	}
 
 	/**
-	 * @return ArenaCage
+	 * @return null|ArenaCage
 	 */
-	public function getCage(): ArenaCage{
+	public function getCage(): ?ArenaCage{
 		return $this->cage;
 	}
 
 	/**
-	 * @return Kits
+	 * @return null|Kits
 	 */
-	public function getKits(): Kits{
+	public function getKits(): ?Kits{
 		return $this->kits;
 	}
 }
