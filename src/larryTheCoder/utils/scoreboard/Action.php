@@ -26,55 +26,24 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\utils;
-
-use pocketmine\level\Location;
-use pocketmine\Player;
+namespace larryTheCoder\utils\scoreboard;
 
 /**
- * This package handle the random E-84
- * Firework Pattern which looks awesome.
+ * Code being reuse as the source code is licensed
+ * under GNU General Public License v3.0 which allows
+ * to use code without explicit permission from the author.
+ * - Commercial use
+ * - Modification
+ * - Distribution
+ * - Patent use
+ * - Private use
  *
- * Class FireworkManager
- * @package larryTheCoder\utils
+ * @package larryTheCoder\utils\scoreboard
+ * @author Miste
  */
-class FireworkManager {
+interface Action {
 
-	/** @var int */
-	public $side = 0;
-	/** @var Location[] */
-	public $conclude = [];
-	/** @var Location */
-	public $currentLoc = null;
-	/** @var Player */
-	private $player;
-	/** @var float|int */
-	private $currentY = 0;
-
-	public function __construct(Player $player){
-		$this->player = $player;
-		$this->currentY = $player->getY();
-	}
-
-	public function display(){
-		$cuboid = $this->cuboidConductive()->explicit(10);
-		foreach($cuboid as $val => $vec){
-			$location = Location::fromObject($vec, $this->player->getLevel(), 0, 0);
-			Utils::addFireworks($location);
-			unset($cuboid[$val]);
-		}
-	}
-
-	/**
-	 * @return Cuboid
-	 */
-	public function cuboidConductive(){
-		$facing = $this->player->getDirection();
-		$vec = $this->player->getSide($facing, 15);
-		$vec1 = $vec->asVector3()->setComponents($vec->getX() - 10, $vec->getY(), $vec->getZ() - 10);
-		$vec2 = $vec->asVector3()->setComponents($vec->getX() + 10, $vec->getY(), $vec->getZ() + 10);
-
-		return new Cuboid($vec1, $vec2);
-	}
+	public const CREATE = 0;
+	public const MODIFY = 1;
 
 }

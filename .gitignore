@@ -10,3 +10,10 @@ nbproject/*
 # Mac crap
 .DS_Store
 /nbproject/private/
+
+# Some compressed craps
+*.7z
+*.zip
+*.tar
+*.tar.gz
+*.sworld

@@ -30,19 +30,12 @@ namespace larryTheCoder\utils;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\FireworksData;
-use pocketmine\{
-	Player, Server
-};
-use pocketmine\block\{
-	Block, BlockIds
-};
+use larryTheCoder\utils\scoreboard\ScoreboardStore;
+use pocketmine\{Player, Server, utils\Random};
+use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
-use pocketmine\item\{
-	Item, ItemIds
-};
-use pocketmine\level\{
-	Location, Position
-};
+use pocketmine\item\{Item, ItemIds};
+use pocketmine\level\{Level, Location, particle\PortalParticle, Position};
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\utils\Config;
@@ -59,6 +52,8 @@ class Utils {
 	public static $particleTimer = [];
 	/** @var integer[][] */
 	public static $helixMathMap = [];
+	/** @var ScoreboardStore */
+	private static $store = null;
 
 	public static function sendDebug(String $log){
 		Server::getInstance()->getLogger()->debug("SW-DEBUG: " . $log);
@@ -155,10 +150,37 @@ class Utils {
 	}
 
 	public static function checkFile(Config $arena){
-		if(!(is_string($arena->get("arena-name")) && is_numeric($arena->getNested("signs.join_sign_x")) && is_numeric($arena->getNested("signs.join_sign_y")) && is_numeric($arena->getNested("signs.join_sign_z")) && is_numeric($arena->getNested("arena.max_game_time")) && is_string($arena->getNested("signs.join_sign_world")) && is_string($arena->getNested("signs.status_line_1")) && is_string($arena->getNested("signs.status_line_2")) && is_string($arena->getNested("signs.status_line_3")) && is_string($arena->getNested("signs.status_line_4")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("chest.refill_rate")) && is_numeric($arena->getNested("arena.spec_spawn_x")) && is_numeric($arena->getNested("arena.spec_spawn_y")) && is_numeric($arena->getNested("arena.spec_spawn_z")) && is_numeric($arena->getNested("arena.max_players")) && is_numeric($arena->getNested("arena.min_players")) && is_numeric($arena->getNested("arena.grace_time")) && is_string($arena->getNested("arena.arena_world")) && is_numeric($arena->getNested("arena.starting_time")) && is_array($arena->getNested("arena.spawn_positions")) && is_string($arena->getNested("arena.finish_msg_levels")) && !is_string($arena->getNested("arena.money_reward")))){
+		if(!(is_string($arena->get("arena-name"))
+				&& is_numeric($arena->getNested("signs.join_sign_x"))
+				&& is_numeric($arena->getNested("signs.join_sign_y"))
+				&& is_numeric($arena->getNested("signs.join_sign_z")))
+			&& is_string($arena->getNested("signs.join_sign_world"))
+			&& is_string($arena->getNested("signs.status_line_1"))
+			&& is_string($arena->getNested("signs.status_line_2"))
+			&& is_string($arena->getNested("signs.status_line_3"))
+			&& is_string($arena->getNested("signs.status_line_4"))
+			&& is_string($arena->getNested("arena.arena_world"))
+			&& is_numeric($arena->getNested("chest.refill_rate"))
+			&& is_numeric($arena->getNested("arena.spec_spawn_x"))
+			&& is_numeric($arena->getNested("arena.spec_spawn_y"))
+			&& is_numeric($arena->getNested("arena.spec_spawn_z"))
+			&& is_numeric($arena->getNested("arena.max_players"))
+			&& is_numeric($arena->getNested("arena.min_players"))
+			&& is_numeric($arena->getNested("arena.grace_time"))
+			&& is_string($arena->getNested("arena.arena_world"))
+			&& is_numeric($arena->getNested("arena.starting_time"))
+			&& is_array($arena->getNested("arena.spawn_positions"))
+			&& is_string($arena->getNested("arena.finish_msg_levels"))
+			&& !is_string($arena->getNested("arena.money_reward"))){
 			return false;
 		}
-		if(!((strtolower($arena->getNested("signs.enable_status")) == true || strtolower($arena->getNested("signs.enable_status")) == false) && (strtolower($arena->getNested("arena.spectator_mode")) == true || strtolower($arena->getNested("arena.spectator_mode")) == false) && (strtolower($arena->getNested("chest.refill")) == true || strtolower($arena->getNested("chest.refill")) == false) && (strtolower($arena->getNested("arena.time")) == true || strtolower($arena->getNested("arena.time")) == "day" || strtolower($arena->getNested("arena.time")) == "night" || is_numeric(strtolower($arena->getNested("arena.time")))) && (strtolower($arena->getNested("arena.start_when_full")) == true || strtolower($arena->getNested("arena.start_when_full")) == false) && (strtolower($arena->get("enabled")) == true || strtolower($arena->get("enabled")) == false))){
+		if(!((strtolower($arena->getNested("signs.enable_status")) == true || strtolower($arena->getNested("signs.enable_status")) == false)
+			&& (strtolower($arena->getNested("arena.spectator_mode")) == true || strtolower($arena->getNested("arena.spectator_mode")) == false)
+			&& (strtolower($arena->getNested("chest.refill")) == true || strtolower($arena->getNested("chest.refill")) == false)
+			&& (strtolower($arena->getNested("arena.time")) == true || strtolower($arena->getNested("arena.time")) == "day" || strtolower($arena->getNested("arena.time")) == "night" || is_numeric(strtolower($arena->getNested("arena.time"))))
+			&& (strtolower($arena->getNested("arena.start_when_full")) == true || strtolower($arena->getNested("arena.start_when_full")) == false)
+			&& (strtolower($arena->get("enabled")) == true || strtolower($arena->get("enabled")) == false))){
+
 			return false;
 		}
 
@@ -339,6 +361,22 @@ class Utils {
 	 */
 	public static function shuffle(array $contents){
 		return [mt_rand(1, 2) => array_shift($contents), mt_rand(3, 5) => array_shift($contents), mt_rand(6, 10) => array_shift($contents), mt_rand(11, 15) => array_shift($contents), mt_rand(16, 17) => array_shift($contents), mt_rand(18, 20) => array_shift($contents), mt_rand(21, 25) => array_shift($contents), mt_rand(26, 27) => array_shift($contents)];
+	}
 
+	public static function addParticles(Level $level, Vector3 $pos1, $count = 5){
+		$particle1 = new PortalParticle($pos1);
+		$random = new Random((int)(microtime(true) * 1000) + mt_rand());
+		for($i = 0; $i < $count; ++$i){
+			$particle1->setComponents($pos1->x + $random->nextSignedFloat() * 280, $pos1->y + $random->nextSignedFloat() * 280, $pos1->z + $random->nextSignedFloat() * 280);
+			$level->addParticle($particle1);
+		}
+	}
+
+	public static function getStore(): ScoreboardStore{
+		if(!is_null(self::$store)){
+			return self::$store;
+		}
+
+		return self::$store = new ScoreboardStore();
 	}
 }

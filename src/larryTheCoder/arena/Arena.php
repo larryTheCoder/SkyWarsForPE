@@ -30,24 +30,19 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\events\PlayerJoinArenaEvent;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\{
-	PortalManager, Settings, Utils
-};
-use pocketmine\{
-	item\enchantment\Enchantment, item\enchantment\EnchantmentInstance, Player, Server
-};
-use pocketmine\block\{
-	Block, StainedGlass
-};
+use larryTheCoder\utils\{scoreboard\Action,
+	scoreboard\DisplaySlot,
+	scoreboard\Scoreboard,
+	scoreboard\Sort,
+	Settings,
+	Utils};
+use pocketmine\{item\enchantment\Enchantment, item\enchantment\EnchantmentInstance, Player, Server};
+use pocketmine\block\{Block, StainedGlass};
 use pocketmine\entity\Entity;
 use pocketmine\event\HandlerList;
 use pocketmine\item\Item;
-use pocketmine\level\{
-	Level, Position
-};
-use pocketmine\level\sound\{
-	ClickSound, EndermanTeleportSound, GenericSound
-};
+use pocketmine\level\{Level, Position};
+use pocketmine\level\sound\{ClickSound, EndermanTeleportSound, GenericSound};
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
@@ -91,6 +86,8 @@ class Arena {
 	public $disabled;
 	/** @var SkyWarsPE */
 	public $plugin;
+	/** @var int[] */
+	public $chestId = [];
 	/** @var Level */
 	protected $level;
 	/** @var string */
@@ -101,6 +98,8 @@ class Arena {
 	protected $listener;
 	/** @var int */
 	private $game = 0;
+	/** @var Scoreboard */
+	private $score;
 
 	public function __construct(string $id, SkyWarsPE $plugin){
 		$this->id = $id;
@@ -120,6 +119,9 @@ class Arena {
 			$plugin->getServer()->getPluginManager()->registerEvents($this->listener = new ArenaListener($this->plugin, $this), $plugin);
 		}catch(\Throwable $e){
 		}
+
+		$this->score = new Scoreboard($this->data['arena-name'] . " Arena", Action::CREATE);
+		$this->score->create(DisplaySlot::SIDEBAR, Sort::ASCENDING);
 	}
 
 	public function checkWorlds(){
@@ -296,6 +298,9 @@ class Arena {
 		$p->setInvisible(false);
 		$p->getInventory()->clearAll();
 		$p->getArmorInventory()->clearAll();
+
+		// Remove his scoreboard display.
+		$this->score->removeDisplay($p);
 	}
 
 	/**
@@ -707,7 +712,9 @@ class Arena {
 		$this->onJoin($p);
 
 		$this->giveGameItems($p, false);
-		PortalManager::addParticles($p->getLevel(), $p->getPosition(), 100);
+
+		// Add the display to the player.
+		$this->score->addDisplay($p);
 	}
 
 	private function onJoin(Player $p){
@@ -808,6 +815,8 @@ class Arena {
 				$p->addTitle($this->plugin->getMsg($p, "arena-game-started", false));
 				$p->setXpLevel(0);
 				$p->getLevel()->addSound(new GenericSound($p, LevelEventPacket::EVENT_SOUND_ORB, 3));
+
+				Utils::addParticles($p->getLevel(), $p->getPosition()->add(0, -5, 0), 100);
 			}
 		}
 
@@ -893,5 +902,14 @@ class Arena {
 	 */
 	public function getArenaLevel(): Level{
 		return $this->level;
+	}
+
+	/**
+	 * Gets the scoreboard class for this arena,
+	 * each arena will be given a separated scoreboard
+	 * classes.
+	 */
+	public function getScoreboard(): Scoreboard{
+		return $this->score;
 	}
 }

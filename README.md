@@ -1,5 +1,7 @@
+![SkyWarsForPE](resources/SkyWarsForPE.png)
+
 # SkyWarsForPE
-[![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE) [![Discord](https://img.shields.io/discord/350333413737365522.svg?style=flat-square&label=discord&colorB=7289da)](https://discord.gg/t5NsTyj)
+[![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE) [![Discord](https://img.shields.io/discord/350333413737365522.svg?style=flat-square&label=discord&colorB=7289da)](https://discord.gg/t5NsTyj) [![Donate](https://img.shields.io/badge/donate-PayPal-yellow.svg?style=flat-square)](http://www.paypal.me/DoubleCheese)
 
 **WARNING, Do not use this plugin on production server, its unstable and could crash your server, you have been warned**
 

@@ -19,10 +19,6 @@ permissions:
   sw.acces:
     description: access the game intrance
     default: true
-# For VIP access NOT DONE
-#  sw.acces.full:
-#    description: ability to join full game
-#    default: true
   sw.editlobby:
     description: prevent players from edit lobby
     default: op

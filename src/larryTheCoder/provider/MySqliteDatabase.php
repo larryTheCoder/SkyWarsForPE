@@ -31,9 +31,7 @@ namespace larryTheCoder\provider;
 
 use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\{
-	Settings, Utils
-};
+use larryTheCoder\utils\{Settings, Utils};
 use pocketmine\level\Position;
 use pocketmine\Server;
 
@@ -48,7 +46,7 @@ class MySqliteDatabase extends SkyWarsDatabase {
 	/** @var \mysqli */
 	private $db;
 	/** @var \mysqli_stmt */
-	private $sqlCreateNewData, $sqlGetPlayerData, $sqlUpdateNewData, $sqlGetLobbyDataPD, $sqlGetLobbyInsert, $sqlGetLobbyUpdate;
+	private $sqlCreateNewData, $sqlGetPlayerData, $sqlUpdateNewData, $sqlGetLobbyPos, $sqlGetLobbyInsert, $sqlGetLobbyUpdate;
 	/** @var Position */
 	private $lobbyPos;
 
@@ -73,7 +71,7 @@ class MySqliteDatabase extends SkyWarsDatabase {
 		$this->sqlGetPlayerData = $this->db->prepare("SELECT * FROM players WHERE playerName = ?;");
 		$this->sqlUpdateNewData = $this->db->prepare("UPDATE players SET playerName = ?, playerTime = ?, kills = ?, deaths = ?, wins = ?, lost = ?;");
 
-		$this->sqlGetLobbyDataPD = $this->db->prepare("SELECT * FROM lobby WHERE worldName IS NOT NULL;");
+		$this->sqlGetLobbyPos = $this->db->prepare("SELECT * FROM lobby WHERE worldName IS NOT NULL;");
 		$this->sqlGetLobbyInsert = $this->db->prepare("INSERT INTO lobby(lobbyX, lobbyY, lobbyZ, worldName) VALUES (?, ?, ?, ?);");
 		$this->sqlGetLobbyUpdate = $this->db->prepare("UPDATE lobby SET lobbyX = ?, lobbyY = ?, lobbyZ = ?, worldName = ? WHERE worldName IS NOT NULL;");
 	}
@@ -177,7 +175,19 @@ class MySqliteDatabase extends SkyWarsDatabase {
 	}
 
 	public function close(): void{
+		// Close this shit databases
+		$this->sqlCreateNewData->close();
+		$this->sqlGetPlayerData->close();
+		$this->sqlUpdateNewData->close();
+		$this->sqlGetLobbyPos->close();
+		$this->sqlGetLobbyInsert->close();
+		$this->sqlGetLobbyUpdate->close();
+
 		$this->db->close();
+
+		// Then unset them
+		unset($this->sqlCreateNewData, $this->sqlGetPlayerData, $this->sqlUpdateNewData,
+			$this->sqlGetLobbyPos, $this->sqlGetLobbyInsert, $this->sqlGetLobbyUpdate);
 	}
 
 	public function getLobby(): Position{
@@ -188,7 +198,7 @@ class MySqliteDatabase extends SkyWarsDatabase {
 		$this->reconnect();
 
 		# Prepare the sql database
-		$stmt = $this->sqlGetLobbyDataPD;
+		$stmt = $this->sqlGetLobbyPos;
 		$result = $stmt->get_result();
 		while($val = $result->fetch_array()){
 			# There is a data, load them and set the position
@@ -210,7 +220,7 @@ class MySqliteDatabase extends SkyWarsDatabase {
 		$this->reconnect();
 
 		# Get if the database had a data
-		$stmt = $this->sqlGetLobbyDataPD;
+		$stmt = $this->sqlGetLobbyPos;
 		$result = $stmt->get_result();
 		if(!empty($result)){
 			$stmt = $this->sqlGetLobbyUpdate;
@@ -234,6 +244,22 @@ class MySqliteDatabase extends SkyWarsDatabase {
 	 * Get the players data
 	 */
 	public function getPlayers(){
-		// TODO: Implement getPlayers() method.
+		$stmt = $this->db->query("SELECT * FROM players");
+		$player = [];
+		while($row = $stmt->fetch_array(SQLITE3_ASSOC)){
+			$data = new PlayerData();
+			$data->player = $row['playerName'];
+			$data->time = $row['playerTime'];
+			$data->kill = $row['kills'];
+			$data->death = $row['deaths'];
+			$data->wins = $row['wins'];
+			$data->lost = $row['lost'];
+			$data->cages = explode(":", $row['cage']);
+			$data->kitId = explode(":", $row['kits']);
+			$player[] = $data;
+		}
+		$stmt->close();
+
+		return $player;
 	}
 }

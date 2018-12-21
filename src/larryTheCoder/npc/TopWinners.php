@@ -29,14 +29,10 @@
 namespace larryTheCoder\npc;
 
 use larryTheCoder\SkyWarsPE;
-use pocketmine\{
-	event\entity\EntityLevelChangeEvent, event\player\PlayerJoinEvent, nbt\tag\StringTag, Player, Server
-};
+use pocketmine\{event\entity\EntityLevelChangeEvent, event\player\PlayerJoinEvent, nbt\tag\StringTag, Player, Server};
 use pocketmine\entity\Skin;
 use pocketmine\event\Listener;
-use pocketmine\level\{
-	Level, Position
-};
+use pocketmine\level\{Level, Position};
 use pocketmine\math\Vector3;
 use pocketmine\scheduler\Task;
 use pocketmine\utils\Config;
@@ -147,6 +143,7 @@ class TopWinners extends Task implements Listener {
 				}else{
 					$skin = Server::getInstance()->getPlayer($p)->getSkin();
 				}
+				// Test
 
 				$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$p, $i + 1, $wins], $this->plugin->getMsg(null, 'top-winner-1', false));
 				$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$p, $i + 1, $wins], $this->plugin->getMsg(null, 'top-winner-2', false));

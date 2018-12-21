@@ -35,28 +35,16 @@ use larryTheCoder\libs\cages\ArenaCage;
 use larryTheCoder\libs\kits\Kits;
 use larryTheCoder\npc\TopWinners;
 use larryTheCoder\panel\FormPanel;
-use larryTheCoder\provider\{
-	MySqliteDatabase, SkyWarsDatabase, SQLite3Database
-};
+use larryTheCoder\provider\{MySqliteDatabase, SkyWarsDatabase, SQLite3Database};
 use larryTheCoder\task\StartLoadArena;
-use larryTheCoder\utils\{
-	Settings, Utils
-};
+use larryTheCoder\utils\{Settings, Utils};
 use onebone\economyapi\EconomyAPI;
-use pocketmine\command\{
-	Command, CommandSender
-};
-use pocketmine\event\{
-	Listener, player\PlayerJoinEvent
-};
+use pocketmine\command\{Command, CommandSender};
+use pocketmine\event\{Listener, player\PlayerJoinEvent};
 use pocketmine\item\Item;
 use pocketmine\Player;
-use pocketmine\plugin\{
-	Plugin, PluginBase
-};
-use pocketmine\utils\{
-	Config, TextFormat
-};
+use pocketmine\plugin\{Plugin, PluginBase};
+use pocketmine\utils\{Config, TextFormat};
 
 /**
  * The main class for SkyWars plugin
@@ -197,7 +185,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	private function checkPlugins(){
 		$ins = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
-		if($ins instanceof Plugin){
+		if($ins instanceof EconomyAPI){
 			$this->economy = $ins;
 		}
 	}

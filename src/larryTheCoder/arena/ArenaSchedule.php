@@ -30,19 +30,13 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\ParticleTask;
-use larryTheCoder\utils\{
-	Settings, Utils
-};
-use pocketmine\{
-	entity\Effect, entity\EffectInstance, item\Item, nbt\tag\CompoundTag, Player
-};
+use larryTheCoder\utils\{Settings, Utils};
+use pocketmine\{entity\Effect, entity\EffectInstance, Player};
 use pocketmine\block\WallSign;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\math\Vector3;
 use pocketmine\scheduler\Task;
-use pocketmine\tile\{
-	Chest, Sign
-};
+use pocketmine\tile\{Chest, Sign};
 
 /**
  * Arena scheduler that will be used to run a game
@@ -51,6 +45,10 @@ use pocketmine\tile\{
  * @package larryTheCoder\arena
  */
 class ArenaSchedule extends Task {
+
+	// Scoreboard constants
+	const WAITING_SC = 0;
+	const STARTING_SC = 1;
 
 	/** @var string */
 	public $line1;
@@ -63,17 +61,15 @@ class ArenaSchedule extends Task {
 	private $startTime = 60;
 
 	# sign lines
-	private $mainTime = 0;
 	private $endTime = 0;
 	private $updateTime = 0;
 	private $arena;
 
-	private $chestTick = false;
+	private $chestTick = 0;
 	private $tickTipBar = 0;
 
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
-		$this->mainTime = $this->arena->data['arena']['max_game_time'];
 		$this->line1 = str_replace("&", "§", $this->arena->data['signs']['status_line_1']);
 		$this->line2 = str_replace("&", "§", $this->arena->data['signs']['status_line_2']);
 		$this->line3 = str_replace("&", "§", $this->arena->data['signs']['status_line_3']);
@@ -154,10 +150,9 @@ class ArenaSchedule extends Task {
 						}else{
 							$p->sendPopup($this->arena->plugin->getMsg($p, "arena-wait-players", false));
 						}
-
 					}
 					$this->startTime = 60;
-					$this->mainTime = $this->arena->data['arena']['max_game_time'];
+					$this->chestTick = 0;
 					$this->endTime = 0;
 				}
 				break;
@@ -169,7 +164,7 @@ class ArenaSchedule extends Task {
 
 				$this->tickEffect();
 
-				$refill = ($this->mainTime % $this->arena->data['chest']["refill_rate"]);
+				$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
 				if($this->arena->data["chest"]["refill"] !== false && $refill == 0){
 					$this->arena->refillChests();
 					$this->arena->messageArenaPlayers("chest-refilled", false);
@@ -179,6 +174,7 @@ class ArenaSchedule extends Task {
 							$this->arena->plugin->getScheduler()->scheduleRepeatingTask($task, 1);
 						}
 					}
+					$this->chestTick = 0;
 				}
 				if($this->tickTipBar === 15){
 					foreach($this->arena->players as $player){
@@ -190,57 +186,10 @@ class ArenaSchedule extends Task {
 				}
 				$this->tickTipBar++;
 
+				$this->chestTick++;
 
-				$this->mainTime--;
-				if($this->mainTime === 0){
-					$this->arena->totalPlayed = 0;
-					$this->arena->setGame(Arena::ARENA_CELEBRATING);
-					foreach($this->arena->players as $player){
-						$player->setXpLevel(0);
-						$player->removeAllEffects();
-						$player->getInventory()->clearAll();
-						$player->getArmorInventory()->clearAll();
-						$player->setGamemode(Player::CREATIVE);
-						$player->setInvisible();
-						//$this->arena->giveGameItems($player, true);
-						$toGive = Item::get(358, 0);
-						$tag = new CompoundTag();
-						$tag->setTag(new CompoundTag("", []));
-						$tag->setString("map_uuid", 18293883);
-						$toGive->setCompoundTag($tag);
-						$p->getInventory()->setItem(8, $toGive, true);
-					}
-
-					break;
-				}
-
-				$space = str_repeat(" ", 78); // 55 default
-				if($refill !== $this->mainTime + 1){
-					$timer = gmdate('i:s', $refill);
-				}else{
-					$timer = 0;
-				}
 				foreach($this->arena->players as $p){
-					$timerPlace = "";
-					if($timer !== 0){
-						$timerPlace = $space . "§bNext refill: $timer\n";
-					}
-					$p->sendTip("\n" .
-						$space . "§0[ §eSkyWars §0]\n" . $timerPlace .
-						$space . "§bNick: " . $p->getName() . "\n" .
-						$space . "§bPlayers: §c" . count($this->arena->players) . "/" . $this->arena->getMaxPlayers() . "\n" .
-						$space . "§eKills: " . $this->arena->kills[strtolower($p->getName())] . "\n" .
-						$space . "§eTime: " . gmdate('i:s', $this->mainTime) . "\n" .
-						$space . "\n" .
-						$space . "\n" .
-						$space . "\n" .
-						$space . "\n" .
-						$space . "\n" .
-						$space . "\n" .
-						$space . "\n" .
-						$space . "\n" .
-						$space . "\n" .
-						$space);
+					$this->sendScoreboard($p);
 				}
 				break;
 			case Arena::ARENA_CELEBRATING:
@@ -289,20 +238,20 @@ class ArenaSchedule extends Task {
 			return;
 		}
 		foreach($this->arena->players as $player){
-			switch($this->mainTime){
-				case ($this->mainTime / 2):
+			switch($this->chestTick){
+				case ($this->chestTick / 2):
 					$player->sendMessage($this->arena->plugin->getMsg($player, "messageEffectIsComing", true));
 
 					$player->addEffect(new EffectInstance(Effect::getEffect(Effect::NAUSEA), 20 * 60, 1));
 					$player->addEffect(new EffectInstance(Effect::getEffect(Effect::SPEED), 10 * 60, 1));
 					break;
-				case ($this->mainTime / 3):
+				case ($this->chestTick / 3):
 					$player->sendMessage($this->arena->plugin->getMsg($player, "messageEffectIsComing", true));
 
 					$player->addEffect(new EffectInstance(Effect::getEffect(Effect::JUMP), 20 * 60, 1));
 					$player->addEffect(new EffectInstance(Effect::getEffect(Effect::POISON), 10 * 60, 1));
 					break;
-				case ($this->mainTime / 4):
+				case ($this->chestTick / 4):
 					$player->sendMessage($this->arena->plugin->getMsg($player, "messageEffectIsComing", true));
 
 					$player->addEffect(new EffectInstance(Effect::getEffect(Effect::DAMAGE_RESISTANCE), 20 * 60, 1));
@@ -312,7 +261,54 @@ class ArenaSchedule extends Task {
 		}
 	}
 
-	public function addScoreboard(){
-		// TODO: Check the API for this fucking thing
+	public function sendScoreboard(Player $p){
+		$useLegacyMethod = true;
+		if(!$useLegacyMethod){
+			$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
+
+			if($refill !== $this->chestTick + 1){
+				$timer = gmdate('i:s', $refill);
+			}else{
+				$timer = 0;
+			}
+			$score = $this->arena->getScoreboard();
+
+			$i = 0;
+			$score->setLine($p, $i++, "[SkyWars]");
+			$score->setLine($p, $i++, "§bNext refill: $timer");
+			$score->setLine($p, $i++, "§bPlayers: §c" . count($this->arena->players) . "/" . $this->arena->getMaxPlayers() . "\n");
+			$score->setLine($p, $i++, "§eKills: " . $this->arena->kills[strtolower($p->getName())] . "\n");
+			$score->setLine($p, $i, "§eTime: " . gmdate('i:s', $this->chestTick) . "\n");
+		}else{
+			$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
+
+			$space = str_repeat(" ", 78); // 55 default
+			if($refill !== $this->chestTick + 1){
+				$timer = gmdate('i:s', $refill);
+			}else{
+				$timer = 0;
+			}
+			$timerPlace = "";
+			if($timer !== 0){
+				$timerPlace = $space . "§bNext refill: $timer\n";
+			}
+
+			$p->sendTip("\n" .
+				$space . "§0[ §eSkyWars §0]\n" . $timerPlace .
+				$space . "§bNick: " . $p->getName() . "\n" .
+				$space . "§bPlayers: §c" . count($this->arena->players) . "/" . $this->arena->getMaxPlayers() . "\n" .
+				$space . "§eKills: " . $this->arena->kills[strtolower($p->getName())] . "\n" .
+				$space . "§eTime: " . gmdate('i:s', $this->chestTick) . "\n" .
+				$space . "\n" .
+				$space . "\n" .
+				$space . "\n" .
+				$space . "\n" .
+				$space . "\n" .
+				$space . "\n" .
+				$space . "\n" .
+				$space . "\n" .
+				$space . "\n" .
+				$space);
+		}
 	}
 }

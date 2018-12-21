@@ -32,18 +32,11 @@ use larryTheCoder\events\PlayerLoseArenaEvent;
 use larryTheCoder\provider\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
-use pocketmine\{
-	Player, Server
-};
-use pocketmine\event\block\{
-	BlockBreakEvent, BlockPlaceEvent
-};
-use pocketmine\event\entity\{
-	EntityDamageByChildEntityEvent, EntityDamageByEntityEvent, EntityDamageEvent
-};
+use pocketmine\{event\server\DataPacketSendEvent, Player, Server};
+use pocketmine\event\block\{BlockBreakEvent, BlockPlaceEvent};
+use pocketmine\event\entity\{EntityDamageByChildEntityEvent, EntityDamageByEntityEvent, EntityDamageEvent};
 use pocketmine\event\Listener;
-use pocketmine\event\player\{
-	PlayerChatEvent,
+use pocketmine\event\player\{PlayerChatEvent,
 	PlayerCommandPreprocessEvent,
 	PlayerDeathEvent,
 	PlayerDropItemEvent,
@@ -51,19 +44,12 @@ use pocketmine\event\player\{
 	PlayerKickEvent,
 	PlayerMoveEvent,
 	PlayerQuitEvent,
-	PlayerRespawnEvent
-};
+	PlayerRespawnEvent};
 use pocketmine\event\player\cheat\PlayerIllegalMoveEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
-use pocketmine\level\{
-	Location, Position
-};
-use pocketmine\network\mcpe\protocol\{
-	ClientboundMapItemDataPacket, LevelSoundEventPacket, MapInfoRequestPacket
-};
-use pocketmine\utils\{
-	Color, TextFormat
-};
+use pocketmine\level\{Location, Position};
+use pocketmine\network\mcpe\protocol\{ClientboundMapItemDataPacket, LevelSoundEventPacket, MapInfoRequestPacket};
+use pocketmine\utils\{Color, TextFormat};
 
 /**
  * A Listener that will be listen to any Events that will be called
@@ -164,9 +150,33 @@ class ArenaListener implements Listener {
 		}
 	}
 
+	private $tempChest = [];
+
+	/**
+	 * @param DataPacketSendEvent $event
+	 * @priority LOWEST
+	 */
+	public function onPacketSent(DataPacketSendEvent $event){
+		// TODO: Copy Hypixel chest behaviour
+		$pl = $event->getPlayer();
+		$pk = $event->getPacket();
+//		switch(true):
+//			case ($pk instanceof ContainerClosePacket):
+//				$level = $this->arena->getArenaLevel();
+//				$block = $level->getBlock($pk->getVector3());
+//				if($this->arena->inArena($pl)){
+//					$this->arena->chestId[] = $pk->getVector3();
+//					$event->setCancelled();
+//				}
+//			case ($pk instanceof ContainerOpenPacket):
+//				$pos = new Vector3($pk->x, $pk->y, $pk->z);
+//
+//		endswitch;
+	}
+
 	/**
 	 * @param EntityDamageEvent $e
-	 * @priority MONITOR
+	 * @priority HIGHEST
 	 */
 	public function onHit(EntityDamageEvent $e){
 		$now = time();

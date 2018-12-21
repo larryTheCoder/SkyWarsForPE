@@ -99,11 +99,6 @@ class ConfigManager {
 		$this->arena->save();
 	}
 
-	public function setMaxTime(int $data){# OK
-		$this->arena->setNested('arena.max_game_time', $data);
-		$this->arena->save();
-	}
-
 	public function setMaxPlayers(int $data){# OK
 		$this->arena->setNested('arena.max_players', $data);
 		$this->arena->save();
