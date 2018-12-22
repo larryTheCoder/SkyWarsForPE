@@ -1,0 +1,51 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+---
+# This is the cages yaml file for SkyWarsForPE!
+# This can be used to decorate the spawn-pedestals
+# The version of cages-yml
+version-id: 1
+
+# The cages section
+# This is an example of how the cage will be
+# look Like every layers
+cages:
+  # This
+  default:
+    # The cage name
+    cage-name: "Default"
+    # Is this is the default cage?
+    cage-default: true
+    # The cage permission
+    permission: ""
+    # The cage price
+    cage-price: 0
+    # The floor type of block
+    floor: GLASS
+    # The lower middle of block
+    lower-middle: GLASS
+    # The middle of block
+    middle: GLASS
+    # The lower middle of block
+    higher-middle: GLASS
+    # The roof of the cage
+    roof: GLASS
+  remote:
+    # The cage name
+    cage-name: "Default"
+    # The cage permission
+    permission: ""
+    # The cage price
+    cage-price: 0
+    # The floor type of block
+    floor: GLASS
+    # The lower middle of block
+    lower-middle: GLASS
+    # The middle of block
+    middle: GLASS
+    # The lower middle of block
+    higher-middle: GLASS
+    # The roof of the cage
+    roof: GLASS
