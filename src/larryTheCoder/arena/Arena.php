@@ -280,12 +280,9 @@ class Arena {
 				return;
 			}
 		}
-		if($this->getPlayerMode($p) == 1){
-			unset($this->spec[strtolower($p->getName())]);
-		}
-		if(!$kicked){
-			$p->sendMessage($this->plugin->getMsg($p, 'player-leave-2'));
-		}
+
+		if($this->getPlayerMode($p) == 1) unset($this->spec[strtolower($p->getName())]);
+		if(!$kicked) $p->sendMessage($this->plugin->getMsg($p, 'player-leave-2'));
 
 		$p->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
 		$sound->setComponents($p->x, $p->y, $p->z);
@@ -301,6 +298,7 @@ class Arena {
 
 		// Remove his scoreboard display.
 		$this->score->removeDisplay($p);
+		Server::getInstance()->getLogger()->debug("User " . $p->getName() . " is leaving the arena.");
 	}
 
 	/**

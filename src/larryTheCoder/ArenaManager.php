@@ -206,12 +206,9 @@ final class ArenaManager {
 		if(empty($arenas)){
 			return null;
 		}
-		# Otherwise randomize it and put it into return
-		# arena.
-		/** @var Arena $arenaC */
-		$arenaC = $arenas[mt_rand(0, count($arenas) - 1)];
 
-		return $arenaC;
+		# Otherwise randomize it and put it into return arena.
+		return $arenas[mt_rand(0, count($arenas) - 1)];
 	}
 
 	public function getArenas(){
@@ -229,7 +226,8 @@ final class ArenaManager {
 
 	public function isInLevel(Entity $sender): bool{
 		foreach($this->arenas as $arena){
-			if($arena->getLevelName() === $sender->getLevel()->getName()){
+			// Lower cased, no wEIrD aESs tEsxTs
+			if(strtolower($arena->getLevelName()) === strtolower($sender->getLevel()->getName())){
 				return true;
 			}
 		}

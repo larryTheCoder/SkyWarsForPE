@@ -30,21 +30,16 @@ namespace larryTheCoder\panel;
 
 
 use larryTheCoder\arena\Arena;
-use larryTheCoder\formAPI\{
-	event\FormRespondedEvent, response\FormResponseCustom, response\FormResponseModal, response\FormResponseSimple
-};
+use larryTheCoder\formAPI\{event\FormRespondedEvent,
+	response\FormResponseCustom,
+	response\FormResponseModal,
+	response\FormResponseSimple};
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\{
-	ConfigManager, Utils
-};
-use pocketmine\{
-	Player, Server
-};
+use larryTheCoder\utils\{ConfigManager, Utils};
+use pocketmine\{Player, Server};
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
-use pocketmine\item\{
-	BlazeRod, Item
-};
+use pocketmine\item\{BlazeRod, Item};
 use pocketmine\utils\Config;
 
 /**
@@ -66,6 +61,7 @@ class FormPanel implements Listener {
 	const PANEL_SIGN_BEHAVIOUR = 6;
 	const PANEL_DELETE_ARENA = 7;
 	const PANEL_SPECTATOR_SET = 8;
+	const PANEL_CHOSE_CAGE = 9;
 
 	/** @var SkyWarsPE */
 	private $plugin;
@@ -363,6 +359,19 @@ class FormPanel implements Listener {
 					$p->teleport($player[$buttonId]);
 					$this->cleanupArray($p);
 					break;
+				case FormPanel::PANEL_CHOSE_CAGE:
+					if($response->closed){
+						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
+						$this->cleanupArray($p);
+						break;
+					}
+					/** @var FormResponseSimple $responseSi */
+					$responseSi = $response;
+					$cage = $this->command[$p->getName()][$responseSi->getClickedButtonId()];
+					$button = $this->plugin->getCage()->getCages()[strtolower($cage)];
+					$this->plugin->getCage()->setPlayerCage($p, $button);
+					$this->cleanupArray($p);
+					break;
 				default:
 					break;
 			}
@@ -521,6 +530,33 @@ class FormPanel implements Listener {
 
 		$form->sendToPlayer($p);
 		$this->forms[$form->getId()] = FormPanel::PANEL_SIGN_BEHAVIOUR;
+	}
+
+	/**
+	 * Show to player the panel cages.
+	 * Decide their own private spawn pedestals
+	 *
+	 * @param Player $player
+	 */
+	public function showChooseCage(Player $player){
+		$pd = $this->plugin->getDatabase()->getPlayerData($player->getName());
+		$form = $this->plugin->formAPI->createSimpleForm();
+		$form->setTitle("§cChoose Your Cage");
+		$form->setContent("§aVarieties of cages available!");
+
+		$array = [];
+		foreach($this->plugin->getCage()->getCages() as $cage){
+			if(!in_array(strtolower($cage->getCageName()), $pd->cages) && $cage->getPrice() !== 0){
+				$form->addButton("§8" . $cage->getCageName() . " §d§l[$" . $cage->getPrice() . "]");
+			}else{
+				$form->addButton("§8" . $cage->getCageName());
+			}
+			$array[] = $cage->getCageName();
+		}
+
+		$form->sendToPlayer($player);
+		$this->command[$player->getName()] = $array;
+		$this->forms[$form->getId()] = FormPanel::PANEL_CHOSE_CAGE;
 	}
 
 	private function joinSignSetup(Player $player, SkyWarsData $data){

@@ -31,9 +31,7 @@ namespace larryTheCoder\commands;
 
 use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
-use pocketmine\command\{
-	Command, CommandSender
-};
+use pocketmine\command\{Command, CommandSender};
 use pocketmine\Player;
 
 final class SkyWarsCommand {
@@ -112,8 +110,23 @@ final class SkyWarsCommand {
 					if($sender->hasPermission("sw.command.kit")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'kit-help', false));
 					}
+					if($sender->hasPermission("sw.command.cage")){
+						$sender->sendMessage($this->plugin->getMsg($sender, 'cage-help', false));
+					}
 
 					$sender->sendMessage($this->plugin->getMsg($sender, 'about-help', false));
+					break;
+				case "cage":
+					if(!$sender->hasPermission("sw.command.cage")){
+						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						break;
+					}
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+						break;
+					}
+
+					$this->plugin->panel->showChooseCage($sender);
 					break;
 				case "random":
 					if(!$sender->hasPermission("sw.command.random")){
@@ -303,10 +316,10 @@ final class SkyWarsCommand {
 					}
 					break;
 				case "about":
-					$sender->sendMessage("§aSkyWarsPE-Rewrite §e(C) §c2018,§d larryTheCoder, NycuRO");
-					$sender->sendMessage("§aGitHub:§d https://www.github.com/larryTheCoder");
-					$sender->sendMessage("§aPlugin-Status:§a Public");
-					$sender->sendMessage("§aPlugin-License:§d Wizardry License");
+					$ver = $this->plugin->getDescription()->getVersion();
+					$sender->sendMessage("§aSkyWarsForPE, §eDream Become Possible.");
+					$sender->sendMessage("This plugin is running SkyWarsForPE v" . $ver . " by larryTheCoder!");
+					$sender->sendMessage("Source-link: https://github.com/larryTheCoder/SkyWarsForPE");
 					break;
 				default:
 					$sender->sendMessage($this->plugin->getMsg($sender, 'help-main'));

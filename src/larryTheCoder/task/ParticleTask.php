@@ -31,9 +31,7 @@ namespace larryTheCoder\task;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
-use pocketmine\level\particle\{
-	GenericParticle, Particle
-};
+use pocketmine\level\particle\{GenericParticle, Particle};
 use pocketmine\math\Vector3;
 use pocketmine\scheduler\Task;
 use pocketmine\tile\Chest;
@@ -62,7 +60,7 @@ class ParticleTask extends Task {
 	 */
 	public function onRun(int $currentTick){
 		$this->lifeTick++;
-		if($this->lifeTick >= 360){
+		if(!$this->chest->isValid() || $this->lifeTick >= 360){
 			SkyWarsPE::getInstance()->getScheduler()->cancelTask($this->getTaskId());
 
 			return;

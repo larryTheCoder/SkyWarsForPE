@@ -28,7 +28,6 @@
 
 namespace larryTheCoder\libs\kits;
 
-use larryTheCoder\exceptions\DataExistsException;
 use larryTheCoder\SkyWarsPE;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\Player;
@@ -60,10 +59,10 @@ class Kits {
 		if(is_null($api)){
 			throw new \InvalidArgumentException("null Kits were given to register in swKit");
 		}
-		if(isset($this->kits[$api->getKitEID()])){
-			throw new DataExistsException("Could not add kit ID#{$api->getKitEID()}, data already exists!");
+		if(isset($this->kits[$api->getKitName()])){
+			throw new \LogicException("Could not add kit UUID#{$api->getKitName()}, data already exists!");
 		}
-		$this->kits[$api->getKitEID()] = $api;
+		$this->kits[$api->getKitName()] = $api;
 		Server::getInstance()->getLogger()->info($this->plugin->getPrefix() . "§aRegistered Kit:§e {$api->getKitName()}.");
 	}
 

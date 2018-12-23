@@ -28,23 +28,54 @@
 
 namespace larryTheCoder\libs\kits;
 
-use pocketmine\event\Event;
+
+use pocketmine\item\Item;
 use pocketmine\Player;
 
-/**
- * This is a KitsAPI, used to register the Kits to
- * the arena. Used by players. You can extends this
- * class to make a cool kits for this game.
- *
- * @package larryTheCoder\kits
- */
-abstract class KitsAPI {
+class NormalKits extends KitsAPI {
+
+	/** @var string */
+	private $description;
+	/** @var string */
+	private $name;
+	/** @var int */
+	private $price;
+	/** @var Item[] */
+	private $item;
+	/** @var Item[] */
+	private $armourContent;
+
+	public function __construct(string $name, int $price, string $description){
+		$this->name = $name;
+		$this->price = $price;
+		$this->description = $description;
+	}
+
+	/**
+	 * Set the inventory item
+	 *
+	 * @param Item[] $item
+	 */
+	public function setInventoryItem(array $item){
+		$this->item = $item;
+	}
+
+	/**
+	 * Set the armour inventory content
+	 *
+	 * @param Item[] $item
+	 */
+	public function setArmourItem(array $item){
+		$this->armourContent = $item;
+	}
 
 	/**
 	 * Get the kit name for the Kit
 	 * @return string
 	 */
-	public abstract function getKitName(): string;
+	public function getKitName(): string{
+		return $this->name;
+	}
 
 	/**
 	 * The price for the kits, depends on the
@@ -53,7 +84,9 @@ abstract class KitsAPI {
 	 *
 	 * @return int
 	 */
-	public abstract function getKitPrice(): int;
+	public function getKitPrice(): int{
+		return $this->price;
+	}
 
 	/**
 	 * Get the description for the Kit
@@ -61,7 +94,9 @@ abstract class KitsAPI {
 	 *
 	 * @return string
 	 */
-	public abstract function getDescription(): string;
+	public function getDescription(): string{
+		return $this->description;
+	}
 
 	/**
 	 * Provide to execute this kit/feature. This
@@ -69,18 +104,26 @@ abstract class KitsAPI {
 	 *
 	 * @param Player $p
 	 */
-	public abstract function executeKit(Player $p);
-
-	/**
-	 * Start to listen to events in the arena from
-	 * this plugin. Its will only be listened to
-	 * the player that owns this kit. No need to worry
-	 * if the event will be executed trough other player.
-	 *
-	 * @param Event $event
-	 */
-	public function eventExecution(Event $event){
-
+	public function executeKit(Player $p){
+		$p->getInventory()->setContents($this->item);
+		$p->getArmorInventory()->setHelmet($this->armourContent[0]);
+		$p->getArmorInventory()->setChestplate($this->armourContent[1]);
+		$p->getArmorInventory()->setLeggings($this->armourContent[2]);
+		$p->getArmorInventory()->setBoots($this->armourContent[3]);
 	}
 
+	/**
+	 * @return Item[]
+	 */
+	public function getItems(): array{
+		return $this->item;
+	}
+
+	/**
+	 * @return Item[]
+	 */
+	public function getArmourContents(): array{
+
+		return $this->armourContent;
+	}
 }
