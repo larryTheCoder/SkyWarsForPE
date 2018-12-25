@@ -1,6 +1,6 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsPE
-version: "1.9.2 Xandrine"
+version: "1.9.3"
 api: 3.0.0+ALPHA9
 author: larryTheCoder
 commands:
