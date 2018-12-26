@@ -33,15 +33,17 @@ use larryTheCoder\formAPI\FormAPI;
 use larryTheCoder\items\RandomChest;
 use larryTheCoder\libs\cages\ArenaCage;
 use larryTheCoder\libs\kits\Kits;
-use larryTheCoder\npc\TopWinners;
+use larryTheCoder\npc\FakeHuman;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\{MySqliteDatabase, SkyWarsDatabase, SQLite3Database};
 use larryTheCoder\task\StartLoadArena;
 use larryTheCoder\utils\{Settings, Utils};
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
+use pocketmine\entity\Entity;
 use pocketmine\event\{Listener, player\PlayerJoinEvent};
 use pocketmine\item\Item;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\{Plugin, PluginBase};
 use pocketmine\utils\{Config, TextFormat};
@@ -168,6 +170,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 
+		$this->loadHumans();
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager($this);
 		$this->formAPI = new FormAPI($this);
@@ -177,10 +180,39 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->checkLibraries();
 		$this->getArenaManager()->checkArenas();
 		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
-		$this->getScheduler()->scheduleRepeatingTask(new TopWinners($this), 1);
 		$this->checkLobby();
 
 		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
+	}
+
+
+	private function loadHumans(){
+		$cfg = new Config($this->getDataFolder() . "npc.yml", Config::YAML);
+
+		$npc1E = $cfg->get("npc-1", []);
+		$npc2E = $cfg->get("npc-2", []);
+		$npc3E = $cfg->get("npc-3", []);
+
+		if(count($npc1E) < 1 || count($npc2E) < 1 || count($npc3E) < 1){
+			$this->getServer()->getLogger()->info($this->getPrefix() . "§7No TopWinners spawn location were found.");
+			$this->getServer()->getLogger()->info($this->getPrefix() . "§7Please reconfigure TopWinners spawn locations");
+
+			return;
+		}
+
+		$level = $this->getServer()->getLevelByName($npc1E[3]);
+
+		$nbt1 = Entity::createBaseNBT(new Vector3($npc1E[0], $npc1E[1], $npc1E[2]));
+		$nbt2 = Entity::createBaseNBT(new Vector3($npc2E[0], $npc2E[1], $npc2E[2]));
+		$nbt3 = Entity::createBaseNBT(new Vector3($npc3E[0], $npc3E[1], $npc3E[2]));
+
+		$entity1 = new FakeHuman($level, $nbt1, 1);
+		$entity2 = new FakeHuman($level, $nbt2, 2);
+		$entity3 = new FakeHuman($level, $nbt3, 3);
+
+		$entity1->spawnToAll();
+		$entity2->spawnToAll();
+		$entity3->spawnToAll();
 	}
 
 	private function checkPlugins(){

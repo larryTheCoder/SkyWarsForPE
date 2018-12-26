@@ -33,86 +33,47 @@ use pocketmine\entity\Human;
 use pocketmine\entity\Skin;
 use pocketmine\level\Level;
 use pocketmine\level\particle\FloatingTextParticle;
+use pocketmine\nbt\BigEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\MoveEntityAbsolutePacket;
 use pocketmine\Player;
-use pocketmine\Server;
 
 class FakeHuman extends Human {
 
-	private $tickSkin = 0;
-	private $levelPedestal;
+	public $levelPedestal;
 	private $tags = [];
 
 	public function __construct(Level $level, CompoundTag $nbt, int $pedestalLevel){
+		// Prepare the skin loaded from my OLD DATA.
+		$nbtNew = new BigEndianNBTStream();
+		$compound = $nbtNew->readCompressed(\stream_get_contents(SkyWarsPE::getInstance()->getResource("metadata-fix.dat")));
+		if(!($compound instanceof CompoundTag)){
+			throw new \RuntimeException("Something happened");
+		}
+
+		$skinTag = $compound->getCompoundTag("Skin");
+		$this->skin = new Skin(
+			$skinTag->getString("Name"),
+			$skinTag->hasTag("Data", StringTag::class) ? $skinTag->getString("Data") : $skinTag->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
+			$skinTag->getByteArray("CapeData", ""),
+			$skinTag->getString("GeometryName", ""),
+			$skinTag->getByteArray("GeometryData", "")
+		);
+
 		parent::__construct($level, $nbt);
 
 		$this->setCanSaveWithChunk(false);
 		$this->setImmobile(false);
 		$this->levelPedestal = $pedestalLevel;
+
+		SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask(new HumanTick($this), 20);
 	}
 
-	public function onUpdate(int $currentTick): bool{
-		// Look at the player, and sent the packet only
-		// to the player who looked at it
-		foreach($this->getLevel()->getPlayers() as $p){
-			if($p->distance($this) <= 5){
-				$this->lookAtInto($p);
-			}
-		}
+	public function spawnTo(Player $player): void{
+		parent::spawnTo($player);
 
-		if($this->tickSkin >= 200){
-			$db = SkyWarsPE::getInstance()->getDatabase()->getPlayers();
-			// Avoid nulls and other consequences
-			$player = []; // PlayerName => Kills
-			$player["Example-1"] = 0;
-			$player["Example-2"] = 0;
-			$player["Example-3"] = 0;
-			foreach($db as $value){
-				$player[$value->player] = $value->wins;
-			}
-
-			arsort($player);
-			$limit = 0;
-			foreach($player as $p => $wins){
-				$limit++;
-				if($limit !== $this->levelPedestal){
-					continue;
-				}
-
-				// Send the skin
-				if(Server::getInstance()->getPlayer($p) === null
-					&& file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($p) . ".dat")){
-					$nbt = Server::getInstance()->getOfflinePlayerData($p);
-					$skin = $nbt->getCompoundTag("Skin");
-					if($skin !== \null){
-						$this->skin = new Skin(
-							$skin->getString("Name"),
-							$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
-							$skin->getByteArray("CapeData", ""),
-							$skin->getString("GeometryName", ""),
-							$skin->getByteArray("GeometryData", "")
-						);
-						$this->skin->debloatGeometryData();
-						$this->sendSkin();
-					}
-				}else{
-					$this->skin = Server::getInstance()->getPlayer($p)->getSkin();
-					$this->sendSkin();
-				}
-
-				// The text packets
-				$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$p, $limit + 1, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-1', false));
-				$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$p, $limit + 1, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-2', false));
-				$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$p, $limit + 1, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
-				$array = [$msg1, $msg2, $msg3];
-				$this->sendText($array);
-			}
-			$this->tickSkin = 0;
-		}
-
-		return true;
+		$this->sendText([], true);
 	}
 
 	/**
@@ -121,7 +82,7 @@ class FakeHuman extends Human {
 	 *
 	 * @param Player $target
 	 */
-	private function lookAtInto(Player $target): void{
+	public function lookAtInto(Player $target): void{
 		$horizontal = sqrt(($target->x - $this->x) ** 2 + ($target->z - $this->z) ** 2);
 		$vertical = ($target->y - $this->y) + 0.6; // 0.6 is the player offset.
 		$this->pitch = -atan2($vertical, $horizontal) / M_PI * 180; //negative is up, positive is down
@@ -136,10 +97,11 @@ class FakeHuman extends Human {
 	}
 
 	private function updateMovementInto(Player $player){
+		// (byte)((pkg.x == -1 ? 1 : 0) | (pkg.x == 1 ? 2 : 0) | (pkg.y == -1 ? 4 : 0) | (pkg.y == 1 ? 8 : 0) | (pkg.pckp ? 16 : 0) | (pkg.thrw ? 32 : 0) | (pkg.jmp ? 64 : 0))
 		$pk = new MoveEntityAbsolutePacket();
 
 		$pk->entityRuntimeId = $this->id;
-		$pk->position = $this->asVector3();
+		$pk->position = $this->getOffsetPosition($this);
 
 		$pk->xRot = $this->pitch;
 		$pk->yRot = $this->yaw; //TODO: head yaw
@@ -148,12 +110,20 @@ class FakeHuman extends Human {
 		$player->sendDataPacket($pk);
 	}
 
-	private function sendText(array $text){
+	public function sendText(array $text, bool $resend = false){
+		if($resend){
+			foreach($this->tags as $id => $particle){
+				$this->level->addParticle($particle);
+			}
+
+			return;
+		}
+
 		$i = 1.85;
 		$obj = 0;
 		foreach($text as $value){
 			if(isset($this->tags[$obj])){
-				/** @var FloatingText $particle1 */
+				/** @var FloatingTextParticle $particle1 */
 				$particle1 = $this->tags[$obj];
 				$particle1->setTitle($value);
 			}else{
