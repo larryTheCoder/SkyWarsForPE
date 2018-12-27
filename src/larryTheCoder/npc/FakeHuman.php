@@ -42,6 +42,10 @@ use pocketmine\Player;
 
 class FakeHuman extends Human {
 
+	// Override methods
+	protected $gravity = 0;
+	protected $drag = 0;
+
 	public $levelPedestal;
 	private $tags = [];
 
@@ -66,9 +70,10 @@ class FakeHuman extends Human {
 
 		$this->setCanSaveWithChunk(false);
 		$this->setImmobile(false);
+		$this->setScale(0.8);
 		$this->levelPedestal = $pedestalLevel;
 
-		SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask(new HumanTick($this), 40); // Tick every 2 seconds
+		SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask(new HumanTick($this), 3);
 	}
 
 	public function spawnTo(Player $player): void{
@@ -142,7 +147,7 @@ class FakeHuman extends Human {
 			return;
 		}
 
-		$i = 1.85;
+		$i = 2.15;
 		$obj = 0;
 		foreach($text as $value){
 			if(isset($this->tags[$obj])){

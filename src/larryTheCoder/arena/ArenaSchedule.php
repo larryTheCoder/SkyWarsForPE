@@ -31,7 +31,11 @@ namespace larryTheCoder\arena;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\ParticleTask;
 use larryTheCoder\utils\{Settings, Utils};
-use pocketmine\{entity\Effect, entity\EffectInstance, Player};
+use pocketmine\{entity\Effect,
+	entity\EffectInstance,
+	network\mcpe\protocol\BlockEventPacket,
+	network\mcpe\protocol\LevelSoundEventPacket,
+	Player};
 use pocketmine\block\WallSign;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\math\Vector3;
@@ -162,11 +166,11 @@ class ArenaSchedule extends Task {
 					$this->arena->fallTime--;
 				}
 
-				$this->tickChest();
 				$this->tickEffect();
 
 				$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
 				if($this->arena->data["chest"]["refill"] !== false && $refill == 0){
+					$this->tickChest();
 					$this->arena->refillChests();
 					$this->arena->messageArenaPlayers("chest-refilled", false);
 					foreach($this->arena->getArenaLevel()->getTiles() as $tiles){
@@ -313,7 +317,25 @@ class ArenaSchedule extends Task {
 		}
 	}
 
+	/**
+	 * Close the chest and send them to all of the players
+	 * in the arena.
+	 */
 	private function tickChest(){
-		// TODO
+		$level = $this->arena->getArenaLevel();
+		foreach($this->arena->chestId as $chest){
+			/** @var Vector3 $chestPos */
+			$chestPos = $chest[0];
+
+			$pk = new BlockEventPacket();
+			$pk->x = (int)$chestPos->x;
+			$pk->y = (int)$chestPos->y;
+			$pk->z = (int)$chestPos->z;
+			$pk->eventType = 1; // It's always 1 for a chest
+			$pk->eventData = 0; // Close the chest lmao
+			$level->broadcastPacketToViewers($chestPos, $pk);
+		}
+		// Send sound to all of the players
+		$level->broadcastLevelSoundEvent(new Vector3(), LevelSoundEventPacket::SOUND_CHEST_CLOSED, -1, -1, false, true);
 	}
 }

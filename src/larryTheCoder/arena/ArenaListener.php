@@ -32,7 +32,7 @@ use larryTheCoder\events\PlayerLoseArenaEvent;
 use larryTheCoder\provider\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
-use pocketmine\{event\server\DataPacketSendEvent, math\Vector3, Player, Server, tile\Chest};
+use pocketmine\{event\server\DataPacketSendEvent, math\Vector3, Player, Server};
 use pocketmine\event\block\{BlockBreakEvent, BlockPlaceEvent};
 use pocketmine\event\entity\{EntityDamageByChildEntityEvent, EntityDamageByEntityEvent, EntityDamageEvent};
 use pocketmine\event\Listener;
@@ -48,9 +48,8 @@ use pocketmine\event\player\{PlayerChatEvent,
 use pocketmine\event\player\cheat\PlayerIllegalMoveEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\level\{Location, Position};
-use pocketmine\network\mcpe\protocol\{ClientboundMapItemDataPacket,
-	ContainerClosePacket,
-	ContainerOpenPacket,
+use pocketmine\network\mcpe\protocol\{BlockEventPacket,
+	ClientboundMapItemDataPacket,
 	LevelSoundEventPacket,
 	MapInfoRequestPacket};
 use pocketmine\utils\{Color, TextFormat};
@@ -154,9 +153,6 @@ class ArenaListener implements Listener {
 		}
 	}
 
-	// Temporary chests
-	private $tempChest = [];
-
 	/**
 	 * @param DataPacketSendEvent $event
 	 * @priority LOWEST
@@ -164,33 +160,20 @@ class ArenaListener implements Listener {
 	public function onPacketSent(DataPacketSendEvent $event){
 		$pl = $event->getPlayer();
 		$pk = $event->getPacket();
-		$level = $this->arena->getArenaLevel();
 		if(!$this->arena->inArena($pl)){
 			return;
 		}
 		switch(true):
-			case ($pk instanceof ContainerClosePacket):
-				if(!isset($this->tempChest[$pk->windowId])){
+			case ($pk instanceof BlockEventPacket):
+				if($pk->eventType !== 1 && $pk->eventData === 0){
 					break;
 				}
 				// This chest is being closed, prepare to cancel the packet.
-				$pos = $this->tempChest[$pk->windowId];
-				unset($this->tempChest[$pk->windowId]);
+				$pos = new Vector3($pk->x, $pk->y, $pk->z);
 
-				$this->arena->chestId[] = [$pos, $pk->windowId];
-				//$event->setCancelled(); // TODO
+				$this->arena->chestId[] = $pos;
+				$event->setCancelled();
 				break;
-			case ($pk instanceof ContainerOpenPacket):
-				// Check if the container is a chest.
-				$block = $level->getBlock($pk->getVector3());
-				if(!($block instanceof Chest)){
-					break;
-				}
-
-				// Store the chest into array.
-				$this->tempChest[$pk->windowId] = new Vector3($pk->x, $pk->y, $pk->z);
-				break;
-
 		endswitch;
 	}
 
