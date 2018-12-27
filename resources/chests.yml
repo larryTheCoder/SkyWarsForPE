@@ -58,10 +58,11 @@ items:
   - {
     type: WOODEN_SWORD,
     # Here, you can either pick to use the name
-    # Of the enchantment, you can't put the ID of it
-    # It would not work great.
-    # 'ENCHANTMENT:LEVEL'
-    enchantments: "SHARPNESS:3 SHARPNESS:3"
+    # Of the enchantment, you can either use the
+    # Enchantment name or the enchantment id, leave a
+    # Space if you want to add another enchantment
+    # Eg: 'ENCHANTMENT:LEVEL'
+    enchantments: "14:3 SHARPNESS:3"
   }
   - {
     type: COOKED_PORKCHOP,

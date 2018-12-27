@@ -69,7 +69,7 @@ class MySqliteDatabase extends SkyWarsDatabase {
 	private function prepare(){
 		$this->sqlCreateNewData = $this->db->prepare("INSERT INTO players(playerName) VALUES (?);");
 		$this->sqlGetPlayerData = $this->db->prepare("SELECT * FROM players WHERE playerName = ?;");
-		$this->sqlUpdateNewData = $this->db->prepare("UPDATE players SET playerName = ?, playerTime = ?, kills = ?, deaths = ?, wins = ?, lost = ?;");
+		$this->sqlUpdateNewData = $this->db->prepare("UPDATE players SET playerName = ?, playerTime = ?, kills = ?, deaths = ?, wins = ?, lost = ? WHERE playerName = ?");
 
 		$this->sqlGetLobbyPos = $this->db->prepare("SELECT * FROM lobby WHERE worldName IS NOT NULL;");
 		$this->sqlGetLobbyInsert = $this->db->prepare("INSERT INTO lobby(lobbyX, lobbyY, lobbyZ, worldName) VALUES (?, ?, ?, ?);");
@@ -163,7 +163,7 @@ class MySqliteDatabase extends SkyWarsDatabase {
 
 		$stmt = $this->sqlUpdateNewData;
 		$stmt->reset();
-		$stmt->bind_param("siiiii", $p, $pd->time, $pd->kill, $pd->death, $pd->wins, $pd->lost);
+		$stmt->bind_param("siiiiis", $p, $pd->time, $pd->kill, $pd->death, $pd->wins, $pd->lost, $p);
 		$result = $stmt->execute();
 		if($result === false){
 			$this->getSW()->getLogger()->error($stmt->error);

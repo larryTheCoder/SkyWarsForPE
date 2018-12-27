@@ -31,6 +31,7 @@ namespace larryTheCoder\npc;
 use larryTheCoder\SkyWarsPE;
 use pocketmine\entity\Human;
 use pocketmine\entity\Skin;
+use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\level\Level;
 use pocketmine\level\particle\FloatingTextParticle;
 use pocketmine\nbt\BigEndianNBTStream;
@@ -67,13 +68,22 @@ class FakeHuman extends Human {
 		$this->setImmobile(false);
 		$this->levelPedestal = $pedestalLevel;
 
-		SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask(new HumanTick($this), 20);
+		SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask(new HumanTick($this), 40); // Tick every 2 seconds
 	}
 
 	public function spawnTo(Player $player): void{
 		parent::spawnTo($player);
 
-		$this->sendText([], true);
+		// Resend the text packet to the player
+		$this->sendText([], true, $player);
+	}
+
+	public function updateMovement(bool $teleport = \false): void{
+		// Override: Do not do anything
+	}
+
+	public function attack(EntityDamageEvent $source): void{
+		$source->setCancelled();
 	}
 
 	/**
@@ -110,10 +120,23 @@ class FakeHuman extends Human {
 		$player->sendDataPacket($pk);
 	}
 
-	public function sendText(array $text, bool $resend = false){
+	public function sendText(array $text, bool $resend = false, Player $players = null){
 		if($resend){
 			foreach($this->tags as $id => $particle){
-				$this->level->addParticle($particle);
+				if(is_null($players)){
+					$this->level->addParticle($particle);
+				}else{
+					$pk = $particle->encode();
+					if(!\is_array($pk)){
+						$pk = [$pk];
+					}
+
+					if($players === \null){
+						$this->level->addParticle($particle);
+					}else{
+						foreach($pk as $ack) $players->sendDataPacket($ack);
+					}
+				}
 			}
 
 			return;

@@ -32,7 +32,7 @@ use larryTheCoder\events\PlayerLoseArenaEvent;
 use larryTheCoder\provider\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
-use pocketmine\{event\server\DataPacketSendEvent, Player, Server};
+use pocketmine\{event\server\DataPacketSendEvent, math\Vector3, Player, Server, tile\Chest};
 use pocketmine\event\block\{BlockBreakEvent, BlockPlaceEvent};
 use pocketmine\event\entity\{EntityDamageByChildEntityEvent, EntityDamageByEntityEvent, EntityDamageEvent};
 use pocketmine\event\Listener;
@@ -48,7 +48,11 @@ use pocketmine\event\player\{PlayerChatEvent,
 use pocketmine\event\player\cheat\PlayerIllegalMoveEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\level\{Location, Position};
-use pocketmine\network\mcpe\protocol\{ClientboundMapItemDataPacket, LevelSoundEventPacket, MapInfoRequestPacket};
+use pocketmine\network\mcpe\protocol\{ClientboundMapItemDataPacket,
+	ContainerClosePacket,
+	ContainerOpenPacket,
+	LevelSoundEventPacket,
+	MapInfoRequestPacket};
 use pocketmine\utils\{Color, TextFormat};
 
 /**
@@ -150,6 +154,7 @@ class ArenaListener implements Listener {
 		}
 	}
 
+	// Temporary chests
 	private $tempChest = [];
 
 	/**
@@ -157,21 +162,36 @@ class ArenaListener implements Listener {
 	 * @priority LOWEST
 	 */
 	public function onPacketSent(DataPacketSendEvent $event){
-		// TODO: Copy Hypixel chest behaviour
 		$pl = $event->getPlayer();
 		$pk = $event->getPacket();
-//		switch(true):
-//			case ($pk instanceof ContainerClosePacket):
-//				$level = $this->arena->getArenaLevel();
-//				$block = $level->getBlock($pk->getVector3());
-//				if($this->arena->inArena($pl)){
-//					$this->arena->chestId[] = $pk->getVector3();
-//					$event->setCancelled();
-//				}
-//			case ($pk instanceof ContainerOpenPacket):
-//				$pos = new Vector3($pk->x, $pk->y, $pk->z);
-//
-//		endswitch;
+		$level = $this->arena->getArenaLevel();
+		if(!$this->arena->inArena($pl)){
+			return;
+		}
+		switch(true):
+			case ($pk instanceof ContainerClosePacket):
+				if(!isset($this->tempChest[$pk->windowId])){
+					break;
+				}
+				// This chest is being closed, prepare to cancel the packet.
+				$pos = $this->tempChest[$pk->windowId];
+				unset($this->tempChest[$pk->windowId]);
+
+				$this->arena->chestId[] = [$pos, $pk->windowId];
+				//$event->setCancelled(); // TODO
+				break;
+			case ($pk instanceof ContainerOpenPacket):
+				// Check if the container is a chest.
+				$block = $level->getBlock($pk->getVector3());
+				if(!($block instanceof Chest)){
+					break;
+				}
+
+				// Store the chest into array.
+				$this->tempChest[$pk->windowId] = new Vector3($pk->x, $pk->y, $pk->z);
+				break;
+
+		endswitch;
 	}
 
 	/**
@@ -295,7 +315,11 @@ class ArenaListener implements Listener {
 				$e->setDeathMessage("");
 				$e->setDrops([]);
 				# Call the event
-				$this->plugin->getServer()->getPluginManager()->callEvent($event = new PlayerLoseArenaEvent($this->plugin, $p, $this->arena));
+				$event = new PlayerLoseArenaEvent($this->plugin, $p, $this->arena);
+				try{
+					$event->call();
+				}catch(\ReflectionException $e){
+				}
 				# Set the database data
 				$this->setDeathData($p);
 

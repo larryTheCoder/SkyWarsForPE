@@ -34,9 +34,7 @@ use larryTheCoder\utils\Utils;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
-use pocketmine\utils\{
-	Config, MainLogger
-};
+use pocketmine\utils\{Config, MainLogger};
 
 class RandomChest {
 
@@ -129,10 +127,10 @@ class RandomChest {
 						foreach($encAll as $value){
 							$encType = explode(":", $value);
 							if(count($encType) > 1 && count($encType) < 3){
-								if(is_string($encType[0])){
-									$encConfirm = Enchantment::getEnchantmentByName($encType[0]);
-								}elseif(is_numeric($encType[0])){
+								if(is_numeric($encType[0])){
 									$encConfirm = Enchantment::getEnchantment(intval($encType[0]));
+								}elseif(is_string($encType[0])){
+									$encConfirm = Enchantment::getEnchantmentByName($encType[0]);
 								}else{
 									$this->errorLog("Invalid chests.yml: enchantment `" . $encType[0] . "` in `" . $key . "` doesn't appears to be correct.");
 									continue;

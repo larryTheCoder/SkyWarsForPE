@@ -30,15 +30,12 @@ declare(strict_types = 1);
 namespace larryTheCoder\formAPI;
 
 use larryTheCoder\formAPI\event\FormRespondedEvent;
-use larryTheCoder\formAPI\form\{
-	CustomForm, Form, ModalForm, SimpleForm
-};
+use larryTheCoder\formAPI\form\{CustomForm, Form, ModalForm, SimpleForm};
 use larryTheCoder\SkyWarsPE;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\ModalFormResponsePacket;
-use pocketmine\Server;
 
 class FormAPI implements Listener {
 
@@ -94,7 +91,10 @@ class FormAPI implements Listener {
 				$modal = $this->forms[$formId]->getResponseModal();
 				$modal->setData(trim($pk->formData));
 				$event = new FormRespondedEvent($player, $this->forms[$formId], $modal);
-				Server::getInstance()->getPluginManager()->callEvent($event);
+				try{
+					$event->call();
+				}catch(\ReflectionException $e){
+				}
 				$ev->setCancelled();
 			}
 		}

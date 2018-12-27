@@ -38,14 +38,13 @@ class HumanTick extends Task {
 
 	/** @var FakeHuman */
 	private $entity;
-	private $tickSkin = 20;
+	private $tickSkin = 10;
 	private $levelPedestal;
 
 	public function __construct(FakeHuman $entity){
 		$this->entity = $entity;
 		$this->levelPedestal = $entity->levelPedestal;
 	}
-
 
 	/**
 	 * Actions to execute when run
@@ -68,7 +67,7 @@ class HumanTick extends Task {
 
 		// Then send this player skins to the players.
 		// Tick every 2 seconds
-		if($this->tickSkin >= 20){
+		if($this->tickSkin >= 10){
 			$db = SkyWarsPE::getInstance()->getDatabase()->getPlayers();
 			// Avoid nulls and other consequences
 			$player = []; // PlayerName => Kills

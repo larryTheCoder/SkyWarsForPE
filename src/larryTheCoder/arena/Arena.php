@@ -698,7 +698,12 @@ class Arena {
 
 			return;
 		}
-		$this->plugin->getServer()->getPluginManager()->callEvent($e = new PlayerJoinArenaEvent($this->plugin, $p, $this));
+		$e = new PlayerJoinArenaEvent($this->plugin, $p, $this);
+		try{
+			$e->call();
+		}catch(\ReflectionException $e){
+		}
+
 		if($e->isCancelled()){
 			return;
 		}

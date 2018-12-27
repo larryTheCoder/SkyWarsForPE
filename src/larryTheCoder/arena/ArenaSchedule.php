@@ -162,6 +162,7 @@ class ArenaSchedule extends Task {
 					$this->arena->fallTime--;
 				}
 
+				$this->tickChest();
 				$this->tickEffect();
 
 				$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
@@ -310,5 +311,9 @@ class ArenaSchedule extends Task {
 				$space . "\n" .
 				$space);
 		}
+	}
+
+	private function tickChest(){
+		// TODO
 	}
 }
