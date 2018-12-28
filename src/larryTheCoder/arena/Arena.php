@@ -292,13 +292,14 @@ class Arena {
 		$p->setXpLevel(0);
 		$p->removeAllEffects();
 		$p->setGamemode(0);
-		$p->setInvisible(false);
 		$p->getInventory()->clearAll();
 		$p->getArmorInventory()->clearAll();
 
 		// Remove his scoreboard display.
 		$this->score->removeDisplay($p);
-		Server::getInstance()->getLogger()->debug("User " . $p->getName() . " is leaving the arena.");
+
+		Utils::sendDebug("leaveArena() is being called");
+		Utils::sendDebug("User " . $p->getName() . " is leaving the arena.");
 	}
 
 	/**
@@ -359,8 +360,7 @@ class Arena {
 				$player->setGamemode(0);
 				$player->getInventory()->clearAll();
 				$player->getArmorInventory()->clearAll();
-				$player->setGamemode(Player::CREATIVE);
-				$player->setInvisible();
+				$player->setGamemode(Player::SPECTATOR);
 				$this->giveGameItems($player, true);
 			}
 
@@ -433,6 +433,8 @@ class Arena {
 		$this->setGame(self::ARENA_WAITING_PLAYERS);
 		$this->unsetAllPlayers();
 		$this->reload();
+
+		Utils::sendDebug("stopGame(" . $forced . ") is being called");
 	}
 
 	public function broadcastResult(){
@@ -543,6 +545,8 @@ class Arena {
 		$this->players = [];
 		$this->winners = [];
 		$this->kills = [];
+
+		Utils::sendDebug("unsetAllPlayers() is being called");
 	}
 
 	/**

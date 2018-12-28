@@ -95,7 +95,11 @@ class ArenaSchedule extends Task {
 			if($this->updateTime >= $this->arena->data['signs']['sign_update_time']){
 				$vars = ['%alive', '%status', '%max', '&', '%world', '%prefix', '%name'];
 				$replace = [count($this->arena->players), $this->arena->getStatus(), $this->arena->getMaxPlayers(), "§", $this->arena->data['arena']['arena_world'], SkyWarsPE::getInstance()->getPrefix(), $this->arena->data['arena-name']];
-				$tile = $this->arena->plugin->getServer()->getLevelByName($this->arena->data['signs']['join_sign_world'])->getTile(new Vector3($this->arena->data['signs']['join_sign_x'], $this->arena->data['signs']['join_sign_y'], $this->arena->data['signs']['join_sign_z']));
+				$level = $this->arena->plugin->getServer()->getLevelByName($this->arena->data['signs']['join_sign_world']);
+				if($level === null){
+					goto skipUpdate;
+				}
+				$tile = $level->getTile(new Vector3($this->arena->data['signs']['join_sign_x'], $this->arena->data['signs']['join_sign_y'], $this->arena->data['signs']['join_sign_z']));
 				if($tile instanceof Sign){
 					$block = $tile->getLevel()->getBlock($tile);
 					if($block instanceof WallSign){
@@ -104,6 +108,7 @@ class ArenaSchedule extends Task {
 					}
 					$tile->setText(str_replace($vars, $replace, $this->line1), str_replace($vars, $replace, $this->line2), str_replace($vars, $replace, $this->line3), str_replace($vars, $replace, $this->line4));
 				}
+				skipUpdate:
 				$this->updateTime = 0;
 			}
 		}
