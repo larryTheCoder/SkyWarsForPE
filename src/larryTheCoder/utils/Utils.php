@@ -31,7 +31,7 @@ namespace larryTheCoder\utils;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\FireworksData;
 use larryTheCoder\utils\scoreboard\ScoreboardStore;
-use pocketmine\{Player, Server, utils\Random};
+use pocketmine\{Player, Server, utils\MainLogger, utils\Random};
 use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item, ItemIds};
@@ -56,7 +56,7 @@ class Utils {
 	private static $store = null;
 
 	public static function sendDebug(String $log){
-		Server::getInstance()->getLogger()->debug("SW-DEBUG: " . $log);
+		MainLogger::getLogger()->debug("SW-DEBUG: " . $log);
 	}
 
 	public static function getParticleTimer(int $id){
@@ -140,6 +140,7 @@ class Utils {
 			$arena->stopGame(true);
 			$arena->forceShutdown();
 		}
+		SkyWarsPE::getInstance()->getArenaManager()->invalidate();
 	}
 
 	public static function loadFirst(string $levelName, bool $load = true){

@@ -192,7 +192,7 @@ class RandomChest {
 	 * @return Item[]
 	 */
 	public function getItems(int $size, int $chestLevel, int $minValue, int $maxValue): array{
-		$this->getLogger()->debug("Filling with size: $size, level: $chestLevel, min: $minValue, max: $maxValue");
+		Utils::sendDebug("Filling with size: $size, level: $chestLevel, min: $minValue, max: $maxValue");
 		$totalChance = 0;
 		/** @var ChestLevel[] $acceptableLevels */
 		$acceptableLevels = [];
@@ -208,7 +208,7 @@ class RandomChest {
 			return [];
 		}
 		$e = count($acceptableLevels);
-		$this->getLogger()->debug("[RandomChests] Found acceptable levels: $e");
+		Utils::sendDebug("[RandomChests] Found acceptable levels: $e");
 		$totalValue = 0;
 		$inventory = [];
 		while($totalValue <= $chestLevel){
@@ -226,7 +226,7 @@ class RandomChest {
 			}
 
 			if(!is_null($level)){
-				$this->getLogger()->debug("[RandomChests] Choosing level $level");
+				Utils::sendDebug("[RandomChests] Choosing level $level");
 				foreach($level->items as $item){
 					$inventory[] = $item;
 				}

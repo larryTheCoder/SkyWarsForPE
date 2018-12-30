@@ -518,6 +518,9 @@ class Arena {
 			$p->setGamemode(0);
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
+
+			// Remove his scoreboard display.
+			$this->score->removeDisplay($p);
 		}
 		foreach($this->spec as $p){
 			$p->removeAllEffects();
@@ -538,6 +541,9 @@ class Arena {
 			$p->setGamemode(0);
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
+
+			// Remove his scoreboard display.
+			$this->score->removeDisplay($p);
 		}
 		// Reset the arrays
 		$this->spawnPedestals = [];
@@ -870,16 +876,28 @@ class Arena {
 	/**
 	 * Check if the entity is in this arena
 	 *
-	 * @param Entity $p
+	 * @param Entity|string $p
+	 * @param bool $test
 	 * @return bool
 	 */
-	public function inArena(Entity $p): bool{
-		if(!($p instanceof Player)){
-			return false;
-		}
+	public function inArena($p, bool $test = false): bool{
 		$players = array_merge($this->players, $this->spec);
+		if($test){
+			var_dump($players);
+		}
+		if($p instanceof Player){
+			if($test){
+				Utils::sendDebug("The player node");
+			}
 
-		return isset($players[strtolower($p->getName())]);
+			return isset($players[strtolower($p->getName())]);
+		}
+
+		if($test){
+			Utils::sendDebug("The string node");
+		}
+
+		return isset($players[strtolower($p)]);
 	}
 
 	/**

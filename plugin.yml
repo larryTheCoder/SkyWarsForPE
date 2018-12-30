@@ -12,6 +12,7 @@ commands:
     description: skywars leave-game command
     default: true
     permission: sw.command.lobby
+    aliases: ["lobby"]
 permissions:
   sw.command.lobby:
     description: back to main lobby

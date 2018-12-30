@@ -112,6 +112,9 @@ class ArenaSchedule extends Task {
 				$this->updateTime = 0;
 			}
 		}
+		if($this->arena->setup){
+			return;
+		}
 		# Update current status
 		$this->arena->statusUpdate();
 		$this->arena->checkLevelTime();

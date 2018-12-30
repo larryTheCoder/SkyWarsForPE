@@ -32,6 +32,7 @@ use larryTheCoder\events\PlayerLoseArenaEvent;
 use larryTheCoder\provider\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
+use larryTheCoder\utils\Utils;
 use pocketmine\{event\server\DataPacketSendEvent, math\Vector3, Player, Server};
 use pocketmine\event\block\{BlockBreakEvent, BlockPlaceEvent};
 use pocketmine\event\entity\{EntityDamageByChildEntityEvent, EntityDamageByEntityEvent, EntityDamageEvent};
@@ -454,7 +455,7 @@ class ArenaListener implements Listener {
 				$colors = [];
 				$imaged = @imagecreatefrompng($folder . "map.png");
 				if(!$imaged){
-					Server::getInstance()->getLogger()->debug("Error: Cannot load map");
+					Utils::sendDebug("Error: Cannot load map");
 
 					return;
 				}

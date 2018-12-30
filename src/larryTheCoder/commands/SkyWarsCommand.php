@@ -31,6 +31,7 @@ namespace larryTheCoder\commands;
 
 use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\Player;
 
@@ -44,6 +45,7 @@ final class SkyWarsCommand {
 
 	public function onCommand(CommandSender $sender, Command $cmd, array $args): bool{
 		switch($cmd->getName()){
+			case "lobby":
 			case "leave":
 				if(!$sender->hasPermission('sw.command.lobby')){
 					$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
@@ -56,7 +58,7 @@ final class SkyWarsCommand {
 					return true;
 				}
 				$pManager = $this->plugin->getArenaManager();
-				if($pManager->getPlayerArena($sender) === false || !$pManager->isInLevel($sender)){
+				if($pManager->getPlayerArena($sender) === null || !$pManager->isInLevel($sender)){
 					$sender->sendMessage('Please use this command in-arena');
 
 					return true;
@@ -162,9 +164,14 @@ final class SkyWarsCommand {
 						break;
 					}
 					$sender->sendMessage($this->plugin->getMsg($sender, 'plugin-reloading'));
-					$plugin = $this->plugin->getServer()->getPluginManager()->getPlugin("SkyWarsForPE");
-					$this->plugin->getServer()->getPluginManager()->disablePlugin($plugin);
-					$this->plugin->getServer()->getPluginManager()->enablePlugin($plugin);
+
+					// Reload the arenas...
+					Utils::unLoadGame();
+					$this->plugin->getArenaManager()->checkArenas();
+					foreach($this->plugin->getArenaManager()->getArenas() as $arena){
+						$arena->recheckArena();
+					}
+
 					$sender->sendMessage($this->plugin->getMsg($sender, 'plugin-reload'));
 					break;
 				case "npc":
@@ -209,7 +216,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'start-usage'));
 						break;
 					}
-					if($this->plugin->getArenaManager()->getPlayerArena($sender) === false){
+					if($this->plugin->getArenaManager()->getPlayerArena($sender) === null){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'start-usage'));
 						break;
 					}
@@ -242,7 +249,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
 						break;
 					}
-					if($this->plugin->getArenaManager()->getPlayerArena($sender) === false){
+					if($this->plugin->getArenaManager()->getPlayerArena($sender) === null){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'stop-usage'));
 						break;
 					}

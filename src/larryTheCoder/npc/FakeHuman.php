@@ -83,6 +83,15 @@ class FakeHuman extends Human {
 		$this->sendText([], true, $player);
 	}
 
+	public function setSkin(Skin $skin): void{
+		if(!$skin->isValid()){
+			throw new \InvalidStateException("Specified skin is not valid, must be 8KiB or 16KiB");
+		}
+
+		// Do not debloat the data, its already debloated.
+		$this->skin = $skin;
+	}
+
 	public function updateMovement(bool $teleport = \false): void{
 		// Override: Do not do anything
 	}

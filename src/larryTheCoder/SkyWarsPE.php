@@ -75,6 +75,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 	public $panel;
 	/** @var RandomChest */
 	public $chest;
+	/** @var FakeHuman[] */
+	public $entities;
 	/** @var array */
 	private $translation = [];
 	/** @var ArenaManager */
@@ -170,7 +172,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 
-		$this->loadHumans();
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager($this);
 		$this->formAPI = new FormAPI($this);
@@ -181,10 +182,10 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->getArenaManager()->checkArenas();
 		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
 		$this->checkLobby();
+		$this->loadHumans();
 
 		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
 	}
-
 
 	private function loadHumans(){
 		$cfg = new Config($this->getDataFolder() . "npc.yml", Config::YAML);
@@ -200,6 +201,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 			return;
 		}
 
+		Utils::loadFirst($npc1E[3]);
 		$level = $this->getServer()->getLevelByName($npc1E[3]);
 
 		$nbt1 = Entity::createBaseNBT(new Vector3($npc1E[0], $npc1E[1], $npc1E[2]));
@@ -213,6 +215,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$entity1->spawnToAll();
 		$entity2->spawnToAll();
 		$entity3->spawnToAll();
+
+		$this->entities[] = [$entity1, $entity2, $entity3];
 	}
 
 	private function checkPlugins(){

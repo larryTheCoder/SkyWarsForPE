@@ -31,6 +31,7 @@ namespace larryTheCoder;
 use larryTheCoder\arena\Arena;
 use larryTheCoder\utils\Utils;
 use pocketmine\entity\Entity;
+use pocketmine\Player;
 use pocketmine\utils\Config;
 
 final class ArenaManager {
@@ -50,8 +51,10 @@ final class ArenaManager {
 
 	/**
 	 * Load the arenas
+	 *
+	 * @internal
 	 */
-	public final function checkArenas(){
+	public function checkArenas(){
 		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6Locating arena files...");
 		foreach(glob($this->pl->getDataFolder() . "arenas/*.yml") as $file){
 			$arena = new Config($file, Config::YAML);
@@ -79,7 +82,7 @@ final class ArenaManager {
 		$arenaName = $this->getRealArenaName($arenaF);
 		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§aReloading arena§e $arenaName");
 		if(!$this->arenaExist($arenaName)){
-			$this->pl->getLogger()->debug("[reloadArena] §cArena§e $arenaName doesn't exists.");
+			Utils::sendDebug("[reloadArena] §cArena§e $arenaName doesn't exists.");
 
 			return false;
 		}
@@ -87,7 +90,7 @@ final class ArenaManager {
 		$game = $this->getArena($arenaName);
 		# Arena is null but how?
 		if(is_null($game) || is_null($arenaConfig)){
-			$this->pl->getLogger()->debug("[reloadArena] §cArena§e $arenaName exists but null.");
+			Utils::sendDebug("[reloadArena] §cArena§e $arenaName exists but null.");
 
 			return false;
 		}
@@ -100,6 +103,9 @@ final class ArenaManager {
 		$game->setup = false;
 		$game->data = $this->arenaConfig[strtolower($arenaName)];
 		$game->recheckArena();
+
+		// Set them in array, lol.
+		$this->arenas[strtolower($game->getArenaName())] = $game;
 
 		return true;
 	}
@@ -162,12 +168,16 @@ final class ArenaManager {
 		}
 	}
 
-	public function getPlayerArena(Entity $p): ?Arena{
+	public function getPlayerArena(Player $p): ?Arena{
 		foreach($this->arenas as $arena){
-			if($arena->inArena($p)){
+			if($arena->inArena($p, true)){
+				Utils::sendDebug("Found player arena");
+
 				return $arena;
 			}
 		}
+
+		Utils::sendDebug("Player arena not found...");
 
 		return null;
 	}
@@ -233,5 +243,11 @@ final class ArenaManager {
 		}
 
 		return false;
+	}
+
+	public function invalidate(){
+		$this->arenaRealName = [];
+		$this->arenas = [];
+		$this->arenaConfig = [];
 	}
 }
