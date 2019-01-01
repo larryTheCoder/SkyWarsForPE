@@ -35,6 +35,7 @@ use larryTheCoder\formAPI\{event\FormRespondedEvent,
 	response\FormResponseModal,
 	response\FormResponseSimple};
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\utils\{ConfigManager, Utils};
 use pocketmine\{Player, Server};
 use pocketmine\event\block\BlockBreakEvent;
@@ -663,6 +664,7 @@ class FormPanel implements Listener {
 				unset($this->mode[strtolower($p->getName())]);
 				unset($this->setters[strtolower($p->getName())]['NPC']);
 				$this->cleanupArray($p);
+				NPCValidationTask::setChanged();
 			}
 			$cfg->save();
 		}

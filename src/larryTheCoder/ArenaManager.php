@@ -96,12 +96,11 @@ final class ArenaManager {
 		}
 		# Check if they want to enable this arena
 		if(!Utils::checkFile($arenaConfig) || $arenaConfig->get('enabled') === false){
-			$this->arenaConfig[strtolower($arenaName)] = $arenaConfig->getAll();
 			$game->disabled = true;
 		}
 		# unbind others setup parameters
 		$game->setup = false;
-		$game->data = $this->arenaConfig[strtolower($arenaName)];
+		$game->data = $this->arenaConfig[strtolower($arenaName)] = $arenaConfig->getAll();
 		$game->recheckArena();
 
 		// Set them in array, lol.
@@ -245,6 +244,9 @@ final class ArenaManager {
 		return false;
 	}
 
+	/**
+	 * Invalidate all the arrays values.
+	 */
 	public function invalidate(){
 		$this->arenaRealName = [];
 		$this->arenas = [];

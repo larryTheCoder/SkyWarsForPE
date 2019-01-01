@@ -50,6 +50,8 @@ use pocketmine\Server;
  */
 class Scoreboard {
 
+	public static $scoreboardCount = -1;
+
 	const MAX_LINES = 15;
 
 	/** @var string */
@@ -66,7 +68,7 @@ class Scoreboard {
 	public function __construct(string $title, int $action){
 		$this->displayName = $title;
 		if($action === Action::CREATE && is_null(Utils::getStore()->getId($title))){
-			$this->objectiveName = uniqid();
+			$this->objectiveName = uniqid(self::$scoreboardCount++);
 
 			return;
 		}

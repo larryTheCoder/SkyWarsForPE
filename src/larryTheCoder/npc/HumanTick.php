@@ -59,9 +59,9 @@ class HumanTick extends Task {
 		}
 		// Look at the player, and sent the packet only
 		// to the player who looked at it
-		foreach($this->entity->getLevel()->getPlayers() as $p){
-			if($p->distance($this->entity) <= 5){
-				$this->entity->lookAtInto($p);
+		foreach($this->entity->getLevel()->getPlayers() as $playerName){
+			if($playerName->distance($this->entity) <= 5){
+				$this->entity->lookAtInto($playerName);
 			}
 		}
 
@@ -82,15 +82,14 @@ class HumanTick extends Task {
 
 			// Limit them to 3
 			$limit = 0;
-			foreach($player as $p => $wins){
+			foreach($player as $playerName => $wins){
 				if($limit >= $this->levelPedestal){
 					continue;
 				}
 
-				// Send the skin
-				if(Server::getInstance()->getPlayer($p) === null
-					&& file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($p) . ".dat")){
-					$nbt = Server::getInstance()->getOfflinePlayerData($p);
+				// Send the skin (Only use the .dat skin data)
+				if(file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($playerName) . ".dat")){
+					$nbt = Server::getInstance()->getOfflinePlayerData($playerName);
 					$skin = $nbt->getCompoundTag("Skin");
 					if($skin !== \null){
 						$skin = new Skin(
@@ -100,21 +99,17 @@ class HumanTick extends Task {
 							$skin->getString("GeometryName", ""),
 							$skin->getByteArray("GeometryData", "")
 						);
-						$this->entity->setSkin($skin);
-						$this->entity->sendSkin();
-					}
-				}else{
-					$player = Server::getInstance()->getPlayer($p);
-					if($player !== null){
-						$this->entity->setSkin(Server::getInstance()->getPlayer($p)->getSkin());
-						$this->entity->sendSkin();
+						if($skin->isValid()){
+							$this->entity->setSkin($skin);
+							$this->entity->sendSkin();
+						}
 					}
 				}
 
 				// The text packets
-				$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$p, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-1', false));
-				$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$p, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-2', false));
-				$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$p, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
+				$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-1', false));
+				$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-2', false));
+				$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
 				$array = [$msg1, $msg2, $msg3];
 				$this->entity->sendText($array);
 

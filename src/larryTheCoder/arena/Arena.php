@@ -144,6 +144,7 @@ class Arena {
 		$tar = new \PharData($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar');
 		$tar->startBuffering();
 		$tar->buildFromDirectory(realpath(Server::getInstance()->getDataPath() . 'worlds/' . $levelName));
+		$tar->compress(\Phar::GZ);
 		$tar->stopBuffering();
 		unset($tar);
 	}

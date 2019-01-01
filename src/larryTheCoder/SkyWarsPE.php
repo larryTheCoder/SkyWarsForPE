@@ -36,6 +36,7 @@ use larryTheCoder\libs\kits\Kits;
 use larryTheCoder\npc\FakeHuman;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\{MySqliteDatabase, SkyWarsDatabase, SQLite3Database};
+use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\task\StartLoadArena;
 use larryTheCoder\utils\{Settings, Utils};
 use onebone\economyapi\EconomyAPI;
@@ -202,6 +203,9 @@ class SkyWarsPE extends PluginBase implements Listener {
 		}
 
 		Utils::loadFirst($npc1E[3]);
+		Utils::loadFirst($npc2E[3]);
+		Utils::loadFirst($npc3E[3]);
+
 		$level = $this->getServer()->getLevelByName($npc1E[3]);
 
 		$nbt1 = Entity::createBaseNBT(new Vector3($npc1E[0], $npc1E[1], $npc1E[2]));
@@ -216,7 +220,13 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$entity2->spawnToAll();
 		$entity3->spawnToAll();
 
-		$this->entities[] = [$entity1, $entity2, $entity3];
+		$this->entities[] = $entity1;
+		$this->entities[] = $entity2;
+		$this->entities[] = $entity3;
+
+		// Delay 2 seconds for this task to run and then repeat it
+		// every 1 second. <--- Sounds bad but its okay?
+		$this->getScheduler()->scheduleDelayedRepeatingTask(new NPCValidationTask($this), 40, 20);
 	}
 
 	private function checkPlugins(){
@@ -246,6 +256,9 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	public function onDisable(){
 		Utils::unLoadGame();
+
+		// Cancel all the damn tasks
+		$this->getScheduler()->cancelAllTasks();
 		$this->database->close();
 
 		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');

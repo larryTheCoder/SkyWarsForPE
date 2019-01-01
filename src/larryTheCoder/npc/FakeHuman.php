@@ -48,6 +48,8 @@ class FakeHuman extends Human {
 
 	public $levelPedestal;
 	private $tags = [];
+	/** @var HumanTick */
+	private $task;
 
 	public function __construct(Level $level, CompoundTag $nbt, int $pedestalLevel){
 		// Prepare the skin loaded from my OLD DATA.
@@ -73,7 +75,13 @@ class FakeHuman extends Human {
 		$this->setScale(0.8);
 		$this->levelPedestal = $pedestalLevel;
 
-		SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask(new HumanTick($this), 3);
+		SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask($this->task = new HumanTick($this), 3);
+	}
+
+	public function close(): void{
+		SkyWarsPE::getInstance()->getScheduler()->cancelTask($this->task->getTaskId());
+
+		parent::close();
 	}
 
 	public function spawnTo(Player $player): void{
@@ -81,15 +89,6 @@ class FakeHuman extends Human {
 
 		// Resend the text packet to the player
 		$this->sendText([], true, $player);
-	}
-
-	public function setSkin(Skin $skin): void{
-		if(!$skin->isValid()){
-			throw new \InvalidStateException("Specified skin is not valid, must be 8KiB or 16KiB");
-		}
-
-		// Do not debloat the data, its already debloated.
-		$this->skin = $skin;
 	}
 
 	public function updateMovement(bool $teleport = \false): void{
