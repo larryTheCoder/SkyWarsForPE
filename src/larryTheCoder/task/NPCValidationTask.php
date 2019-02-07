@@ -62,7 +62,7 @@ class NPCValidationTask extends Task {
 	public function onRun(int $currentTick){
 		$entity = $this->plugin->entities;
 		foreach($entity as $key => $value){
-			if(!($value == null || $value->isValid())){
+			if($value->isValid()){
 				continue;
 			}
 
@@ -93,6 +93,11 @@ class NPCValidationTask extends Task {
 			$this->plugin->getServer()->getLogger()->info($this->plugin->getPrefix() . "§7Please reconfigure TopWinners spawn locations");
 
 			return;
+		}
+
+		if(isset($this->plugin->entities[$key])){
+			$this->plugin->entities[$key]->close();
+			unset($this->plugin->entities[$key]);
 		}
 
 		Utils::loadFirst($npc[3]);

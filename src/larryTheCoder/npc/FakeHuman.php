@@ -47,7 +47,8 @@ class FakeHuman extends Human {
 	protected $drag = 0;
 
 	public $levelPedestal;
-	private $tags = [];
+	/** @var FloatingTextParticle[] */
+	private $tags;
 	/** @var HumanTick */
 	private $task;
 
@@ -67,7 +68,6 @@ class FakeHuman extends Human {
 			$skinTag->getString("GeometryName", ""),
 			$skinTag->getByteArray("GeometryData", "")
 		);
-
 		parent::__construct($level, $nbt);
 
 		$this->setCanSaveWithChunk(false);
@@ -133,22 +133,13 @@ class FakeHuman extends Human {
 		$player->sendDataPacket($pk);
 	}
 
-	public function sendText(array $text, bool $resend = false, Player $players = null){
-		if($resend){
+	public function sendText(array $text, bool $resend = false, Player $player = null){
+		if($resend || isset($this->tags)){
 			foreach($this->tags as $id => $particle){
-				if(is_null($players)){
+				if(is_null($player)){
 					$this->level->addParticle($particle);
 				}else{
-					$pk = $particle->encode();
-					if(!\is_array($pk)){
-						$pk = [$pk];
-					}
-
-					if($players === \null){
-						$this->level->addParticle($particle);
-					}else{
-						foreach($pk as $ack) $players->sendDataPacket($ack);
-					}
+					$this->level->addParticle($particle, [$player]);
 				}
 			}
 

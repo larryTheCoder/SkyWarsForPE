@@ -29,6 +29,7 @@
 namespace larryTheCoder\npc;
 
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\Utils;
 use pocketmine\entity\Skin;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\scheduler\Task;
@@ -40,6 +41,7 @@ class HumanTick extends Task {
 	private $entity;
 	private $tickSkin = 200;
 	private $levelPedestal;
+	private $skinHash;
 
 	public function __construct(FakeHuman $entity){
 		$this->entity = $entity;
@@ -83,7 +85,8 @@ class HumanTick extends Task {
 			// Limit them to 3
 			$limit = 0;
 			foreach($player as $playerName => $wins){
-				if($limit >= $this->levelPedestal){
+				if($limit !== ($this->levelPedestal - 1)){
+					$limit++;
 					continue;
 				}
 
@@ -99,9 +102,9 @@ class HumanTick extends Task {
 							$skin->getString("GeometryName", ""),
 							$skin->getByteArray("GeometryData", "")
 						);
-						if($skin->isValid()){
+						if(!isset($this->skinHash) || $this->skinHash !== Utils::getSkinHashed($skin)){
 							$this->entity->setSkin($skin);
-							$this->entity->sendSkin();
+							$this->skinHash = Utils::getSkinHashed($skin);
 						}
 					}
 				}
@@ -112,11 +115,10 @@ class HumanTick extends Task {
 				$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
 				$array = [$msg1, $msg2, $msg3];
 				$this->entity->sendText($array);
-
-				$limit++;
 			}
 			$this->tickSkin = 0;
 		}
 		$this->tickSkin++;
 	}
+	#0110e920d6d54081542a95ed490b1748
 }
