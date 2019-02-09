@@ -200,6 +200,9 @@ class MySqliteDatabase extends SkyWarsDatabase {
 		# Prepare the sql database
 		$stmt = $this->sqlGetLobbyPos;
 		$result = $stmt->get_result();
+		if(is_bool($result)){
+			goto defaultLoc;
+		}
 		while($val = $result->fetch_array()){
 			# There is a data, load them and set the position
 			Utils::loadFirst($val["worldName"]);
@@ -209,6 +212,8 @@ class MySqliteDatabase extends SkyWarsDatabase {
 
 			return $data;
 		}
+		defaultLoc:
+
 		# Not in database... We set a new one
 		$default = Server::getInstance()->getDefaultLevel()->getSpawnLocation();
 		$this->setLobby($default);
@@ -222,7 +227,7 @@ class MySqliteDatabase extends SkyWarsDatabase {
 		# Get if the database had a data
 		$stmt = $this->sqlGetLobbyPos;
 		$result = $stmt->get_result();
-		if(!empty($result)){
+		if(is_bool($result) || !empty($result)){
 			$stmt = $this->sqlGetLobbyUpdate;
 		}else{
 			$stmt = $this->sqlGetLobbyInsert;

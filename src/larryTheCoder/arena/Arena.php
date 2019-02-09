@@ -826,8 +826,8 @@ class Arena {
 					$p->getLevel()->setBlock($pos, Block::get(Block::AIR));
 				}
 
-				$p->addTitle($this->plugin->getMsg($p, "arena-game-started", false));
 				$p->setXpLevel(0);
+				$p->addTitle($this->plugin->getMsg($p, "arena-game-started", false));
 				$p->getLevel()->addSound(new GenericSound($p, LevelEventPacket::EVENT_SOUND_ORB, 3));
 
 				Utils::addParticles($p->getLevel(), $p->getPosition()->add(0, -5, 0), 100);

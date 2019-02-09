@@ -85,8 +85,8 @@ class HumanTick extends Task {
 			// Limit them to 3
 			$limit = 0;
 			foreach($player as $playerName => $wins){
-				if($limit !== ($this->levelPedestal - 1)){
-					$limit++;
+				$limit++;
+				if($limit !== $this->levelPedestal){
 					continue;
 				}
 
@@ -120,5 +120,4 @@ class HumanTick extends Task {
 		}
 		$this->tickSkin++;
 	}
-	#0110e920d6d54081542a95ed490b1748
 }

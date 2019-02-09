@@ -88,7 +88,7 @@ class FakeHuman extends Human {
 		parent::spawnTo($player);
 
 		// Resend the text packet to the player
-		$this->sendText([], true, $player);
+		$this->sendText([], $player);
 	}
 
 	public function updateMovement(bool $teleport = \false): void{
@@ -133,14 +133,10 @@ class FakeHuman extends Human {
 		$player->sendDataPacket($pk);
 	}
 
-	public function sendText(array $text, bool $resend = false, Player $player = null){
-		if($resend || isset($this->tags)){
+	public function sendText(array $text, Player $player = null){
+		if(isset($this->tags) && !is_null($player)){
 			foreach($this->tags as $id => $particle){
-				if(is_null($player)){
-					$this->level->addParticle($particle);
-				}else{
-					$this->level->addParticle($particle, [$player]);
-				}
+				$this->level->addParticle($particle, [$player]);
 			}
 
 			return;
