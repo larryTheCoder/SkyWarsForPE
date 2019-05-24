@@ -247,7 +247,7 @@ class ArenaSchedule extends Task {
 	 * same time.
 	 */
 	private function tickEffect(){
-		if(Settings::$isModded){
+		if(!Settings::$isModded){
 			return;
 		}
 		foreach($this->arena->players as $player){
@@ -275,54 +275,35 @@ class ArenaSchedule extends Task {
 	}
 
 	public function sendScoreboard(Player $p){
-		$useLegacyMethod = true;
-		if(!$useLegacyMethod){
-			$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
+		$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
 
-			if($refill !== $this->chestTick + 1){
-				$timer = gmdate('i:s', $refill);
-			}else{
-				$timer = 0;
-			}
-			$score = $this->arena->getScoreboard();
-
-			$i = 0;
-			$score->setLine($p, $i++, "[SkyWars]");
-			$score->setLine($p, $i++, "§bNext refill: $timer");
-			$score->setLine($p, $i++, "§bPlayers: §c" . count($this->arena->players) . "/" . $this->arena->getMaxPlayers() . "\n");
-			$score->setLine($p, $i++, "§eKills: " . $this->arena->kills[strtolower($p->getName())] . "\n");
-			$score->setLine($p, $i, "§eTime: " . gmdate('i:s', $this->chestTick) . "\n");
+		$space = str_repeat(" ", 78); // 55 default
+		if($refill !== $this->chestTick + 1){
+			$timer = gmdate('i:s', $refill);
 		}else{
-			$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
-
-			$space = str_repeat(" ", 78); // 55 default
-			if($refill !== $this->chestTick + 1){
-				$timer = gmdate('i:s', $refill);
-			}else{
-				$timer = 0;
-			}
-			$timerPlace = "";
-			if($timer !== 0){
-				$timerPlace = $space . "§bNext refill: $timer\n";
-			}
-
-			$p->sendTip("\n" .
-				$space . "§0[ §eSkyWars §0]\n" . $timerPlace .
-				$space . "§bNick: " . $p->getName() . "\n" .
-				$space . "§bPlayers: §c" . count($this->arena->players) . "/" . $this->arena->getMaxPlayers() . "\n" .
-				$space . "§eKills: " . $this->arena->kills[strtolower($p->getName())] . "\n" .
-				$space . "§eTime: " . gmdate('i:s', $this->chestTick) . "\n" .
-				$space . "\n" .
-				$space . "\n" .
-				$space . "\n" .
-				$space . "\n" .
-				$space . "\n" .
-				$space . "\n" .
-				$space . "\n" .
-				$space . "\n" .
-				$space . "\n" .
-				$space);
+			$timer = 0;
 		}
+		$timerPlace = "";
+		if($timer !== 0){
+			$timerPlace = $space . "§bNext refill: $timer\n";
+		}
+
+		$p->sendTip("\n" .
+			$space . "§0[ §eSkyWars §0]\n" . $timerPlace .
+			$space . "§bNick: " . $p->getName() . "\n" .
+			$space . "§bPlayers: §c" . count($this->arena->players) . "/" . $this->arena->getMaxPlayers() . "\n" .
+			$space . "§eKills: " . $this->arena->kills[strtolower($p->getName())] . "\n" .
+			$space . "§eTime: " . gmdate('i:s', $this->chestTick) . "\n" .
+			$space . "\n" .
+			$space . "\n" .
+			$space . "\n" .
+			$space . "\n" .
+			$space . "\n" .
+			$space . "\n" .
+			$space . "\n" .
+			$space . "\n" .
+			$space . "\n" .
+			$space);
 	}
 
 	/**

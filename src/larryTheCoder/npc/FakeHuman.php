@@ -60,13 +60,14 @@ class FakeHuman extends Human {
 		}
 
 		$skinTag = $compound->getCompoundTag("Skin");
-		$this->skin = new Skin(
+		$skin = new Skin(
 			$skinTag->getString("Name"),
 			$skinTag->hasTag("Data", StringTag::class) ? $skinTag->getString("Data") : $skinTag->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
 			$skinTag->getByteArray("CapeData", ""),
 			$skinTag->getString("GeometryName", ""),
 			$skinTag->getByteArray("GeometryData", "")
 		);
+		$this->setSkin($skin);
 
 		parent::__construct($level, $nbt);
 
@@ -91,7 +92,7 @@ class FakeHuman extends Human {
 		$this->sendText([], true, $player);
 	}
 
-	public function updateMovement(bool $teleport = \false): void{
+	public function updateMovement(bool $teleport = false): void{
 		// Override: Do not do anything
 	}
 
@@ -107,7 +108,7 @@ class FakeHuman extends Human {
 	 */
 	public function lookAtInto(Player $target): void{
 		$horizontal = sqrt(($target->x - $this->x) ** 2 + ($target->z - $this->z) ** 2);
-		$vertical = ($target->y - $this->y) + 0.6; // 0.6 is the player offset.
+		$vertical = ($target->y - $this->y) + 0.55;
 		$this->pitch = -atan2($vertical, $horizontal) / M_PI * 180; //negative is up, positive is down
 
 		$xDist = $target->x - $this->x;
@@ -127,10 +128,19 @@ class FakeHuman extends Human {
 		$pk->position = $this->getOffsetPosition($this);
 
 		$pk->xRot = $this->pitch;
-		$pk->yRot = $this->yaw; //TODO: head yaw
+		$pk->yRot = $this->yaw;
 		$pk->zRot = $this->yaw;
 
 		$player->sendDataPacket($pk);
+	}
+
+	public function despawnText(){
+		foreach($this->tags as $id => $particle){
+			$particle->setInvisible(true); // TODO: Remove this completely
+			if($this->level !== null && !$this->level->isClosed()){
+				$this->level->addParticle($particle);
+			}
+		}
 	}
 
 	public function sendText(array $text, bool $resend = false, Player $players = null){
@@ -140,11 +150,11 @@ class FakeHuman extends Human {
 					$this->level->addParticle($particle);
 				}else{
 					$pk = $particle->encode();
-					if(!\is_array($pk)){
+					if(!is_array($pk)){
 						$pk = [$pk];
 					}
 
-					if($players === \null){
+					if($players === null){
 						$this->level->addParticle($particle);
 					}else{
 						foreach($pk as $ack) $players->sendDataPacket($ack);

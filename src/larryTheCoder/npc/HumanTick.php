@@ -60,7 +60,7 @@ class HumanTick extends Task {
 		// Look at the player, and sent the packet only
 		// to the player who looked at it
 		foreach($this->entity->getLevel()->getPlayers() as $playerName){
-			if($playerName->distance($this->entity) <= 5){
+			if($playerName->distance($this->entity) <= 15){
 				$this->entity->lookAtInto($playerName);
 			}
 		}
@@ -83,7 +83,8 @@ class HumanTick extends Task {
 			// Limit them to 3
 			$limit = 0;
 			foreach($player as $playerName => $wins){
-				if($limit >= $this->levelPedestal){
+				$limit++;
+				if($limit !== $this->levelPedestal){
 					continue;
 				}
 
@@ -91,7 +92,7 @@ class HumanTick extends Task {
 				if(file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($playerName) . ".dat")){
 					$nbt = Server::getInstance()->getOfflinePlayerData($playerName);
 					$skin = $nbt->getCompoundTag("Skin");
-					if($skin !== \null){
+					if($skin !== null){
 						$skin = new Skin(
 							$skin->getString("Name"),
 							$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
@@ -101,7 +102,6 @@ class HumanTick extends Task {
 						);
 						if($skin->isValid()){
 							$this->entity->setSkin($skin);
-							$this->entity->sendSkin();
 						}
 					}
 				}
@@ -112,8 +112,6 @@ class HumanTick extends Task {
 				$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
 				$array = [$msg1, $msg2, $msg3];
 				$this->entity->sendText($array);
-
-				$limit++;
 			}
 			$this->tickSkin = 0;
 		}

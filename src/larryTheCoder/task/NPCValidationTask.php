@@ -62,7 +62,7 @@ class NPCValidationTask extends Task {
 	public function onRun(int $currentTick){
 		$entity = $this->plugin->entities;
 		foreach($entity as $key => $value){
-			if(!($value == null || $value->isValid())){
+			if($value !== null && $value->isValid()){
 				continue;
 			}
 

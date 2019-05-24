@@ -39,7 +39,7 @@ class SQLite3Database extends SkyWarsDatabase {
 
 	/** @var \Sqlite3 */
 	private $db;
-	/** @var  \SQLite3Stmt */
+	/** @var \SQLite3Stmt */
 	private $sqlCreateNewData, $sqlGetPlayerData, $sqlUpdateNewData, $sqlGetLobbyPos, $sqlGetLobbyInsert, $sqlGetLobbyUpdate;
 	/** @var Position */
 	private $positionCache;

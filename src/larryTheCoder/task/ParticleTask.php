@@ -29,6 +29,7 @@
 namespace larryTheCoder\task;
 
 
+use Exception;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\level\particle\{GenericParticle, Particle};
@@ -68,7 +69,7 @@ class ParticleTask extends Task {
 		$i = 0;
 		try{
 			$i = Utils::getParticleTimer($this->chest->getId());
-		}catch(\Exception $ex){
+		}catch(Exception $ex){
 			Utils::setParticleTimer($this->chest->getId(), 0);
 		}
 

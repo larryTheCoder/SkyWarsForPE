@@ -41,7 +41,7 @@ use pocketmine\Server;
  * Class MySqliteDatabase
  * @package larryTheCoder\provider
  */
-class MySqliteDatabase extends SkyWarsDatabase {
+class MySqlDatabase extends SkyWarsDatabase {
 
 	/** @var \mysqli */
 	private $db;
@@ -62,14 +62,15 @@ class MySqliteDatabase extends SkyWarsDatabase {
 
 	private function init(){
 		$this->db = new \mysqli(Settings::$mysqlHost, Settings::$mysqlUser, Settings::$mysqlPassword, Settings::$mysqlDatabase, Settings::$mysqlPort);
-		$this->db->query("CREATE TABLE IF NOT EXISTS players(playerName VARCHAR(64) NOT NULL, playerTime INTEGER DEFAULT 0, kills INTEGER DEFAULT 0, deaths INTEGER DEFAULT 0, wins INTEGER DEFAULT 0, lost INTEGER DEFAULT 0)");
+		$this->db->query("CREATE TABLE IF NOT EXISTS players(playerName VARCHAR(32) NOT NULL, playerTime INTEGER DEFAULT 0, kills INTEGER DEFAULT 0, deaths INTEGER DEFAULT 0, wins INTEGER DEFAULT 0, lost INTEGER DEFAULT 0, cage CHAR, kits CHAR)");
+		$this->db->query("CREATE TABLE IF NOT EXISTS lobby(lobbyX INTEGER DEFAULT 0, lobbyY INTEGER DEFAULT 0, lobbyZ INTEGER DEFAULT 0, worldName VARCHAR(124) NOT NULL)");
 		$this->prepare();
 	}
 
 	private function prepare(){
 		$this->sqlCreateNewData = $this->db->prepare("INSERT INTO players(playerName) VALUES (?);");
 		$this->sqlGetPlayerData = $this->db->prepare("SELECT * FROM players WHERE playerName = ?;");
-		$this->sqlUpdateNewData = $this->db->prepare("UPDATE players SET playerName = ?, playerTime = ?, kills = ?, deaths = ?, wins = ?, lost = ? WHERE playerName = ?");
+		$this->sqlUpdateNewData = $this->db->prepare("UPDATE players SET playerTime = ?, kills = ?, deaths = ?, wins = ?, lost = ? WHERE playerName = ?");
 
 		$this->sqlGetLobbyPos = $this->db->prepare("SELECT * FROM lobby WHERE worldName IS NOT NULL;");
 		$this->sqlGetLobbyInsert = $this->db->prepare("INSERT INTO lobby(lobbyX, lobbyY, lobbyZ, worldName) VALUES (?, ?, ?, ?);");
@@ -157,19 +158,31 @@ class MySqliteDatabase extends SkyWarsDatabase {
 			return self::DATA_EXECUTE_FAILED;
 		}
 
-		if(!is_integer($this->getPlayerData($p))){
+		if(is_integer($this->getPlayerData($p))){
 			return self::DATA_EXECUTE_EMPTY;
 		}
 
+		var_dump($pd);
+
 		$stmt = $this->sqlUpdateNewData;
 		$stmt->reset();
-		$stmt->bind_param("siiiiis", $p, $pd->time, $pd->kill, $pd->death, $pd->wins, $pd->lost, $p);
+		$stmt->bind_param("iiiiis", $time, $kills, $deaths, $wins, $loses, $player);
+
+		$time = $pd->time;
+		$kills = $pd->kill;
+		$deaths = $pd->death;
+		$wins = $pd->wins;
+		$loses = $pd->lost;
+		$player = $p;
+
 		$result = $stmt->execute();
 		if($result === false){
 			$this->getSW()->getLogger()->error($stmt->error);
 
 			return self::DATA_EXECUTE_FAILED;
 		}
+
+		var_dump($this->getPlayerData($p));
 
 		return self::DATA_EXECUTE_SUCCESS;
 	}
@@ -188,6 +201,8 @@ class MySqliteDatabase extends SkyWarsDatabase {
 		// Then unset them
 		unset($this->sqlCreateNewData, $this->sqlGetPlayerData, $this->sqlUpdateNewData,
 			$this->sqlGetLobbyPos, $this->sqlGetLobbyInsert, $this->sqlGetLobbyUpdate);
+
+		Server::getInstance()->getLogger()->info(SkyWarsPE::getInstance()->getPrefix() . "§aSuccessfully closed the mysql database");
 	}
 
 	public function getLobby(): Position{
@@ -200,6 +215,9 @@ class MySqliteDatabase extends SkyWarsDatabase {
 		# Prepare the sql database
 		$stmt = $this->sqlGetLobbyPos;
 		$result = $stmt->get_result();
+		if(is_bool($result)){
+			goto emptySet;
+		}
 		while($val = $result->fetch_array()){
 			# There is a data, load them and set the position
 			Utils::loadFirst($val["worldName"]);
@@ -209,6 +227,7 @@ class MySqliteDatabase extends SkyWarsDatabase {
 
 			return $data;
 		}
+		emptySet:
 		# Not in database... We set a new one
 		$default = Server::getInstance()->getDefaultLevel()->getSpawnLocation();
 		$this->setLobby($default);
@@ -227,8 +246,15 @@ class MySqliteDatabase extends SkyWarsDatabase {
 		}else{
 			$stmt = $this->sqlGetLobbyInsert;
 		}
+
 		# Bind the parameters which the same
-		$stmt->bind_param("iiis", $pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ(), $pos->getLevel()->getName());
+		$stmt->bind_param("iiis", $x, $y, $z, $level);
+
+		$x = $pos->getFloorX();
+		$y = $pos->getFloorY();
+		$z = $pos->getFloorZ();
+		$level = $pos->getLevel()->getName();
+
 		$result = $stmt->execute();
 		if($result === false){
 			$this->getSW()->getLogger()->error($stmt->error);

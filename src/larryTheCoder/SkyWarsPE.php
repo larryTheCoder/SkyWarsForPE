@@ -35,7 +35,7 @@ use larryTheCoder\libs\cages\ArenaCage;
 use larryTheCoder\libs\kits\Kits;
 use larryTheCoder\npc\FakeHuman;
 use larryTheCoder\panel\FormPanel;
-use larryTheCoder\provider\{MySqliteDatabase, SkyWarsDatabase, SQLite3Database};
+use larryTheCoder\provider\{MySqlDatabase, SkyWarsDatabase, SQLite3Database};
 use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\task\StartLoadArena;
 use larryTheCoder\utils\{Settings, Utils};
@@ -152,7 +152,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 				$this->database = new SQLite3Database($this);
 				break;
 			case "mysql":
-				$this->database = new MySqliteDatabase($this);
+				$this->database = new MySqlDatabase($this);
 				break;
 			default:
 				$this->getServer()->getLogger()->warning($this->getPrefix() . "§cUnknown database §e" . Settings::$selectedDatabase);

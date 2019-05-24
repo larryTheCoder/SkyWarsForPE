@@ -30,15 +30,9 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\events\PlayerJoinArenaEvent;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\{scoreboard\Action,
-	scoreboard\DisplaySlot,
-	scoreboard\Scoreboard,
-	scoreboard\Sort,
-	Settings,
-	Utils};
+use larryTheCoder\utils\{Settings, Utils};
 use pocketmine\{item\enchantment\Enchantment, item\enchantment\EnchantmentInstance, Player, Server};
 use pocketmine\block\{Block, StainedGlass};
-use pocketmine\entity\Entity;
 use pocketmine\event\HandlerList;
 use pocketmine\item\Item;
 use pocketmine\level\{Level, Position};
@@ -54,7 +48,10 @@ use pocketmine\utils\TextFormat;
  *
  * @package larryTheCoder\arena
  */
-class Arena {
+class Arena extends PlayerHandler {
+
+	const ARENA_SOLO = 0;
+	const ARENA_TEAM = 1;
 
 	const ARENA_WAITING_PLAYERS = 0;
 	const ARENA_RUNNING = 1;
@@ -62,20 +59,6 @@ class Arena {
 
 	/** @var array */
 	public $data;
-	/** @var Player[] */
-	public $players = [];
-	/** @var Player[] */
-	public $spec = [];
-	/** @var Position */
-	public $cageToRemove = [];
-	/** @var integer[] */
-	public $claimedPedestals = [];
-	/** @var Position[] */
-	public $spawnPedestals = [];
-	/** @var array */
-	public $kills = [];
-	/** @var string[] */
-	public $winners = [];
 	/** @var int */
 	public $fallTime = 0;
 	/** @var bool */
@@ -98,10 +81,9 @@ class Arena {
 	protected $listener;
 	/** @var int */
 	private $game = 0;
-	/** @var Scoreboard */
-	private $score;
 
 	public function __construct(string $id, SkyWarsPE $plugin){
+		parent::__construct($this);
 		$this->id = $id;
 		$this->plugin = $plugin;
 		$this->data = $plugin->getArenaManager()->getArenaConfig($id);
@@ -119,9 +101,6 @@ class Arena {
 			$plugin->getServer()->getPluginManager()->registerEvents($this->listener = new ArenaListener($this->plugin, $this), $plugin);
 		}catch(\Throwable $e){
 		}
-
-		$this->score = new Scoreboard($this->data['arena-name'] . " Arena", Action::CREATE);
-		$this->score->create(DisplaySlot::SIDEBAR, Sort::ASCENDING);
 	}
 
 	public function checkWorlds(){
@@ -150,9 +129,10 @@ class Arena {
 	}
 
 	/**
+	 * @param int $times
 	 * @return bool
 	 */
-	public function reload(): bool{
+	public function reload(int $times = 0): bool{
 		$levelName = $this->data['arena']['arena_world'];
 		if($this->plugin->getServer()->isLevelLoaded($levelName)){
 			$this->checkLevelTime();
@@ -161,7 +141,22 @@ class Arena {
 		$levelName = $this->data["arena"]["arena_world"];
 		$this->fallTime = $this->data['arena']['grace_time'];
 
-		$this->deleteDirectory(Server::getInstance()->getDataPath() . 'worlds/' . $levelName);
+		if(!$this->deleteDirectory(Server::getInstance()->getDataPath() . 'worlds/' . $levelName)){
+			$this->plugin->getLogger()->info($this->plugin->getPrefix() . TextFormat::RED . "Directory $levelName could not be deleted.");
+			if($times >= 10){
+				goto skip;
+			}
+			if($this->plugin->getServer()->isLevelLoaded($levelName)){
+				$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($levelName), true);
+
+				return $this->reload($times + 1);
+			}
+			skip:
+			$this->plugin->getLogger()->info($this->plugin->getPrefix() . TextFormat::RED . "Please check that the server has permission to delete the folder.");
+
+			return false;
+		}
+
 		if($this->plugin->getServer()->isLevelLoaded($levelName)){
 			if($this->plugin->getServer()->getLevelByName($levelName)->getAutoSave() || Settings::$zipArchive){
 				$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($levelName));
@@ -259,7 +254,7 @@ class Arena {
 
 	public function kickPlayer($p){
 		/** @var Player[] $players */
-		$players = array_merge($this->players, $this->spec);
+		$players = parent::getAllPlayers();
 		$players[strtolower($p)]->sendMessage($this->plugin->getMsg($players[strtolower($p)], 'admin-kick'));
 		$this->leaveArena($players[strtolower($p)], true);
 	}
@@ -296,26 +291,8 @@ class Arena {
 		$p->getInventory()->clearAll();
 		$p->getArmorInventory()->clearAll();
 
-		// Remove his scoreboard display.
-		$this->score->removeDisplay($p);
-
 		Utils::sendDebug("leaveArena() is being called");
 		Utils::sendDebug("User " . $p->getName() . " is leaving the arena.");
-	}
-
-	/**
-	 * @param Player $p
-	 * @return bool|int
-	 */
-	public function getPlayerMode(Player $p){
-		if(isset($this->players[strtolower($p->getName())])){
-			return 0;
-		}
-		if(isset($this->spec[strtolower($p->getName())])){
-			return 1;
-		}
-
-		return false;
 	}
 
 	/**
@@ -338,7 +315,7 @@ class Arena {
 	}
 
 	public function messageArenaPlayers(string $msg, $popup = true, $toReplace = [], $replacement = []){
-		$inGame = array_merge($this->players, $this->spec);
+		$inGame = parent::getAllPlayers();
 		/** @var Player $p */
 		foreach($inGame as $p){
 			if($popup){
@@ -422,7 +399,7 @@ class Arena {
 				if(!$spectate && !$itemSpectate){
 					$p->getInventory()->setItem($placeAt, $toGive, true);
 					continue;
-				}
+				} //Squid turning into kid
 			}
 		}
 	}
@@ -449,8 +426,6 @@ class Arena {
 		$pd->wins += 1;
 		$pd->kill += $this->winners[0][1];
 		$this->plugin->getDatabase()->setPlayerData($p->getName(), $pd);
-		$pd = $this->plugin->getDatabase()->getPlayerData($p->getName());
-		Server::getInstance()->getLogger()->info($pd);
 
 		foreach($this->winners as $winner){
 			$p = $this->plugin->getServer()->getPlayer($winner[0]);
@@ -519,9 +494,6 @@ class Arena {
 			$p->setGamemode(0);
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
-
-			// Remove his scoreboard display.
-			$this->score->removeDisplay($p);
 		}
 		foreach($this->spec as $p){
 			$p->removeAllEffects();
@@ -542,9 +514,6 @@ class Arena {
 			$p->setGamemode(0);
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
-
-			// Remove his scoreboard display.
-			$this->score->removeDisplay($p);
 		}
 		// Reset the arrays
 		$this->spawnPedestals = [];
@@ -575,38 +544,6 @@ class Arena {
 	}
 
 	/**
-	 * Re-update the status list from data, this will ensure that
-	 * the highest kills will be recorded
-	 */
-	public function statusUpdate(){
-		if($this->getMode() !== self::ARENA_WAITING_PLAYERS){
-			$i = 0;
-			arsort($this->kills);
-			foreach($this->kills as $player => $kills){
-				$p = $this->plugin->getServer()->getPlayer($player);
-				if(!is_null($p)){
-					$this->winners[$i] = ["{$p->getName()}", $kills];
-				}else{
-					unset($this->kills[$player]);
-				}
-				$i++;
-			}
-		}else{
-			$this->winners = [];
-			# Sometimes player are null
-			if(!isset($this->winners[1])){
-				$this->winners[0] = ["§7...", 0];
-			}
-			if(!isset($this->winners[2])){
-				$this->winners[1] = ["§7...", 0];
-			}
-			if(!isset($this->winners[3])){
-				$this->winners[2] = ["§7...", 0];
-			}
-		}
-	}
-
-	/**
 	 * Get the current status for the arena
 	 *
 	 * @return string
@@ -621,7 +558,7 @@ class Arena {
 		if($this->getMode() === Arena::ARENA_WAITING_PLAYERS){
 			return "&fWaiting";
 		}
-		if(count($this->players) >= $this->getMinPlayers()){
+		if($this->getPlayers() >= $this->getMinPlayers()){
 			return "&6Starting";
 		}
 		if($this->getMode() === Arena::ARENA_RUNNING){
@@ -630,7 +567,7 @@ class Arena {
 		if($this->getMode() === Arena::ARENA_CELEBRATING){
 			return "&cEnded";
 		}
-		if(count($this->players) === $this->getMaxPlayers()){
+		if($this->getPlayers() === $this->getMaxPlayers()){
 			return "&cFull";
 		}
 
@@ -670,7 +607,7 @@ class Arena {
 		if($this->getMode() === Arena::ARENA_WAITING_PLAYERS){
 			return new StainedGlass(13);
 		}
-		if(count($this->players) >= $this->getMinPlayers()){
+		if($this->getPlayers() >= $this->getMinPlayers()){
 			return new StainedGlass(4);
 		}
 		if($this->getMode() === Arena::ARENA_RUNNING){
@@ -694,7 +631,7 @@ class Arena {
 
 			return;
 		}
-		if(count($this->players) >= $this->getMaxPlayers()){
+		if($this->getPlayers() >= $this->getMaxPlayers()){
 			$p->sendMessage($this->plugin->getMsg($p, 'arena-full'));
 
 			return;
@@ -726,9 +663,6 @@ class Arena {
 		$this->onJoin($p);
 
 		$this->giveGameItems($p, false);
-
-		// Add the display to the player.
-		$this->score->addDisplay($p);
 	}
 
 	private function onJoin(Player $p){
@@ -762,7 +696,6 @@ class Arena {
 		}
 
 		# Teleport them to the arena
-		$this->plugin->getServer()->getLogger()->info($spawn);
 		$p->teleport($spawn, 0, 0);
 
 		# Add some sound and all set
@@ -875,42 +808,6 @@ class Arena {
 	}
 
 	/**
-	 * Check if the entity is in this arena
-	 *
-	 * @param Entity|string $p
-	 * @param bool $test
-	 * @return bool
-	 */
-	public function inArena($p, bool $test = false): bool{
-		$players = array_merge($this->players, $this->spec);
-		if($test){
-			var_dump($players);
-		}
-		if($p instanceof Player){
-			if($test){
-				Utils::sendDebug("The player node");
-			}
-
-			return isset($players[strtolower($p->getName())]);
-		}
-
-		if($test){
-			Utils::sendDebug("The string node");
-		}
-
-		return isset($players[strtolower($p)]);
-	}
-
-	/**
-	 * Get the numbers of player in arena
-	 *
-	 * @return int
-	 */
-	public function getPlayers(): int{
-		return count($this->players);
-	}
-
-	/**
 	 * Get the arena level-name
 	 * use this method for safer fetch
 	 *
@@ -928,14 +825,5 @@ class Arena {
 	 */
 	public function getArenaLevel(): Level{
 		return $this->level;
-	}
-
-	/**
-	 * Gets the scoreboard class for this arena,
-	 * each arena will be given a separated scoreboard
-	 * classes.
-	 */
-	public function getScoreboard(): Scoreboard{
-		return $this->score;
 	}
 }

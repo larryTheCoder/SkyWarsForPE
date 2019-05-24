@@ -37,7 +37,7 @@ use larryTheCoder\formAPI\{event\FormRespondedEvent,
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\utils\{ConfigManager, Utils};
-use pocketmine\{Player, Server};
+use pocketmine\{block\Slab, Player, Server};
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\item\{BlazeRod, Item};
@@ -656,7 +656,11 @@ class FormPanel implements Listener {
 			$b = $e->getBlock();
 			$cfg = new Config($this->plugin->getDataFolder() . "npc.yml", Config::YAML);
 			if($this->mode[strtolower($p->getName())] >= 1 && $this->mode[strtolower($p->getName())] <= 3){
-				$cfg->set("npc-{$this->mode[strtolower($p->getName())]}", [$b->getX() + 0.5, $b->getY() + 1, $b->getZ() + 0.5, $b->getLevel()->getName()]);
+				$y = 1;
+				if($b instanceof Slab){
+					$y = 0.5;
+				}
+				$cfg->set("npc-{$this->mode[strtolower($p->getName())]}", [$b->getX() + 0.5, $b->getY() + $y, $b->getZ() + 0.5, $b->getLevel()->getName()]);
 				$p->sendMessage(str_replace("{COUNT}", $this->mode[strtolower($p->getName())], $this->plugin->getMsg($p, 'panel-spawn-pos')));
 				$this->mode[strtolower($p->getName())]++;
 			}
