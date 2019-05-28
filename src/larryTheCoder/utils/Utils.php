@@ -31,7 +31,7 @@ namespace larryTheCoder\utils;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\FireworksData;
 use larryTheCoder\utils\scoreboard\ScoreboardStore;
-use pocketmine\{Player, Server, utils\MainLogger, utils\Random};
+use pocketmine\{entity\Skin, Player, Server, utils\MainLogger, utils\Random};
 use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item, ItemIds};
@@ -186,6 +186,23 @@ class Utils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Return an md5 of the skin.
+	 * Verify the integrity of the skin itself.
+	 *
+	 * @param Skin $skin
+	 * @return string
+	 */
+	public static function getSkinHashed(Skin $skin){
+		$hash1 = md5($skin->getCapeData());
+		$hash2 = md5($skin->getGeometryData());
+		$hash3 = md5($skin->getGeometryName());
+		$hash4 = md5($skin->getSkinData());
+		$hash5 = md5($skin->getSkinId());
+
+		return md5($hash1 . $hash2 . $hash3 . $hash4 . $hash5);
 	}
 
 	public static function ensureDirectory(string $directory = ""){
