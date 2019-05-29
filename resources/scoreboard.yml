@@ -1,0 +1,81 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+---
+
+# This version should not get changed
+# Otherwise something bad will happen.
+version: 1
+
+# Scoreboards:
+# - As you might know, scoreboards is bla bla bla...
+#   But here is the important things.
+#   -> The scoreboard are in descending order. From 15-1
+#      From down to up.
+#   -> We have limited empty spaces due to mojang tomf*ckery
+#   -> They must be in array.
+#   -> You can simplify '§' as '&'
+#   -> The maximum arrays in one scoreboard is 15, Please follow this
+#      otherwise we will complain about it in console.
+#
+#   Enjoy your game with scoreboard (While it lasts)
+#
+# - Tags information.
+#   - {arena_mode}:   Shows the mode of the arena, could be
+#                     SOLO or TEAM mode.
+#   - {arena_map}:    Shows the name of the map given.
+#   - {arena_status}: Shows the status of the arena, this will
+#                     return either 'Starting' or 'Refilling in...' and
+#                     'ended'.
+#   - {player_kills}: Shows the amount of players that the player killed.
+#   - {player_left}:  Give out the amount of player that is alive in arena.
+#   - {player_place}: The player
+
+# The display name of the arena.
+# Please do not use the tags above for
+# this section.
+display-name: "§e§lSKYWARS"
+
+# This scoreboard key is used when
+# The arena is not started and when it
+# is waiting for players
+wait-arena:
+  - "§e www.hyrulePE.xyz"
+  - ""
+  - "Mode: &6{arena_mode}"
+  - "Map: &6{arena_map}"
+  - ""
+  - "&6{arena_status}"
+  - "Status:"
+
+# This scoreboard key is used
+# when the game is started.
+in-game-arena:
+  - "§e www.hyrulePE.xyz"
+  - ""
+  - "Mode: &6{arena_mode}"
+  - "Map: &6{arena_map}"
+  - ""
+  - "Kills: &6{player_kills}"
+  - ""
+  - "Players left: {players_left}"
+  - ""
+  - "{arena_status}"
+  - "Events:"
+  - ""
+  - "&6{player_place}&f place"
+  - "You're in &6{player_place}&f place"
+
+# This scoreboard is used when
+# the game is ended.
+ending-state-arena:
+  - "§e www.hyrulePE.xyz"
+  - ""
+  - "Mode: &6{arena_mode}"
+  - "Map: &6{arena_map}"
+  - ""
+  - "3. &e{player_top_3} &c{kills}"
+  - "2. &e{player_top_2) &c{kills}"
+  - "1. &a{player_top_1} &c{kills}"
+  - "Top players:"

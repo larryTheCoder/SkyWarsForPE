@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\arena;
 
+use http\Exception\InvalidArgumentException;
 use larryTheCoder\events\PlayerJoinArenaEvent;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\{Settings, Utils};
@@ -357,6 +358,9 @@ class Arena extends PlayerHandler {
 	 * @param int $mode
 	 */
 	public function setGame(int $mode){
+		if($mode < Arena::ARENA_WAITING_PLAYERS && $mode > Arena::ARENA_RUNNING){
+			throw new InvalidArgumentException("Arena mode must be at least 0-2, $mode given");
+		}
 		$this->game = $mode;
 	}
 

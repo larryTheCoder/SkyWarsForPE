@@ -30,8 +30,7 @@ namespace larryTheCoder\utils;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\FireworksData;
-use larryTheCoder\utils\scoreboard\ScoreboardStore;
-use pocketmine\{entity\Skin, Player, Server, utils\MainLogger, utils\Random};
+use pocketmine\{Player, Server, utils\MainLogger, utils\Random};
 use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item, ItemIds};
@@ -52,8 +51,8 @@ class Utils {
 	public static $particleTimer = [];
 	/** @var integer[][] */
 	public static $helixMathMap = [];
-	/** @var ScoreboardStore */
-	private static $store = null;
+	/** @var Config */
+	private static $scoreboard;
 
 	public static function sendDebug(String $log){
 		MainLogger::getLogger()->debug("SW-DEBUG: " . $log);
@@ -186,23 +185,6 @@ class Utils {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Return an md5 of the skin.
-	 * Verify the integrity of the skin itself.
-	 *
-	 * @param Skin $skin
-	 * @return string
-	 */
-	public static function getSkinHashed(Skin $skin){
-		$hash1 = md5($skin->getCapeData());
-		$hash2 = md5($skin->getGeometryData());
-		$hash3 = md5($skin->getGeometryName());
-		$hash4 = md5($skin->getSkinData());
-		$hash5 = md5($skin->getSkinId());
-
-		return md5($hash1 . $hash2 . $hash3 . $hash4 . $hash5);
 	}
 
 	public static function ensureDirectory(string $directory = ""){
@@ -390,11 +372,11 @@ class Utils {
 		}
 	}
 
-	public static function getStore(): ScoreboardStore{
-		if(!is_null(self::$store)){
-			return self::$store;
+	public static function loadDefaultConfig(){
+		if(isset(self::$scoreboard)){
+			return self::$scoreboard;
 		}
 
-		return self::$store = new ScoreboardStore();
+		return self::$scoreboard = new Config(SkyWarsPE::getInstance()->getDataFolder() . "scoreboard.yml");
 	}
 }

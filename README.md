@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://i.ibb.co/bXG690Z/Sky-Wars-For-PE.png"/>
+  <img src="https://cdn.stykers.moe/img/SkyWarsForPE.png"/>
 </p>
 
 
 # SkyWarsForPE
-[![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE) [![Discord](https://img.shields.io/discord/350333413737365522.svg?style=flat-square&label=discord&colorB=7289da)](https://discord.gg/t5NsTyj) [![Donate](https://img.shields.io/badge/donate-PayPal-yellow.svg?style=flat-square)](http://www.paypal.me/DoubleCheese)
+[![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE) [![Donate](https://img.shields.io/badge/donate-PayPal-yellow.svg?style=flat-square)](http://www.paypal.me/DoubleCheese)
 
     Powered by Open Sourced code.
     Its time to burn those old fancy paid plugins and beat them in face!
@@ -45,8 +45,7 @@ Giving out planned features wont do anything without trying first. But these are
 - Chest Open Close packet (See Hypixel game behaviour)
 - Time manipulation
 - Game API (Do some cool stuff and controls the arena)
-- NPC Top winners (Crashed so often, trying to figure out the problem)
-- Scoreboards! Yes! Ergh...
+- Scoreboards is on the way now
 
 
 ## Commands
@@ -72,7 +71,7 @@ Before you attempted to copy any of this plugin, please read following license b
 
     Adapted from the Wizardry License
     
-    Copyright (c) 2015-2018 larryTheCoder and contributors
+    Copyright (c) 2015-2019 larryTheCoder and contributors
     
     Permission is hereby granted to any persons and/or organizations
     using this software to copy, modify, merge, publish, and distribute it.

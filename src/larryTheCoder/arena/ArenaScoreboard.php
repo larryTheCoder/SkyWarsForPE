@@ -28,12 +28,11 @@
 
 namespace larryTheCoder\arena;
 
-use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\scoreboard\Scoreboard;
 use larryTheCoder\utils\scoreboard\StandardScoreboard;
+use larryTheCoder\utils\Utils;
 use pocketmine\Player;
 use pocketmine\scheduler\Task;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\Config;
 
 /**
  * A Scoreboard interface class
@@ -46,26 +45,88 @@ class ArenaScoreboard extends Task {
 
 	/** @var Player[] */
 	private $scoreboards = [];
-	/** @var Scoreboard */
-	private $sidebarScore;
-	private $i = 0;
+	/** @var Config */
+	private $config;
+	/** @var Arena */
+	private $arena;
 
-	public function __construct(){
-		SkyWarsPE::$instance->getScheduler()->scheduleRepeatingTask($this, 20);
+	public function __construct(Arena $arena){
+		$this->arena = $arena;
+		$this->config = Utils::loadDefaultConfig();
 	}
 
+	/**
+	 * Adds a player into the scoreboard list.
+	 *
+	 * @param Player $pl
+	 */
 	public function addPlayer(Player $pl){
 		$this->scoreboards[$pl->getName()] = $pl;
 		StandardScoreboard::setScore($pl, "§e§lSKYWARS", 1);
 	}
 
-	/**
-	 * Gets the scoreboard class for this arena,
-	 * each arena will be given a separated scoreboard
-	 * classes.
-	 */
-	public function getScoreboard(): Scoreboard{
-		return $this->sidebarScore;
+	// PLAYER WAITING/STARTING
+
+	//      SKYWARS
+	// Status:
+	// Waiting... / Starting in...
+	//
+	// Map: {arena_map}
+	// Mode: {arena_mode}
+	//
+	// www.hyrulePE.xyz
+
+
+	// PLAYER IN GAME/SPECTATOR
+
+	//      SKYWARS
+	// You're in 3rd place
+	//
+	// Events:
+	// {arena_status}
+	//
+	// Players left: {players_left}
+	//
+	// Kills: {player_kills}
+	//
+	// Map: {arena_map}
+	// Mode: {arena_mode}
+	//
+	// www.hyrulePE.xyz
+
+
+	// PLAYER GAME ENDED
+
+	//         SKYWARS
+	// Top winners
+	// 1. {player_top_1} {kills}
+	// 2. {player_top_2) {kills}
+	// 3. {player_top_3} {kills}
+	//
+	// Map: {arena_map}
+	// Mode: {arena_mode}
+	//
+	// www.hyrulePE.xyz
+
+	/** @var array[] */
+	private $tempEmptyCache = [];
+
+	public function passData(Player $pl, string &$line, bool $isSpectator){
+		if(!isset($this->tempEmptyCache[$pl->getName()])){
+			// Temporary spaces.
+			$this->tempEmptyCache[$pl->getName()] = ["§0\e", "§1\e", "§2\e", "§3\e", "§4\e", "§5\e", "§6\e", "§7\e", "§8\e", "§9\e", "§a\e", "§b\e", "§c\e", "§d\e", "§e\e"];
+		}
+
+		if(empty($line)){
+			foreach($this->tempEmptyCache[$pl->getName()] as $obj => $image){
+				$line = $image;
+				unset($this->tempEmptyCache[$pl->getName()][$obj]);
+
+				return;
+			}
+		}
+
+
 	}
 
 	/**
@@ -76,26 +137,35 @@ class ArenaScoreboard extends Task {
 	 * @return void
 	 */
 	public function onRun(int $currentTick){
-		if($this->i > 5){
-			$this->i = 0;
-		}
-		foreach($this->scoreboards as $pl){
-			// Scoreboard standards
-			StandardScoreboard::setScoreLine($pl, 1, "§e www.hyrulePE.xyz  ");
-			StandardScoreboard::setScoreLine($pl, 3, " Mode: §6Solo");
-			StandardScoreboard::setScoreLine($pl, 4, " Map: §aSomething");
-			StandardScoreboard::setScoreLine($pl, 6, " Kills: §a0");
-			StandardScoreboard::setScoreLine($pl, 8, " Players left: §a4");
-			StandardScoreboard::setScoreLine($pl, 10, " Refill:  §a2:11");
-
-			// Fuck you mojang.
-			StandardScoreboard::setScoreLine($pl, 2, TextFormat::GREEN . "\e");
-			StandardScoreboard::setScoreLine($pl, 5, TextFormat::RED . "\e");
-			StandardScoreboard::setScoreLine($pl, 7, TextFormat::YELLOW . "\e");
-			StandardScoreboard::setScoreLine($pl, 9, TextFormat::BLACK . "\e");
-			StandardScoreboard::setScoreLine($pl, 11, TextFormat::LIGHT_PURPLE . "\e");
+		switch($this->arena->getMode()){
+			case Arena::ARENA_WAITING_PLAYERS:
+				$data = $this->config->get("wait-arena", [""]);
+				break;
+			case Arena::ARENA_RUNNING:
+				$data = $this->config->get("in-game-arena", [""]);
+				break;
+			case Arena::ARENA_CELEBRATING:
+				$data = $this->config->get("ending-state-arena", [""]);
+				break;
+			default:
+				$data = null;
 		}
 
-		$this->i++;
+		// Feed the scoreboard to the players
+		// That is alive.
+		foreach($this->arena->players as $pl){
+			foreach($data as $line => $message){
+				$pLine = $this->passData($pl, $message, false);
+				StandardScoreboard::setScoreLine($pl, $line + 1, $pLine);
+			}
+		}
+
+		// Do the same thing to the spectators.
+		foreach($this->arena->spec as $pl){
+			foreach($data as $line => $message){
+				$pLine = $this->passData($pl, $message, true);
+				StandardScoreboard::setScoreLine($pl, $line + 1, $pLine);
+			}
+		}
 	}
 }
