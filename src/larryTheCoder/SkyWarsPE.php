@@ -110,7 +110,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 		Utils::ensureDirectory("arenas/worlds");
 		$this->saveResource("chests.yml");
 		$this->saveResource("config.yml");
-		//$this->saveResource("scoreboard.yml", true);
+		$this->saveResource("scoreboard.yml");
 		$this->saveResource("image/map.png");
 		$this->saveResource("arenas/default.yml");
 		$this->saveResource("language/en_US.yml");

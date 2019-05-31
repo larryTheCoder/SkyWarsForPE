@@ -379,4 +379,20 @@ class Utils {
 
 		return self::$scoreboard = new Config(SkyWarsPE::getInstance()->getDataFolder() . "scoreboard.yml");
 	}
+
+	/**
+	 * @param int $number
+	 * @return string
+	 */
+	public static function addPrefix(int $number){
+		if($number === 1){
+			return $number . "st";
+		}elseif($number === 2){
+			return $number . "nd";
+		}elseif($number === 3){
+			return $number . "rd";
+		}
+
+		return $number . "th";
+	}
 }

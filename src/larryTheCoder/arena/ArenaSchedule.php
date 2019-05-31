@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2019 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -72,6 +72,11 @@ class ArenaSchedule extends Task {
 	private $chestTick = 0;
 	private $tickTipBar = 0;
 
+	private $resetChest = false;
+
+	/** @var ArenaScoreboard|null */
+	private $scoreboard = null;
+
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
 		$this->line1 = str_replace("&", "§", $this->arena->data['signs']['status_line_1']);
@@ -85,8 +90,20 @@ class ArenaSchedule extends Task {
 		if(!$this->arena->plugin->getServer()->isLevelLoaded($this->arena->data['signs']['join_sign_world'])){
 			$this->arena->plugin->getServer()->loadLevel($this->arena->data['signs']['join_sign_world']);
 		}
+
+		$this->scoreboard = new ArenaScoreboard($arena);
 	}
 
+	/**
+	 * @return ArenaScoreboard|null
+	 */
+	public function getArenaScoreboard(){
+		return $this->scoreboard;
+	}
+
+	/**
+	 * @param int $currentTick
+	 */
 	public function onRun(int $currentTick){
 		/** @var Player $p */
 		# Sign schedule for arena
@@ -121,9 +138,23 @@ class ArenaSchedule extends Task {
 		# Arena is not running
 		switch($this->arena->getMode()){
 			case Arena::ARENA_WAITING_PLAYERS:
+				$this->arena->kills = [];
+				$this->resetChest = false;
+
 				$this->arena->totalPlayed = 0;
 				if(!empty($this->arena->players) && count($this->arena->players) > $this->arena->getMinPlayers() - 1){
 					$this->startTime--;
+
+					// Scoreboard events...
+					if($this->startTime <= 3 && $this->startTime > 1){
+						$this->scoreboard->setCurrentEvent("Starting in §6" . $this->startTime);
+					}elseif($this->startTime <= 1){
+						$this->scoreboard->setCurrentEvent("Starting in §c" . $this->startTime);
+					}else{
+						$this->scoreboard->setCurrentEvent("Starting in §a" . $this->startTime);
+					}
+
+					// Player titles and EXP start time.
 					foreach($this->arena->players as $p){
 						if($p instanceof Player){
 							$p->setXpLevel($this->startTime);
@@ -145,25 +176,32 @@ class ArenaSchedule extends Task {
 						}
 					}
 
+					// Start the arena if the timer is 0
 					if($this->startTime == 0){
 						$this->arena->startGame();
-						$this->startTime = 60;
+						$this->startTime = 10;
 						break;
 					}
+
+					// Check if the players are full. Start the game if possible
 					if(Settings::$startWhenFull && $this->arena->getMaxPlayers() - 1 < count($this->arena->players)){
 						$this->arena->startGame();
-						$this->startTime = 60;
+						$this->startTime = 10;
 						break;
 					}
 				}else{
 					foreach($this->arena->players as $p){
 						if($this->startTime < 60){
 							$p->sendPopup($this->arena->plugin->getMsg($p, "arena-low-players", false));
+							$this->scoreboard->setCurrentEvent("§cNot enough players");
 						}else{
 							$p->sendPopup($this->arena->plugin->getMsg($p, "arena-wait-players", false));
+							$this->scoreboard->setCurrentEvent("§6Waiting for players");
 						}
 					}
-					$this->startTime = 60;
+
+					// Reset everything.
+					$this->startTime = 10;
 					$this->chestTick = 0;
 					$this->endTime = 0;
 				}
@@ -173,8 +211,6 @@ class ArenaSchedule extends Task {
 				if($this->arena->fallTime !== 0){
 					$this->arena->fallTime--;
 				}
-
-				$this->tickEffect();
 
 				$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
 				if($this->arena->data["chest"]["refill"] !== false && $refill == 0){
@@ -189,25 +225,30 @@ class ArenaSchedule extends Task {
 					}
 					$this->chestTick = 0;
 				}
-				if($this->tickTipBar === 15){
-					foreach($this->arena->players as $player){
-						$player->sendPopup("§c1. §a{$this->arena->winners[0][0]} -> {$this->arena->winners[0][1]} kills" .
-							"\n§c2. §a{$this->arena->winners[1][0]} -> {$this->arena->winners[1][1]} kills" .
-							"\n§c3. §a{$this->arena->winners[2][0]} -> {$this->arena->winners[2][1]} kills");
-					}
-					$this->tickTipBar = 0;
-				}
-				$this->tickTipBar++;
 
+				$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
+
+				if(($this->arena->data['chest']["refill_rate"] - $refill) > 0){
+					$timer = gmdate('i:s', ($this->arena->data['chest']["refill_rate"] - $refill));
+				}else{
+					$timer = 0;
+				}
+				if($timer !== 0){
+					$this->scoreboard->setCurrentEvent("Refill in $timer");
+				}elseif(!$this->resetChest){
+					$this->resetChest = true;
+					$this->scoreboard->setCurrentEvent("");
+				}
+
+				$this->tickTipBar++;
 				$this->chestTick++;
 
-				foreach($this->arena->players as $p){
-					$this->sendScoreboard($p);
-				}
+				$this->tickEffect();
 				break;
 			case Arena::ARENA_CELEBRATING:
 				if($this->endTime === 0){
 					$this->arena->broadcastResult();
+					$this->scoreboard->setCurrentEvent("§cGame ended");
 				}
 				$this->endTime++;
 
@@ -222,10 +263,6 @@ class ArenaSchedule extends Task {
 					$facing = $player->getDirection();
 					$vec = $player->getSide($facing, -3);
 					Utils::addFireworks($vec);
-					$player->sendPopup("§c1. §a{$this->arena->winners[0][0]} -> {$this->arena->winners[0][1]} kills" .
-						"\n§c2. §a{$this->arena->winners[1][0]} -> {$this->arena->winners[1][1]} kills" .
-						"\n§c3. §a{$this->arena->winners[2][0]} -> {$this->arena->winners[2][1]} kills");
-
 				}
 
 				if($this->endTime >= 11){
@@ -239,6 +276,9 @@ class ArenaSchedule extends Task {
 		// This will checks if there is 1 players left in arena
 		// So there will no errors
 		$this->arena->checkAlive();
+		foreach($this->arena->getAllPlayers() as $pl){
+			$this->scoreboard->updateScoreboard($pl);
+		}
 	}
 
 	/**
@@ -272,38 +312,6 @@ class ArenaSchedule extends Task {
 					break;
 			}
 		}
-	}
-
-	public function sendScoreboard(Player $p){
-		$refill = ($this->chestTick % $this->arena->data['chest']["refill_rate"]);
-
-		$space = str_repeat(" ", 78); // 55 default
-		if($refill !== $this->chestTick + 1){
-			$timer = gmdate('i:s', $refill);
-		}else{
-			$timer = 0;
-		}
-		$timerPlace = "";
-		if($timer !== 0){
-			$timerPlace = $space . "§bNext refill: $timer\n";
-		}
-
-		$p->sendTip("\n" .
-			$space . "§0[ §eSkyWars §0]\n" . $timerPlace .
-			$space . "§bNick: " . $p->getName() . "\n" .
-			$space . "§bPlayers: §c" . count($this->arena->players) . "/" . $this->arena->getMaxPlayers() . "\n" .
-			$space . "§eKills: " . $this->arena->kills[strtolower($p->getName())] . "\n" .
-			$space . "§eTime: " . gmdate('i:s', $this->chestTick) . "\n" .
-			$space . "\n" .
-			$space . "\n" .
-			$space . "\n" .
-			$space . "\n" .
-			$space . "\n" .
-			$space . "\n" .
-			$space . "\n" .
-			$space . "\n" .
-			$space . "\n" .
-			$space);
 	}
 
 	/**

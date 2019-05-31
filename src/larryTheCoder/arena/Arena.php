@@ -292,6 +292,8 @@ class Arena extends PlayerHandler {
 		$p->getInventory()->clearAll();
 		$p->getArmorInventory()->clearAll();
 
+		$this->task->getArenaScoreboard()->removePlayer($p);
+
 		Utils::sendDebug("leaveArena() is being called");
 		Utils::sendDebug("User " . $p->getName() . " is leaving the arena.");
 	}
@@ -498,6 +500,8 @@ class Arena extends PlayerHandler {
 			$p->setGamemode(0);
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
+
+			$this->task->getArenaScoreboard()->removePlayer($p);
 		}
 		foreach($this->spec as $p){
 			$p->removeAllEffects();
@@ -518,6 +522,8 @@ class Arena extends PlayerHandler {
 			$p->setGamemode(0);
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
+
+			$this->task->getArenaScoreboard()->removePlayer($p);
 		}
 		// Reset the arrays
 		$this->spawnPedestals = [];
@@ -667,6 +673,7 @@ class Arena extends PlayerHandler {
 		$this->onJoin($p);
 
 		$this->giveGameItems($p, false);
+		$this->task->getArenaScoreboard()->addPlayer($p);
 	}
 
 	private function onJoin(Player $p){
@@ -686,7 +693,7 @@ class Arena extends PlayerHandler {
 
 		# Then we save the data
 		$this->players[strtolower($p->getName())] = $p;
-		$this->kills[strtolower($p->getName())] = 0;
+		$this->kills[$p->getName()] = 0;
 
 		# Okay saved then we get the spawn for the player
 		$spawn = $this->getNextPedestals($p);
@@ -771,6 +778,8 @@ class Arena extends PlayerHandler {
 			}
 		}
 
+		$this->task->getArenaScoreboard()->setCurrentEvent(TextFormat::RED . "In match");
+
 		$this->refillChests();
 		$this->messageArenaPlayers('arena-start', false);
 	}
@@ -829,5 +838,16 @@ class Arena extends PlayerHandler {
 	 */
 	public function getArenaLevel(): Level{
 		return $this->level;
+	}
+
+	/**
+	 * This supposed to return the mode of the
+	 * arena which is SOLO or TEAM.
+	 * TODO: Implement this fully.
+	 *
+	 * @return string
+	 */
+	public function getArenaMode(){
+		return "SOLO";
 	}
 }

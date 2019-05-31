@@ -31,8 +31,8 @@ namespace larryTheCoder\arena;
 use larryTheCoder\utils\scoreboard\StandardScoreboard;
 use larryTheCoder\utils\Utils;
 use pocketmine\Player;
-use pocketmine\scheduler\Task;
 use pocketmine\utils\Config;
+use pocketmine\utils\TextFormat;
 
 /**
  * A Scoreboard interface class
@@ -41,7 +41,7 @@ use pocketmine\utils\Config;
  *
  * @package larryTheCoder\arena
  */
-class ArenaScoreboard extends Task {
+class ArenaScoreboard {
 
 	/** @var Player[] */
 	private $scoreboards = [];
@@ -50,9 +50,28 @@ class ArenaScoreboard extends Task {
 	/** @var Arena */
 	private $arena;
 
+	/** @var string */
+	private $events;
+
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
 		$this->config = Utils::loadDefaultConfig();
+
+		$this->events = "Nothing";
+	}
+
+	/**
+	 * Sets the current event of the arena.
+	 * This is to show the current status or
+	 * events that is happening inside the arena.
+	 *
+	 * @param string $event
+	 */
+	public function setCurrentEvent(string $event){
+		if(empty($event)){
+			$event = "Nothing";
+		}
+		$this->events = $event;
 	}
 
 	/**
@@ -62,81 +81,93 @@ class ArenaScoreboard extends Task {
 	 */
 	public function addPlayer(Player $pl){
 		$this->scoreboards[$pl->getName()] = $pl;
-		StandardScoreboard::setScore($pl, "§e§lSKYWARS", 1);
+		$this->updateScoreboard($pl);
 	}
 
-	// PLAYER WAITING/STARTING
+	/**
+	 * Removes the player from the list.
+	 *
+	 * @param Player $pl
+	 */
+	public function removePlayer(Player $pl){
+		if(isset($this->scoreboards[$pl->getName()])){
+			unset($this->scoreboards[$pl->getName()]);
+		}
 
-	//      SKYWARS
-	// Status:
-	// Waiting... / Starting in...
-	//
-	// Map: {arena_map}
-	// Mode: {arena_mode}
-	//
-	// www.hyrulePE.xyz
-
-
-	// PLAYER IN GAME/SPECTATOR
-
-	//      SKYWARS
-	// You're in 3rd place
-	//
-	// Events:
-	// {arena_status}
-	//
-	// Players left: {players_left}
-	//
-	// Kills: {player_kills}
-	//
-	// Map: {arena_map}
-	// Mode: {arena_mode}
-	//
-	// www.hyrulePE.xyz
-
-
-	// PLAYER GAME ENDED
-
-	//         SKYWARS
-	// Top winners
-	// 1. {player_top_1} {kills}
-	// 2. {player_top_2) {kills}
-	// 3. {player_top_3} {kills}
-	//
-	// Map: {arena_map}
-	// Mode: {arena_mode}
-	//
-	// www.hyrulePE.xyz
+		StandardScoreboard::removeScore($pl);
+	}
 
 	/** @var array[] */
 	private $tempEmptyCache = [];
 
-	public function passData(Player $pl, string &$line, bool $isSpectator){
+	public function passData(Player $pl, string $line): string{
 		if(!isset($this->tempEmptyCache[$pl->getName()])){
-			// Temporary spaces.
+			// Temporary spaces. Ah thanks mojang, wait no.
 			$this->tempEmptyCache[$pl->getName()] = ["§0\e", "§1\e", "§2\e", "§3\e", "§4\e", "§5\e", "§6\e", "§7\e", "§8\e", "§9\e", "§a\e", "§b\e", "§c\e", "§d\e", "§e\e"];
 		}
 
 		if(empty($line)){
 			foreach($this->tempEmptyCache[$pl->getName()] as $obj => $image){
-				$line = $image;
 				unset($this->tempEmptyCache[$pl->getName()][$obj]);
 
-				return;
+				return $image;
 			}
 		}
 
+		// Arrays really likes to complains if there is the object
+		// doesn't exists
+		$kills = isset($this->arena->kills[$pl->getName()])
+			? $this->arena->kills[$pl->getName()] : 0;
+		$playerPlacing = isset($this->arena->winnersFixed[$pl->getName()])
+			? Utils::addPrefix($this->arena->winnersFixed[$pl->getName()]) : "Not ranked";
+		$topPlayer = (isset($this->arena->winners[0]) && isset($this->arena->winners[0][0]))
+			? $this->arena->winners[0][0] : "No data";
+		$topKill = (isset($this->arena->winners[0]) && isset($this->arena->winners[0][1]))
+			? $this->arena->winners[0][1] : "No data";
 
+		// Tags information..?
+		$search = [
+			"{arena_mode}",
+			"{arena_map}",
+			"{arena_status}",
+			"{top_player}",
+			"{top_kills}",
+			"{player_kills}",
+			"{player_place}",
+			"{players_left}",
+			"{max_players}",
+			"{min_players}",
+			"{player_name}",
+			"&",
+		];
+		$replace = [
+			$this->arena->getArenaMode(),
+			$this->arena->getArenaName(),
+			$this->events,
+			$topPlayer,
+			$topKill,
+			$kills,
+			$playerPlacing,
+			$this->arena->getPlayers(),
+			$this->arena->getMaxPlayers(),
+			$this->arena->getMinPlayers(),
+			$pl->getName(),
+			TextFormat::ESCAPE,
+		];
+
+		foreach($this->arena->winners as $i => $data){
+			foreach($data as $player => $kills){
+				array_push($search, "{kills_top_" . ($i + 1) . "}");
+				array_push($search, "{player_top_" . ($i + 1) . "}");
+				array_push($replace, $player);
+				array_push($replace, $kills);
+			}
+		}
+
+		return " " . str_replace($search, $replace, $line);
 	}
 
-	/**
-	 * Actions to execute when run
-	 *
-	 * @param int $currentTick
-	 *
-	 * @return void
-	 */
-	public function onRun(int $currentTick){
+	public function updateScoreboard(Player $pl){
 		switch($this->arena->getMode()){
 			case Arena::ARENA_WAITING_PLAYERS:
 				$data = $this->config->get("wait-arena", [""]);
@@ -151,21 +182,18 @@ class ArenaScoreboard extends Task {
 				$data = null;
 		}
 
-		// Feed the scoreboard to the players
-		// That is alive.
-		foreach($this->arena->players as $pl){
-			foreach($data as $line => $message){
-				$pLine = $this->passData($pl, $message, false);
-				StandardScoreboard::setScoreLine($pl, $line + 1, $pLine);
-			}
+		if(!$pl->isOnline()){
+			unset($this->scoreboards[$pl->getName()]);
+
+			return;
 		}
 
-		// Do the same thing to the spectators.
-		foreach($this->arena->spec as $pl){
-			foreach($data as $line => $message){
-				$pLine = $this->passData($pl, $message, true);
-				StandardScoreboard::setScoreLine($pl, $line + 1, $pLine);
-			}
+		StandardScoreboard::setScore($pl, $this->config->get("display-name", "§e§lSKYWARS"), 1);
+		foreach($data as $line => $message){
+			$pLine = $this->passData($pl, $message);
+			StandardScoreboard::setScoreLine($pl, $line + 1, $pLine);
 		}
+
+		$this->tempEmptyCache = []; // Reset the cache.
 	}
 }

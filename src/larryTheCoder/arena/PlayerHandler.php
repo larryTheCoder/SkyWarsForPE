@@ -34,7 +34,6 @@ use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\level\Position;
 use pocketmine\Player;
-use pocketmine\Server;
 
 /**
  * This class handles everything related to the player
@@ -62,8 +61,10 @@ abstract class PlayerHandler {
 
 	/** @var array */
 	public $kills = [];
-	/** @var string[] */
+	/** @var object[][] */
 	public $winners = [];
+	/** @var int[] */
+	public $winnersFixed = [];
 
 	/** @var Position */
 	public $cageToRemove = [];
@@ -114,7 +115,7 @@ abstract class PlayerHandler {
 	public abstract function unsetAllPlayers();
 
 	/**
-	 * @return array
+	 * @return Player[]
 	 */
 	public function getAllPlayers(): array{
 		return array_merge($this->players, $this->spec);
@@ -159,30 +160,20 @@ abstract class PlayerHandler {
 	 * the players every 1 seconds.
 	 */
 	public function statusUpdate(){
-		if($this->arena->getMode() !== Arena::ARENA_WAITING_PLAYERS){
-			$i = 0;
-			arsort($this->kills);
-			foreach($this->kills as $player => $kills){
-				$p = Server::getInstance()->getPlayer($player);
-				if(!is_null($p)){
-					$this->winners[$i] = ["{$p->getName()}", $kills];
-				}else{
-					unset($this->kills[$player]);
-				}
-				$i++;
+		$i = 0;
+		arsort($this->kills);
+		foreach($this->kills as $player => $kills){
+			$this->winners[$i] = [$player, $kills];
+			$this->winnersFixed[$player] = $i + 1;
+			$i++;
+		}
+
+		$i = $this->arena->getMaxPlayers() - 1;
+		while($i >= 0){
+			if(!isset($this->winners[$i])){
+				$this->winners[$i] = ["§7...", 0];
 			}
-		}else{
-			$this->winners = [];
-			# Sometimes player are null
-			if(!isset($this->winners[1])){
-				$this->winners[0] = ["§7...", 0];
-			}
-			if(!isset($this->winners[2])){
-				$this->winners[1] = ["§7...", 0];
-			}
-			if(!isset($this->winners[3])){
-				$this->winners[2] = ["§7...", 0];
-			}
+			$i--;
 		}
 	}
 

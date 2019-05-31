@@ -28,9 +28,20 @@ version: 1
 #   - {arena_status}: Shows the status of the arena, this will
 #                     return either 'Starting' or 'Refilling in...' and
 #                     'ended'.
-#   - {player_kills}: Shows the amount of players that the player killed.
-#   - {player_left}:  Give out the amount of player that is alive in arena.
-#   - {player_place}: The player
+#   - {player_kills}: Shows the amount of players that the player had killed.
+#   - {players_left}:  Give out the amount of player that is alive in arena.
+#   - {player_place}: The player place in game (Use this when the arena is
+#                     started).
+#   - {max_players}:  Return the maximum player for the arena.
+#   - {min_players}:  Return the minimum player to start the arena.
+#   - {kills_top_x}:  [x] is a number of the player place,
+#                     ex {kills_top_3}.
+#                     Returns the number of kills of the top x
+#   - {player_top_x}: [x] is a number just like above, It will return
+#                     The name of the player at top x
+#   - {top_player}:   Gives out the top player in the arena.
+#   - {top_kills}:    Return the top kills that killed by a player.
+#   - {player_name}:  Return the name of the player.
 
 # The display name of the arena.
 # Please do not use the tags above for
@@ -41,7 +52,7 @@ display-name: "§e§lSKYWARS"
 # The arena is not started and when it
 # is waiting for players
 wait-arena:
-  - "§e www.hyrulePE.xyz"
+  - "§ewww.hyrulePE.xyz"
   - ""
   - "Mode: &6{arena_mode}"
   - "Map: &6{arena_map}"
@@ -52,7 +63,7 @@ wait-arena:
 # This scoreboard key is used
 # when the game is started.
 in-game-arena:
-  - "§e www.hyrulePE.xyz"
+  - "§ewww.hyrulePE.xyz"
   - ""
   - "Mode: &6{arena_mode}"
   - "Map: &6{arena_map}"
@@ -64,18 +75,17 @@ in-game-arena:
   - "{arena_status}"
   - "Events:"
   - ""
-  - "&6{player_place}&f place"
   - "You're in &6{player_place}&f place"
 
 # This scoreboard is used when
 # the game is ended.
 ending-state-arena:
-  - "§e www.hyrulePE.xyz"
+  - "§ewww.hyrulePE.xyz"
   - ""
   - "Mode: &6{arena_mode}"
   - "Map: &6{arena_map}"
   - ""
-  - "3. &e{player_top_3} &c{kills}"
-  - "2. &e{player_top_2) &c{kills}"
-  - "1. &a{player_top_1} &c{kills}"
+  - "3. &e{player_top_3} &c{kills_top_3}"
+  - "2. &e{player_top_2} &c{kills_top_2}"
+  - "1. &a{player_top_1} &c{kills_top_1}"
   - "Top players:"

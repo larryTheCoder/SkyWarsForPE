@@ -36,6 +36,7 @@ Its unstable and not easy to configure. I ensure you that this plugin will make 
 - Top winners! Top winners! Who won the game?
 - All the player stats will be stored centrally in sql database.
 - Provides the best settings for your server.
+- Scoreboards is now implemented and it can be configured in [scoreboard.yml](https://github.com/larryTheCoder/SkyWarsForPE/blob/master/resources/scoreboard.yml).
 
 ### Planned Features
 Giving out planned features wont do anything without trying first. But these are the planned features for this plugin
@@ -45,7 +46,6 @@ Giving out planned features wont do anything without trying first. But these are
 - Chest Open Close packet (See Hypixel game behaviour)
 - Time manipulation
 - Game API (Do some cool stuff and controls the arena)
-- Scoreboards is on the way now
 
 
 ## Commands
