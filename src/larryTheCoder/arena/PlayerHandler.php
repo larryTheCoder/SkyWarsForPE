@@ -54,6 +54,8 @@ abstract class PlayerHandler {
 	const TEAM_ORANGE = 4;
 	const TEAM_PURPLE = 5;
 
+	/** @var string[] */
+	public $playerNameFixed;
 	/** @var Player[] */
 	public $players = [];
 	/** @var Player[] */

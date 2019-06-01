@@ -531,6 +531,7 @@ class Arena extends PlayerHandler {
 		$this->players = [];
 		$this->winners = [];
 		$this->kills = [];
+		$this->playerNameFixed = [];
 
 		Utils::sendDebug("unsetAllPlayers() is being called");
 	}
@@ -693,7 +694,7 @@ class Arena extends PlayerHandler {
 
 		# Then we save the data
 		$this->players[strtolower($p->getName())] = $p;
-		$this->kills[$p->getName()] = 0;
+		$this->kills[strtolower($p->getName())] = 0;
 
 		# Okay saved then we get the spawn for the player
 		$spawn = $this->getNextPedestals($p);
@@ -712,6 +713,10 @@ class Arena extends PlayerHandler {
 		# Add some sound and all set
 		$sound = new EndermanTeleportSound(new Vector3($p->x, $p->y, $p->z));
 		$p->getLevel()->addSound($sound, [$p]);
+
+		// This is to fix the lowercased characters.
+		// Because everything in this code is lowercased
+		$this->playerNameFixed[strtolower($p->getName())] = $p->getName();
 
 		$p->sendMessage(str_replace("{PLAYER}", $p->getName(), $this->plugin->getMsg($p, 'player-join')));
 	}

@@ -313,7 +313,7 @@ class ArenaListener implements Listener {
 						$this->arena->messageArenaPlayers('death-message-suicide', false, ["{PLAYER}"], [$p->getName()]);
 					}else{
 						$this->arena->messageArenaPlayers('death-message', false, ["{PLAYER}", "{KILLER}"], [$p->getName(), $player]);
-						$this->arena->kills[$player]++;
+						$this->arena->kills[strtolower($player)]++;
 					}
 				}else{
 					$msg = $this->getDeathMessageById($player);
@@ -330,7 +330,7 @@ class ArenaListener implements Listener {
 		$pd = $this->plugin->getDatabase()->getPlayerData($player->getName());
 		$pd->death++;
 		$pd->lost++;
-		$pd->kill += $this->arena->kills[$player->getName()];
+		$pd->kill += $this->arena->kills[strtolower($player->getName())];
 		$pd->time += $this->arena->totalPlayed;
 		$result = $this->plugin->getDatabase()->setPlayerData($player->getName(), $pd);
 		if($result !== SkyWarsDatabase::DATA_EXECUTE_SUCCESS){

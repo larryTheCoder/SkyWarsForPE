@@ -62,7 +62,7 @@ class ArenaSchedule extends Task {
 	public $line3;
 	/** @var string */
 	public $line4;
-	private $startTime = 60;
+	private $startTime = 30;
 
 	# sign lines
 	private $endTime = 0;
@@ -179,14 +179,14 @@ class ArenaSchedule extends Task {
 					// Start the arena if the timer is 0
 					if($this->startTime == 0){
 						$this->arena->startGame();
-						$this->startTime = 10;
+						$this->startTime = 30;
 						break;
 					}
 
 					// Check if the players are full. Start the game if possible
 					if(Settings::$startWhenFull && $this->arena->getMaxPlayers() - 1 < count($this->arena->players)){
 						$this->arena->startGame();
-						$this->startTime = 10;
+						$this->startTime = 30;
 						break;
 					}
 				}else{
@@ -201,7 +201,7 @@ class ArenaSchedule extends Task {
 					}
 
 					// Reset everything.
-					$this->startTime = 10;
+					$this->startTime = 30;
 					$this->chestTick = 0;
 					$this->endTime = 0;
 				}
