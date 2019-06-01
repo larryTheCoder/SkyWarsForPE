@@ -304,8 +304,8 @@ class FormPanel implements Listener {
 					$a->setNested('arena.min_players', $data->minPlayer);
 					$a->setNested('arena.start_when_full', $startWhenFull);
 					$a->setNested('arena.max_game_time', $maxTime);
-					$this->plugin->getArenaManager()->setArenaData($a, $data->arenaName);
 					$a->save();
+					$this->plugin->getArenaManager()->setArenaData($a, $data->arenaName);
 					$this->cleanupArray($p);
 					break;
 				case FormPanel::PANEL_SIGN_BEHAVIOUR:

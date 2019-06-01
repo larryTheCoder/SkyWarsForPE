@@ -238,8 +238,24 @@ class Arena extends PlayerHandler {
 		$this->saveArenaWorld();
 	}
 
-	public function recheckArena(){
-		Utils::loadFirst($this->data['arena']['arena_world']);
+	public function recheckArena($i = 0){
+		if($i >= 10){
+			Server::getInstance()->getLogger()->error("FAILURE! WORLD {$this->data['arena']['arena_world']} COULD NOT BE LOADED.");
+
+			return;
+		}
+
+		try{
+			$i++;
+			Utils::loadFirst($this->data['arena']['arena_world']);
+		}catch(\Exception $ex){
+			Server::getInstance()->getLogger()->warning("{$this->data['arena']['arena_world']} world is corrupted, trying to reset to its last state. Trial $i");
+
+			$this->reload();
+			$this->recheckArena($i);
+
+			return;
+		}
 		$this->level = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']);
 
 		$this->task->line1 = str_replace("&", "§", $this->data['signs']['status_line_1']);
