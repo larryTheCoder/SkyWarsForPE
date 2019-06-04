@@ -118,8 +118,8 @@ class ArenaScoreboard {
 		// doesn't exists
 		$kills = isset($this->arena->kills[strtolower($pl->getName())])
 			? $this->arena->kills[strtolower($pl->getName())] : 0;
-		$playerPlacing = isset($this->arena->winnersFixed[$pl->getName()])
-			? Utils::addPrefix($this->arena->winnersFixed[$pl->getName()]) : "Not ranked";
+		$playerPlacing = isset($this->arena->winnersFixed[strtolower($pl->getName())])
+			? Utils::addPrefix($this->arena->winnersFixed[strtolower($pl->getName())]) : "Not ranked";
 		$topPlayer = (isset($this->arena->winners[0]) && isset($this->arena->winners[0][0]))
 			? $this->arena->winners[0][0] : "No data";
 		$topKill = (isset($this->arena->winners[0]) && isset($this->arena->winners[0][1]))
@@ -158,19 +158,15 @@ class ArenaScoreboard {
 		];
 
 		foreach($this->arena->winners as $i => $data){
-			/**
-			 * @var int $playerKills
-			 * @var string $playerName
-			 */
-			foreach($data as $playerKills => $playerName){
-				$playerName = isset($this->arena->playerNameFixed[$playerName])
-					? $this->arena->playerNameFixed[$playerName] : $playerName;
+			/** @var string $plName */
+			$plName = $data[0];
+			$plName = isset($this->arena->playerNameFixed[$plName])
+				? $this->arena->playerNameFixed[$plName] : $plName;
 
-				array_push($search, "{kills_top_" . ($i + 1) . "}");
-				array_push($search, "{player_top_" . ($i + 1) . "}");
-				array_push($replace, $playerKills);
-				array_push($replace, $playerName);
-			}
+			array_push($search, "{kills_top_" . ($i + 1) . "}");
+			array_push($search, "{player_top_" . ($i + 1) . "}");
+			array_push($replace, $data[1]);
+			array_push($replace, $plName);
 		}
 
 		return " " . str_replace($search, $replace, $line);

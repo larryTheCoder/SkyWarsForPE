@@ -319,6 +319,10 @@ class ArenaListener implements Listener {
 					$msg = $this->getDeathMessageById($player);
 					$this->arena->messageArenaPlayers($msg, false, ["{PLAYER}"], [$p->getName()]);
 				}
+
+				$this->arena->spec[strtolower($p->getName())] = $p;
+				unset($this->arena->players[strtolower($p->getName())]);
+
 				$this->arena->checkAlive();
 				unset($this->lastHit[strtolower($p->getName())]);
 			}
@@ -390,9 +394,6 @@ class ArenaListener implements Listener {
 						$d->hidePlayer($p);
 					}
 				}
-
-				$this->arena->spec[strtolower($p->getName())] = $p;
-				unset($this->arena->players[strtolower($p->getName())]);
 
 				return;
 			}else{

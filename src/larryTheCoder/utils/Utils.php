@@ -227,6 +227,25 @@ class Utils {
 		return true;
 	}
 
+	public static function writeLog($message){
+		// FORMAT           : [DATE] Message
+		// FORMAT FOR ARENA : [DATE] [ARENA]  Message
+		// OTHER FORMATS    : [DATE] [TYPE] Message
+
+		Utils::ensureDirectory("logs/");
+		$logFile = SkyWarsPE::getInstance()->getDataFolder() . "/logs/logData.txt";
+
+		$timestamp = date("H:i:s");
+
+		$logResource = \fopen($logFile, "ab");
+		if(!\is_resource($logResource)){
+			throw new \RuntimeException("Couldn't open log file");
+		}
+
+		fwrite($logResource, "[$timestamp]" . $message . PHP_EOL);
+		\fclose($logResource);
+	}
+
 	public static function deleteDirectory($dir){
 		if(!file_exists($dir)){
 			return true;

@@ -436,19 +436,26 @@ class Arena extends PlayerHandler {
 		}
 
 		$p = $this->plugin->getServer()->getPlayerExact($this->winners[0][0]);
-		$pd = $this->plugin->getDatabase()->getPlayerData($p->getName());
-		$pd->time += $this->totalPlayed;
-		$pd->wins += 1;
-		$pd->kill += $this->winners[0][1];
-		$this->plugin->getDatabase()->setPlayerData($p->getName(), $pd);
+		if(!is_null($p)){
+			$pd = $this->plugin->getDatabase()->getPlayerData($p->getName());
+			$pd->time += $this->totalPlayed;
+			$pd->wins += 1;
+			$pd->kill += $this->winners[0][1];
+			$this->plugin->getDatabase()->setPlayerData($p->getName(), $pd);
+		}
 
 		foreach($this->winners as $winner){
 			$p = $this->plugin->getServer()->getPlayer($winner[0]);
 			$this->giveMoney($p, $this->data['arena']['money_reward']);
 		}
 
+		/** @var string $playerName */
+		$playerName = $this->winners[0][0];
+		$playerName = $playerName = isset($this->playerNameFixed[$playerName])
+			? $this->playerNameFixed[$playerName] : $playerName;
+
 		# Now the finish message
-		$msg = str_replace(['{PLAYER}', '{ARENA}'], [$this->winners[0][0], $this->getArenaName()], $this->plugin->getMsg($p, 'finish-broadcast-message'));
+		$msg = str_replace(['{PLAYER}', '{ARENA}'], [$playerName, $this->getArenaName()], $this->plugin->getMsg($p, 'finish-broadcast-message'));
 		$levels = explode(", ", $this->data['arena']['finish_msg_levels']);
 		Server::getInstance()->getLogger()->info($msg);
 		foreach($levels as $level){
@@ -502,7 +509,7 @@ class Arena extends PlayerHandler {
 			$sound->setComponents($p->x, $p->y, $p->z);
 			$p->getLevel()->addSound($sound, [$p]);
 			unset($this->players[strtolower($p->getName())]);
-			$p->teleport($this->plugin->getDatabase()->getLobby());
+			$p->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
 			# Reset the XP Level
 			$p->setXpLevel(0);
 			$p->removeAllEffects();
@@ -524,7 +531,7 @@ class Arena extends PlayerHandler {
 			$sound->setComponents($p->x, $p->y, $p->z);
 			$p->getLevel()->addSound($sound, [$p]);
 			unset($this->spec[strtolower($p->getName())]);
-			$p->teleport($this->plugin->getDatabase()->getLobby());
+			$p->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
 			# Reset the XP Level
 			$p->setXpLevel(0);
 			$p->removeAllEffects();

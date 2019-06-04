@@ -129,7 +129,10 @@ class ArenaSchedule extends Task {
 				$this->updateTime = 0;
 			}
 		}
-		if($this->arena->setup){
+
+		// Why do we need to tick disabled arena?
+		// Wasting time.
+		if($this->arena->setup || $this->arena->disabled){
 			return;
 		}
 		# Update current status
@@ -138,7 +141,6 @@ class ArenaSchedule extends Task {
 		# Arena is not running
 		switch($this->arena->getMode()){
 			case Arena::ARENA_WAITING_PLAYERS:
-				$this->arena->kills = [];
 				$this->resetChest = false;
 
 				$this->arena->totalPlayed = 0;
