@@ -227,6 +227,29 @@ class Utils {
 		return true;
 	}
 
+	public static function deleteDirectory($dir){
+		if(!file_exists($dir)){
+			return true;
+		}
+
+		if(!is_dir($dir)){
+			return unlink($dir);
+		}
+
+		foreach(scandir($dir) as $item){
+			if($item == '.' || $item == '..'){
+				continue;
+			}
+
+			if(!self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)){
+				return false;
+			}
+
+		}
+
+		return rmdir($dir);
+	}
+
 	/**
 	 * Convert the string to Block class
 	 * This also checks the Block class

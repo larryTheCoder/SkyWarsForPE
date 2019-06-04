@@ -63,7 +63,7 @@ final class SkyWarsCommand {
 
 					return true;
 				}
-				$this->plugin->getArenaManager()->getPlayerArena($sender)->leaveArena($sender);
+				$pManager->getPlayerArena($sender)->leaveArena($sender);
 
 				return true;
 		}

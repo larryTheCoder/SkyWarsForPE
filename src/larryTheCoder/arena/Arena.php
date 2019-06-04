@@ -116,76 +116,82 @@ class Arena extends PlayerHandler {
 	private function saveArenaWorld(){
 		$levelName = $this->data['arena']['arena_world'];
 
-		Utils::ensureDirectory($this->plugin->getDataFolder() . 'arenas/worlds');
-		if(is_file($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar') || is_file($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar.gz')){
-			return;
-		}
+		$fromPath = $this->plugin->getServer()->getDataPath() . "/worlds/" . $levelName;
+		$toPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName;
 
-		$tar = new \PharData($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar');
-		$tar->startBuffering();
-		$tar->buildFromDirectory(realpath(Server::getInstance()->getDataPath() . 'worlds/' . $levelName));
-		$tar->compress(\Phar::GZ);
-		$tar->stopBuffering();
-		unset($tar);
+		// Reverted from diff 65e8fb78
+		Utils::ensureDirectory($toPath);
+		if(!Settings::$zipArchive){
+			if(file_exists($toPath)){
+				return;
+			}
+
+			// Just copy it.
+			Utils::copyResourceTo($fromPath, $toPath);
+		}else{
+			if(is_file("$toPath.zip")){
+				return;
+			}
+
+			// Get real path for our folder
+			$rootPath = realpath($fromPath);
+
+			// Initialize archive object
+			$zip = new \ZipArchive();
+			$zip->open("$toPath.zip", \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+
+			// Create recursive directory iterator
+			/** @var \SplFileInfo[] $files */
+			$files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($rootPath), \RecursiveIteratorIterator::LEAVES_ONLY);
+
+			foreach($files as $name => $file){
+				// Skip directories (they would be added automatically)
+				if(!$file->isDir()){
+					// Get real and relative path for current file
+					$filePath = $file->getRealPath();
+					$relativePath = substr($filePath, strlen($rootPath) + 1);
+
+					// Add current file to archive
+					$zip->addFile($filePath, $relativePath);
+				}
+			}
+
+			// Zip archive will be created only after closing object
+			$zip->close();
+		}
 	}
 
-	/**
-	 * @param int $times
-	 * @return bool
-	 */
-	public function reload(int $times = 0): bool{
+	public function reload(): bool{
 		$levelName = $this->data['arena']['arena_world'];
 		if($this->plugin->getServer()->isLevelLoaded($levelName)){
 			$this->checkLevelTime();
 			$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($levelName));
 		}
-		$levelName = $this->data["arena"]["arena_world"];
 		$this->fallTime = $this->data['arena']['grace_time'];
 
-		if(!$this->deleteDirectory(Server::getInstance()->getDataPath() . 'worlds/' . $levelName)){
-			$this->plugin->getLogger()->info($this->plugin->getPrefix() . TextFormat::RED . "Directory $levelName could not be deleted.");
-			if($times >= 10){
-				goto skip;
-			}
-			if($this->plugin->getServer()->isLevelLoaded($levelName)){
-				$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($levelName), true);
+		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName;
+		$toPath = $this->plugin->getServer()->getDataPath() . "/worlds/" . $levelName;
 
-				return $this->reload($times + 1);
-			}
-			skip:
-			$this->plugin->getLogger()->info($this->plugin->getPrefix() . TextFormat::RED . "Please check that the server has permission to delete the folder.");
-
-			return false;
-		}
-
-		if($this->plugin->getServer()->isLevelLoaded($levelName)){
-			if($this->plugin->getServer()->getLevelByName($levelName)->getAutoSave() || Settings::$zipArchive){
-				$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($levelName));
-				if(is_file($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar')){
-					$tar = new \PharData($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar');
-				}elseif(is_file($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar.gz')){
-					$tar = new \PharData($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar.gz');
-				}else{
-					# Will never reach this.
-					return false;
-				}
-				$tar->extractTo(Server::getInstance()->getDataPath() . 'worlds/' . $levelName, null, true);
-				unset($tar);
-			}
-		}else{
-			if(is_file($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar')){
-				$tar = new \PharData($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar');
-			}elseif(is_file($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar.gz')){
-				$tar = new \PharData($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar.gz');
-			}else{
-				# Will never reach this.
+		Utils::deleteDirectory($toPath);
+		if(!Settings::$zipArchive){
+			if(file_exists($toPath)){
 				return false;
 			}
-			$tar->extractTo(Server::getInstance()->getDataPath() . 'worlds/' . $levelName, null, true);
-			unset($tar);
-		}
-		if(is_file($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar.gz')){
-			@unlink($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar');
+
+			Utils::copyResourceTo($fromPath, $toPath);
+		}else{
+			if(!is_file("$fromPath.zip")){
+				return false;
+			}
+
+			$zip = new \ZipArchive;
+			if($zip->open("$fromPath.zip")){
+				// Extract it to this path
+				$zip->extractTo($toPath);
+				$zip->close();
+			}else{
+				return false;
+			}
 		}
 
 		return true;
@@ -205,36 +211,23 @@ class Arena extends PlayerHandler {
 		}
 	}
 
-	public function deleteDirectory($dir){
-		if(!file_exists($dir)){
-			return true;
-		}
-
-		if(!is_dir($dir)){
-			return unlink($dir);
-		}
-
-		foreach(scandir($dir) as $item){
-			if($item == '.' || $item == '..'){
-				continue;
-			}
-
-			if(!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)){
-				return false;
-			}
-
-		}
-
-		return rmdir($dir);
-	}
-
 	/**
 	 * Reset the world data
 	 */
 	public function reset(){
 		$levelName = $this->data['arena']['arena_world'];
+		if($this->plugin->getServer()->isLevelLoaded($levelName)){
+			$this->plugin->getServer()->unloadLevel($this->level, true);
+		}
 
-		unlink($this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . '.tar');
+		// This is the path to the backup world
+		// We need to remove this directory/file.
+		$backupWorld = $this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName;
+		if(!Settings::$zipArchive){
+			Utils::deleteDirectory($backupWorld);
+		}else{
+			unlink("$backupWorld.zip");
+		}
 		$this->saveArenaWorld();
 	}
 
