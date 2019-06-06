@@ -16,6 +16,8 @@ Give us a stars and we will give a nice updates and add-ons as return for your k
 
 **It will be coded in Nukkit Soon!**
 
+[![Discord Invite Link](https://cdn.stykers.moe/img/skywars_for_pe_discord.png)](https://discord.gg/8YwS3pr)
+
 ## Features
 This plugin has a lot of features and great game quality inside. Unlike Svile-SW-plugin. 
 Its unstable and not easy to configure. I ensure you that this plugin will make your day happy.
@@ -46,7 +48,8 @@ Giving out planned features wont do anything without trying first. But these are
 - Chest Open Close packet (See Hypixel game behaviour)
 - Time manipulation
 - Game API (Do some cool stuff and controls the arena)
-
+- Kits implemented (Yeah its not added yeet)
+- Party implementation (oof this one)
 
 ## Commands
 | Default command | Parameter | Description | Default Permission |
