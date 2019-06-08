@@ -92,6 +92,12 @@ class FakeHuman extends Human {
 		$this->sendText([], true, $player);
 	}
 
+	public function despawnFrom(Player $pl, bool $send = true): void{
+		parent::despawnFrom($pl, $send);
+
+		$this->despawnText($pl);
+	}
+
 	public function updateMovement(bool $teleport = false): void{
 		// Override: Do not do anything
 	}
@@ -134,9 +140,18 @@ class FakeHuman extends Human {
 		$player->sendDataPacket($pk);
 	}
 
-	public function despawnText(){
+	public function despawnText(Player $pl = null){
+		/**
+		 * @var int $id
+		 * @var FloatingTextParticle $particle
+		 */
 		foreach($this->tags as $id => $particle){
-			$particle->setInvisible(true); // TODO: Remove this completely
+			$particle->setInvisible(true);
+			if($pl !== null){
+				foreach($particle->encode() as $ack) $pl->sendDataPacket($ack);
+				$particle->setInvisible(false);
+				continue;
+			}
 			if($this->level !== null && !$this->level->isClosed()){
 				$this->level->addParticle($particle);
 			}
