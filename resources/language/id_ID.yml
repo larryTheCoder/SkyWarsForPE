@@ -55,7 +55,7 @@ death-message-fall: "§7- §e{PLAYER} §cJatuh Dari Ketinggian."
 death-message-toasted: "§7- §e{PLAYER} §cMencoba berenang di lava"
 death-message-drowned: "§7- §e{PLAYER} §cTenggelam"
 death-message-nature: "§7- §e{PLAYER} §cMeninggal"
-death-message-explode: "§7- §e{PLAYER} §cMeninggal Karena Di Bom Menggunakan K-400"
+death-message-explode: "§7- §e{PLAYER} §cMeninggal Karena Di Bom Menggunakan TNT" #Trinitrotoluena
 death-message-magic: "§7- §e{PLAYER} §cDibunuh Pak Dukun !"
 death-message-unknown: "§7- §e{PLAYER} Adalah Anggota Iluminati"
 death-message: "§7- §e{PLAYER}Dibunuh oleh §e{KILLER}"
