@@ -290,7 +290,7 @@ class Arena extends PlayerHandler {
 		if($this->getPlayerMode($p) == 1) unset($this->spec[strtolower($p->getName())]);
 		if(!$kicked) $p->sendMessage($this->plugin->getMsg($p, 'player-leave-2'));
 
-		$p->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
+		$p->teleport($this->plugin->getDatabase()->getLobby());
 		$sound->setComponents($p->x, $p->y, $p->z);
 		$p->getLevel()->addSound($sound, [$p]);
 
@@ -509,7 +509,6 @@ class Arena extends PlayerHandler {
 			$sound->setComponents($p->x, $p->y, $p->z);
 			$p->getLevel()->addSound($sound, [$p]);
 			unset($this->players[strtolower($p->getName())]);
-			$p->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
 			# Reset the XP Level
 			$p->setXpLevel(0);
 			$p->removeAllEffects();
@@ -517,6 +516,7 @@ class Arena extends PlayerHandler {
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
 
+			$p->teleport($this->plugin->getDatabase()->getLobby());
 			$this->task->getArenaScoreboard()->removePlayer($p);
 		}
 		foreach($this->spec as $p){
@@ -531,7 +531,6 @@ class Arena extends PlayerHandler {
 			$sound->setComponents($p->x, $p->y, $p->z);
 			$p->getLevel()->addSound($sound, [$p]);
 			unset($this->spec[strtolower($p->getName())]);
-			$p->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn());
 			# Reset the XP Level
 			$p->setXpLevel(0);
 			$p->removeAllEffects();
@@ -539,6 +538,7 @@ class Arena extends PlayerHandler {
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
 
+			$p->teleport($this->plugin->getDatabase()->getLobby());
 			$this->task->getArenaScoreboard()->removePlayer($p);
 		}
 		// Reset the arrays

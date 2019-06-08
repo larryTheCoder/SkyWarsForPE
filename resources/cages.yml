@@ -34,7 +34,7 @@ cages:
     roof: GLASS
   remote:
     # The cage name
-    cage-name: "Default"
+    cage-name: "Modern"
     # The cage permission
     permission: ""
     # The cage price
@@ -42,10 +42,10 @@ cages:
     # The floor type of block
     floor: GLASS
     # The lower middle of block
-    lower-middle: GLASS
+    lower-middle: AIR
     # The middle of block
     middle: GLASS
     # The lower middle of block
-    higher-middle: GLASS
+    higher-middle: AIR
     # The roof of the cage
     roof: GLASS

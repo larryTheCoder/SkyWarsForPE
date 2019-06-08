@@ -131,37 +131,41 @@ class FormPanel implements Listener {
 		$form = $this->plugin->formAPI->createCustomForm();
 		$files = [];
 		# Check if there is ANOTHER ARENA is using this world
-		foreach(scandir(Server::getInstance()->getDataPath() . 'worlds') as $file){
+		$worldPath = Server::getInstance()->getDataPath() . 'worlds/';
+		foreach(scandir($worldPath) as $file){
 			if($file === "." || $file === ".."){
 				continue;
 			}
-			if(strtolower(Server::getInstance()->getDefaultLevel()->getFolderName()) === strtolower($file)){
+			if(strtolower(Server::getInstance()->getDefaultLevel()->getFolderName()) === strtolower($file) || !is_dir($worldPath . $file)){
 				continue;
 			}
 
 			foreach($this->plugin->getArenaManager()->getArenas() as $arena){
-				if($arena->getLevelName() !== $file){
-					$files[] = $file;
+				if(strtolower($arena->getArenaLevel()->getFolderName()) === strtolower($file)){
+					continue 2;
 				}
 			}
+
+			$files[] = $file;
 		}
+
 		if(empty($files)){
-			$player->sendMessage($this->plugin->getPrefix() . $this->plugin->getMsg($player, "no-world"));
+			$player->sendMessage($this->plugin->getMsg($player, "no-world"));
 
 			return;
 		}
 
-		$form->setTitle("§eSkyWars Setup.");
+		$form->setTitle("§5SkyWars Setup.");
 		# What the player want to name the arena
-		$form->addInput("§aChoose a great arena name", "Arena Name");
+		$form->addInput("§6The name of your Arena.", "Donkey Island");
 		# What is the level for input 'Arena Name'
-		$form->addDropdown("§aChoose the level you want to use", $files);
+		$form->addDropdown("§6Select your Arena level.", $files);
 		# How much player do that this arena need
-		$form->addSlider("§eMaximum players to be in arena", 0, 50);
-		$form->addSlider("§eMinimum players to be in arena", 0, 50);
+		$form->addSlider("§eMaximum players", 4, 40);
+		$form->addSlider("§eMinimum players", 2, 40);
 		# Ask if they want these enabled
-		$form->addToggle("§aEnable spectator", true);
-		$form->addToggle("§aStart when full", true);
+		$form->addToggle("§7Spectator mode", true);
+		$form->addToggle("§7Start on full", true);
 
 		$form->sendToPlayer($player);
 		$this->forms[$form->getId()] = FormPanel::PANEL_SETUP;
@@ -198,6 +202,10 @@ class FormPanel implements Listener {
 						$p->sendMessage($this->plugin->getMsg($p, 'arena-exists'));
 						break;
 					}
+					if(empty($data->arenaLevel)){
+						$p->sendMessage($this->plugin->getMsg($p, 'panel-low-arguments'));
+						break;
+					}
 
 					file_put_contents($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", $this->plugin->getResource('arenas/default.yml'));
 					$a = new Config($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", Config::YAML);
@@ -208,8 +216,9 @@ class FormPanel implements Listener {
 					$a->setNested('arena.max_players', $data->maxPlayer > $data->minPlayer ? $data->maxPlayer : $data->minPlayer);
 					$a->setNested('arena.min_players', $data->minPlayer);
 					$a->setNested('arena.start_when_full', $data->startWhenFull);
-					$this->plugin->getArenaManager()->setArenaData($a, $data->arenaName);
 					$a->save();
+
+					$this->plugin->getArenaManager()->setArenaData($a, $data->arenaName);
 					$this->setupSpawn($p);
 					break;
 				case FormPanel::PANEL_SPAWN_SETUP:

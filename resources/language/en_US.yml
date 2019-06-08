@@ -88,7 +88,7 @@ no-world: "&cSorry, you don't have any levels left to create an arena."
 
 # Panel messages
 panel-low-arguments: "&cCannot create arena, missing some arguments."
-panel-cancelled: "&cYour request had been cancelled."
+panel-cancelled: "&cYour request has been cancelled."
 panel-choose-cage: "&aYou chosen the cage, &d{CAGE}"
 panel-spawn-wand: "&aBreak a block with the wand in your inventory."
 panel-join-spect: "&aSpectator spawn location has been marked."

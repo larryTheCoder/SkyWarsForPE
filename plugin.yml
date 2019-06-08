@@ -1,6 +1,6 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsPE
-version: "1.9.3-beta"
+version: "2.3-beta"
 api: 3.0.0+ALPHA9
 author: larryTheCoder
 commands:
