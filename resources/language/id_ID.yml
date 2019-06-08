@@ -1,0 +1,107 @@
+# --------------------------------------------------------------------------------------------
+# Diterjemahkan Oleh
+# Alika Reva [ 26 ] [ Neva ] [ Alika-Chan / Senpai ]
+# Reflyansyah Maulana Agsa [ 17 ] [ Neva ] [ Refly-Kun ]
+# --------------------------------------------------------------------------------------------
+# Pesan Dari Alika
+# 1. Dilarang Mengubah hak cipta plugin orang lain dengan mengubah nama pemilik plugin karena itu mencuri namanya sayang
+# 2. Menghina Dan Merendahkan Orang Lain Itu Dilarang, Nyaw
+# ---------------------------------------------------------------------------------------------
+# Gunakan Dengan Bijak Jika Ada Kesalahan Terjemahan Mohon Dikoreksi ! atau laporkan ini kepada penerjemah
+---
+config-version: 4
+
+low-permission: "&eKamu harus memiliki izin untuk mengirim perintah atau melakukan sesuatu dengan plugin ini"
+no-permission: "&cKamu Tidak memiliki ijin untuk menggunakan perintah ini."
+subtitle-splashes:
+- "§6Menang Di Game Ini !"
+- "§6Semoga Berhasil !"
+- "§6Tunjukkan Skillmu !"
+
+# Arena-Game behaviour language.
+arena-disabled: "&cArena Sedang Tidak Aktif."
+arena-insetup: "&cArena sedang tidak tersedia."
+arena-full: "&cArena sedang penuh"
+arena-running: "&cPermainan Sudah Dimulai."
+arena-wait-players: "&6Menunggu Pemain Tambahan..."
+arena-low-players: "&eTidak Cukup Pemain, Membatalkan Hitung Mundur."
+arena-starting: "&aMemulai Game..."
+arena-subtitle: "&aEnjoy"
+arena-game-started: "§aPermainan telah dimulai !"
+arena-delete: "&cArena &d{ARENA} Telah Dihapus."
+arena-exists: "&cNama Arena ini telah dipakai, Coba Nama yang lain !"
+arena-not-exist: "&cArena tidak tersedia !"
+arena-not-running: "&cArena Sedang Tidak Digunakan."
+arena-start: "&aPermainan dimulai !!!"
+chest-refilled: "&aPeti telah di isi ulang !"
+admin-kick: "&cKamu telah ditendang dari arena"
+player-join: "&c{PLAYER}&a, selamat datang di arena."
+player-join-2: "&7-> &c{PLAYER}, &7bergabung dalam arena."
+player-leave: "&e{PLAYER} &7keluar dari arena."
+player-leave-2: "&cAnda sudah keluar dari arena"
+player-spectate: "&7kamu sekarang adalah penonton."
+player-receive-money: "&akamu menerima &d${VALUE}&a dari permainan."
+command-banned: "&cDilarang curang selama di permainan."
+finish-broadcast-message: "&a{PLAYER}&e telah memenangkan permainan di &a{ARENA}!"
+messageEffectIsComing: "Efek Special akan segera datang . . ."
+
+# Kill message
+death-message-void: "§7- §e{PLAYER} §ckeluar dari dunia"
+death-message-suicide: "§7- §e{PLAYER} §ctelah bunuh diri."
+death-message-suffocated: "§7- §e{PLAYER} §emeninggal karena terjepit."
+death-message-burned: "§7- §e{PLAYER} §cmeninggal karena terbakar."
+death-message-catused: "§7- §e{PLAYER} §cmeninggal karena tertusuk duri kaktus, yang benar aja ?"
+death-message-fall: "§7- §e{PLAYER} §cJatuh Dari Ketinggian."
+death-message-toasted: "§7- §e{PLAYER} §cMencoba berenang di lava"
+death-message-drowned: "§7- §e{PLAYER} §cTenggelam"
+death-message-nature: "§7- §e{PLAYER} §cMeninggal"
+death-message-explode: "§7- §e{PLAYER} §cMeninggal Karena Di Bom Menggunakan TNT" #Trinitrotoluena
+death-message-magic: "§7- §e{PLAYER} §cDibunuh Pak Dukun !"
+death-message-unknown: "§7- §e{PLAYER} Adalah Anggota Iluminati"
+death-message: "§7- §e{PLAYER}Dibunuh oleh §e{KILLER}"
+
+# Command help message
+help-main: "&cmohon gunakan /sw help untuk bantuan"
+lobby-help: "&2/lobby §l§5»§r§f Untuk Teleportasi ke Ruang Tunggu."
+random-help: "&2/sw random §l§5»§r§f Teleportasi ke Arena Acak."
+stats-help: "&2/sw stats §l§5»§r§f Menampilkan kemajuan Permainan Anda"
+reload-help: "&2/sw reload §l§5»§r§f memuat ulang plugin, Dan Menghentikan Permainan."
+create-help: "&2/sw create §l§5»§r§f membuat arena baru."
+cage-help: "&2/sw cage §l§5»§r§f menempatkan letak goa.."
+start-help: "&2/sw start §b[Nama Arena] §l§5»§r§f langsung mulai permainan di arena tertentu."
+stop-help: "&2/sw stop §b[Nama Arena] §l§5»§r§f langsung hentikan permainan di arena tertentu."
+join-help: "&2/sw join §b[Nama Arena] §l§5»§r§f masuk kedalam arena."
+settings-help: "&2/sw settings §l§5»§r§f siapkan atau ubah pengaturan arena."
+setlobby-help: "&2/sw setlobby §l§5»§r§f atur lobi utama."
+about-help: "&2/sw about §l§5»§r§f info pencipta plugin SkyWarPE"
+npc-help: "&2/sw npc §l§5»§r§f Membuat NPC pemenang papan atas"
+kit-help: "&2/sw kit §l§5»§r§f menampilkan kit yang tersedia."
+
+# Command false usage help message
+start-usage: "&6Usage: &2/sw start §b[Nama Arena]."
+stop-usage: "&6Usage: &2/sw start §b[Nama Arena]."
+join-usage: "&6Usage: &2/sw start §b[Nama Arena]."
+
+# Command messages, Here the messages
+arena-unavailable: "&cArena tidak tersedia / tidak ada"
+plugin-reloading: "&eMemuat ulang plugin, ini terkadang membuat beberapa fungsi gagal dijalankan..."
+plugin-reload: "&aplugin berhasil dimuat ulang."
+arena-started: "&amemulai permainan di &d{ARENA}."
+main-lobby-set: "&amenandai lokasi untuk transportasi cepat di lobi"
+no-world: "&cmaaf kamu tidak lagi memiliki arena untuk digunakan silahkan load dunia untuk menambahkan arena."
+
+# Panel messages
+panel-low-arguments: "&ctidak dapat membuat arena, isi data tidak lengkap."
+panel-cancelled: "&cpermintaan anda dibatalkan"
+panel-choose-cage: "&aKamu memilih Goa, &d{CAGE}"
+panel-spawn-wand: "&aHancurkan block dengan wand yang ada di inventies kamu untuk melakukan set munculan."
+panel-join-spect: "&aLokasi Munculan penonton telah di atur"
+panel-join-sign: "&aLokasi Tanda Masuk Telah Atur"
+panel-spawn-pos: "&aMenandai Munculan Lokasi No &e#{COUNT}."
+panel-spawn-set: "&eberhasil melakukan set lokadi munculan."
+panel-npc-next: "&eSekarang Tempatkan NPC ditempat yang ingin anda lihat dan katakan done"
+
+# Top winners
+top-winner-1: "&r&lPemain Peringkat #{VAL}"
+top-winner-2: "&r&2{PLAYER}"
+top-winner-3: "&r&7{WINS} Kemenangan"
