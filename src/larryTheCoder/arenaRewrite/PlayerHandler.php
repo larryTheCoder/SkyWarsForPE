@@ -26,19 +26,13 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\KitUI;
+namespace larryTheCoder\arenaRewrite;
 
-
-use pocketmine\event\Listener;
-
-class KitUIRegistration implements Listener {
-
-	/**
-	 * @param KitEquipEvent $ev
-	 */
-	public function onKitEquipEvent(KitEquipEvent $ev){
-		$ev->getKit();
-	}
-
+/**
+ * Handles everything regarding the player.
+ *
+ * @package larryTheCoder\arenaRewrite
+ */
+trait PlayerHandler {
 
 }

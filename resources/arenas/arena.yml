@@ -10,6 +10,10 @@ version: 2
 enabled: false
 # Pick your own arena name.
 arena-name: "Beast World"
+# The mode of the arena.
+#  0 - Solo
+#  1 - Team
+arena-mode: 0
 
 # The game sign section
 signs:
@@ -23,8 +27,8 @@ signs:
   # Please ensure that this will be enabled
   # Otherwise the sign wont tick
   enable-status: true
-  #status lines
-  #variables:
+  # Status lines for signs.
+  # Variables:
   #   &a &b &c = you can use color with "&"
   #   %alive = amount of in-game players
   #   %dead = amount of dead players
@@ -36,16 +40,10 @@ signs:
   status-line-2: "&a%name"
   status-line-3: "&7Players: &2%alive&3/&2%max"
   status-line-4: "&6Click to join!"
-
   # Sign will update every 'x" seconds
   # The 'x' is depends on this section.
   # This effects the client connections.
   sign-update-time: 10
-  # returns player to main level/lobby
-  # world is same like arena-world
-  return-sign-x: 566
-  return-sign-y: 57
-  return-sign-z: 890
 
 # The chest configuration config
 chest:

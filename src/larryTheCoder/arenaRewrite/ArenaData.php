@@ -26,19 +26,54 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\KitUI;
+namespace larryTheCoder\arenaRewrite;
 
 
-use pocketmine\event\Listener;
+/**
+ * Stores everything about the arena config
+ * file into a set of variables.
+ *
+ * @package larryTheCoder\arenaRewrite
+ */
+trait ArenaData {
 
-class KitUIRegistration implements Listener {
+	// The root of the config.
+	public $arenaEnable = false;
+	public $arenaName = "";
+	public $arenaMode = Arena::MODE_SOLO;
+
+	// Signs section.
+	public $enableJoinSign = false;
+	public $joinSignX = 0;
+	public $joinSignY = 0;
+	public $joinSignZ = 0;
+	public $statusLine1 = "";
+	public $statusLine2 = "";
+	public $statusLine3 = "";
+	public $statusLine4 = "";
+	public $statusLineUpdate = 2;
+
+	// Chest section.
+	public $refillChest = true;
+	public $refillRate = 240;
+
+	// Arena section.
+	public $arenaWorld = "";
+	public $arenaSpecPos = null;
 
 	/**
-	 * @param KitEquipEvent $ev
+	 * Parses the data for the arena
 	 */
-	public function onKitEquipEvent(KitEquipEvent $ev){
-		$ev->getKit();
+	public function parseData(){
+		$data = $this->getArenaData();
+		$this->arenaEnable = boolval($data["enabled"]);
+
 	}
 
-
+	/**
+	 * Returns the data of the arena.
+	 *
+	 * @return array
+	 */
+	public abstract function getArenaData();
 }

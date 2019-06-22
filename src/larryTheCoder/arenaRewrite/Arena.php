@@ -26,19 +26,44 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\KitUI;
+namespace larryTheCoder\arenaRewrite;
 
+use larryTheCoder\SkyWarsPE;
 
-use pocketmine\event\Listener;
+/**
+ * Presenting the arena of the SkyWars.
+ * Improved and rewrites old arena code.
+ *
+ * @package larryTheCoder\arenaRewrite
+ */
+class Arena {
+	use PlayerHandler;
+	use ArenaData;
 
-class KitUIRegistration implements Listener {
+	const MODE_SOLO = 0;
+	const MODE_TEAM = 1;
 
-	/**
-	 * @param KitEquipEvent $ev
-	 */
-	public function onKitEquipEvent(KitEquipEvent $ev){
-		$ev->getKit();
+	/** @var string */
+	private $arenaName;
+	/*** @var SkyWarsPE */
+	private $plugin;
+	/** @var array */
+	private $data;
+
+	public function __construct(string $arenaName, SkyWarsPE $plugin){
+		$this->arenaName = $arenaName;
+		$this->plugin = $plugin;
+		$this->data = $plugin->getArenaManager()->getArenaConfig($arenaName);
+
+		$this->parseData();
 	}
 
-
+	/**
+	 * Returns the data of the arena.
+	 *
+	 * @return array
+	 */
+	public function getArenaData(){
+		return $this->data;
+	}
 }

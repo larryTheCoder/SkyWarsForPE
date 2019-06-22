@@ -26,19 +26,20 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\KitUI;
+namespace larryTheCoder\arenaRewrite\tasks;
 
+use pocketmine\scheduler\Task;
 
-use pocketmine\event\Listener;
-
-class KitUIRegistration implements Listener {
+class SignTickTask extends Task {
 
 	/**
-	 * @param KitEquipEvent $ev
+	 * Actions to execute when run
+	 *
+	 * @param int $currentTick
+	 *
+	 * @return void
 	 */
-	public function onKitEquipEvent(KitEquipEvent $ev){
-		$ev->getKit();
+	public function onRun(int $currentTick){
+		// TODO: Implement onRun() method.
 	}
-
-
 }
