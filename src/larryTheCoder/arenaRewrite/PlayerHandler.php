@@ -28,6 +28,8 @@
 
 namespace larryTheCoder\arenaRewrite;
 
+use pocketmine\Player;
+
 /**
  * Handles everything regarding the player.
  *
@@ -35,4 +37,82 @@ namespace larryTheCoder\arenaRewrite;
  */
 trait PlayerHandler {
 
+	/** @var bool */
+	private $teamMode = false;
+	/** @var Player[] */
+	private $players = [];
+	/** @var Player[] */
+	private $spectators = [];
+
+	/** @var int[] */
+	private $teams = []; // "Player" => "Team color"
+	/** @var int */
+	private $maxMembers = 3; // Max members per team.
+
+	public function addPlayer(Player $pl, int $team = -1){
+		$this->players[strtolower($pl->getName())] = $pl;
+
+		// Check if the arena is in team mode.
+		if($this->teamMode){
+			$this->teams[strtolower($pl->getName())] = $team;
+		}
+	}
+
+	public function removePlayer(Player $pl){
+		// Check if the player do exists
+		if(isset($this->players[strtolower($pl->getName())])){
+			unset($this->players[strtolower($pl->getName())]);
+
+			// Unset the player from this team.
+			if(isset($this->teams[strtolower($pl->getName())])){
+				unset($this->teams[strtolower($pl->getName())]);
+			}
+		}
+	}
+
+	/**
+	 * Checks either the player is inside
+	 * the arena or not.
+	 *
+	 * @param Player $pl
+	 * @return bool
+	 */
+	public function isInArena(Player $pl): bool{
+		return isset($this->players[strtolower($pl->getName())]);
+	}
+
+	/**
+	 * Get the number of players in the arena.
+	 * This returns the number of player that is alive
+	 * inside the arena.
+	 *
+	 * @return int
+	 */
+	public function getPlayersCount(): int{
+		return count($this->players);
+	}
+
+	/**
+	 * This will return the number of spectators
+	 * that is inside the arena.
+	 *
+	 * @return int
+	 */
+	public function getSpectatorsCount(): int{
+		return count($this->spectators);
+	}
+
+	public function getPlayers(): array{
+		return $this->players;
+	}
+
+	public function getSpectators(): array{
+		return $this->spectators;
+	}
+
+	public function resetPlayers(){
+		$this->spectators = [];
+		$this->players = [];
+		$this->teams = [];
+	}
 }

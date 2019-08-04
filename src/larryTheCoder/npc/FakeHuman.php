@@ -37,7 +37,7 @@ use pocketmine\level\particle\FloatingTextParticle;
 use pocketmine\nbt\BigEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\network\mcpe\protocol\MoveEntityAbsolutePacket;
+use pocketmine\network\mcpe\protocol\MoveActorAbsolutePacket;
 use pocketmine\Player;
 
 class FakeHuman extends Human {
@@ -128,7 +128,7 @@ class FakeHuman extends Human {
 
 	private function updateMovementInto(Player $player){
 		// (byte)((pkg.x == -1 ? 1 : 0) | (pkg.x == 1 ? 2 : 0) | (pkg.y == -1 ? 4 : 0) | (pkg.y == 1 ? 8 : 0) | (pkg.pckp ? 16 : 0) | (pkg.thrw ? 32 : 0) | (pkg.jmp ? 64 : 0))
-		$pk = new MoveEntityAbsolutePacket();
+		$pk = new MoveActorAbsolutePacket();
 
 		$pk->entityRuntimeId = $this->id;
 		$pk->position = $this->getOffsetPosition($this);

@@ -100,8 +100,10 @@ class HumanTick extends Task {
 							$skin->getString("GeometryName", ""),
 							$skin->getByteArray("GeometryData", "")
 						);
-						if($skin->isValid()){
+						try{
+							$skin->validate();
 							$this->entity->setSkin($skin);
+						}catch(\Exception $ignored){
 						}
 					}
 				}

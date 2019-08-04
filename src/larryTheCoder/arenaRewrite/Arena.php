@@ -28,7 +28,11 @@
 
 namespace larryTheCoder\arenaRewrite;
 
+use larryTheCoder\arenaRewrite\api\ArenaAPI;
+use larryTheCoder\arenaRewrite\api\DefaultGameAPI;
+use larryTheCoder\arenaRewrite\api\GameAPI;
 use larryTheCoder\SkyWarsPE;
+use pocketmine\Player;
 
 /**
  * Presenting the arena of the SkyWars.
@@ -36,12 +40,17 @@ use larryTheCoder\SkyWarsPE;
  *
  * @package larryTheCoder\arenaRewrite
  */
-class Arena {
+class Arena extends ArenaAPI {
 	use PlayerHandler;
 	use ArenaData;
 
 	const MODE_SOLO = 0;
 	const MODE_TEAM = 1;
+
+	const STATE_WAITING = 0;
+	const STATE_SLOPE_WAITING = 1;
+	const STATE_ARENA_RUNNING = 2;
+	const STATE_ARENA_CELEBRATING = 3;
 
 	/** @var string */
 	private $arenaName;
@@ -49,6 +58,11 @@ class Arena {
 	private $plugin;
 	/** @var array */
 	private $data;
+	/** @var int */
+	private $arenaStatus = self::STATE_WAITING;
+
+	/** @var DefaultGameAPI|GameAPI */
+	public $gameAPI;
 
 	public function __construct(string $arenaName, SkyWarsPE $plugin){
 		$this->arenaName = $arenaName;
@@ -56,6 +70,7 @@ class Arena {
 		$this->data = $plugin->getArenaManager()->getArenaConfig($arenaName);
 
 		$this->parseData();
+		$this->gameAPI = new DefaultGameAPI($this);
 	}
 
 	/**
@@ -65,5 +80,41 @@ class Arena {
 	 */
 	public function getArenaData(){
 		return $this->data;
+	}
+
+	/**
+	 * Add the player to join into the arena.
+	 *
+	 * @param Player $pl
+	 */
+	public function joinToArena(Player $pl){
+		$this->gameAPI->joinToArena();
+	}
+
+	/**
+	 * Leave a player from an arena.
+	 *
+	 * @param Player $pl
+	 */
+	public function leaveArena(Player $pl){
+		$this->gameAPI->joinToArena();
+	}
+
+	/**
+	 * Get the status of the arena.
+	 *
+	 * @return int
+	 */
+	public function getStatus(){
+		return $this->arenaStatus;
+	}
+
+	/**
+	 * Set the status of the arena.
+	 *
+	 * @param int $statusCode
+	 */
+	public function setStatus(int $statusCode){
+		$this->arenaStatus = $statusCode;
 	}
 }

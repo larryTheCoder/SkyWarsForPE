@@ -113,6 +113,7 @@ class FormPanel implements Listener {
 		$db = $this->plugin->getDatabase()->getPlayerData($player->getName());
 		$formAPI = $this->plugin->formAPI->createCustomForm();
 
+		$formAPI->setTitle("§5{$db->player}'s stats'");
 		$formAPI->addLabel("§6Name: §f" . $db->player);
 		$formAPI->addLabel("§6Kills: §f" . $db->kill);
 		$formAPI->addLabel("§6Deaths: §f" . $db->death);

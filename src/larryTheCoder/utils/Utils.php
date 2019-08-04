@@ -30,13 +30,17 @@ namespace larryTheCoder\utils;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\FireworksData;
-use pocketmine\{Player, Server, utils\MainLogger, utils\Random};
+use pocketmine\{network\mcpe\protocol\AddActorPacket,
+	Player,
+	Server,
+	utils\MainLogger,
+	utils\Random,
+	utils\TextFormat as VS};
 use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item, ItemIds};
 use pocketmine\level\{Level, Location, particle\PortalParticle, Position};
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\utils\Config;
 
 /**
@@ -94,6 +98,36 @@ class Utils {
 		return null;
 	}
 
+	function centerText(array $lines): string{
+		// First step, clone lines without colors
+		$maximumLines = [];
+		foreach($lines as $primaryLine){
+			$maximumLines[] = strlen(VS::clean($primaryLine));
+		}
+
+		// Now find the maximum lines in the array.
+		$stickWith = max($maximumLines);
+		$output = "";
+
+		// Check how many lines has been processed
+		$currentOutput = 0;
+		foreach($lines as $line){
+			$currentOutput++;
+			$diff = round(($stickWith - strlen(VS::clean($line))) / 2);
+			if($diff !== 0){
+				$line = str_repeat(" ", intval($diff)) . $line;
+			}
+
+			if($currentOutput === count($lines)){
+				$output .= "{$line}";
+			}else{
+				$output .= "{$line}\n";
+			}
+		}
+
+		return $output;
+	}
+
 	/**
 	 * @param int $id
 	 * @param int $rotation
@@ -118,7 +152,7 @@ class Utils {
 	public static function strikeLightning(Player $p){
 		$level = $p->getLevel();
 
-		$light = new AddEntityPacket();
+		$light = new AddActorPacket();
 		$light->metadata = [];
 
 		$light->type = 93;

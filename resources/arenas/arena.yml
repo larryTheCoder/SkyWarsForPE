@@ -15,6 +15,42 @@ arena-name: "Beast World"
 #  1 - Team
 arena-mode: 0
 
+# Related to teammate settings
+# If arena-mode is set to '1'.
+#
+# WARNING:
+#   THIS WILL OVERRIDE THE ARENA SETTINGS
+#   THAT HAS BEEN SET. PLEASE REFER HERE
+#   IF YOU SET ARENA MODE INTO 1.
+team-settings:
+  # The number of players needed
+  # For a team.
+  players-per-team: 3
+  # This decides either the player has
+  # the permission to choose their own team
+  # or they will get random team. The player
+  # will have a set of colors in their inventory
+  # hotbar if this is set to false.
+  monarchy-system: false
+
+# Lobby settings
+lobby-settings:
+  # Enable lobby functions. If you enable this. All the players
+  # Will be teleported to a world where that has been set as a lobby.
+  # And when the game has started. They will be teleported to their cages.
+  # Recommended for a game that requires teams.
+  enable: false
+  # The lobby spawn location
+  join-lobby-x: 89
+  join-lobby-y: 78
+  join-lobby-z: -487
+  join-lobby-world: "Virginia"
+  # After the countdown is 0. This is another countdown
+  # after the players has been teleported to their cages.
+  # Then this number takes place on how long they will be
+  # released from their cages.
+  release-countdown: 10
+
 # The game sign section
 signs:
   # These are the coordinates for your
@@ -96,8 +132,6 @@ arena:
   max-players: 12
   # Min player in arena
   min-players: 2
-  # Max game time
-  max-game-time: 390
   # Starting time (seconds)
   starting-time: 60
   # Spawn positions in arena
