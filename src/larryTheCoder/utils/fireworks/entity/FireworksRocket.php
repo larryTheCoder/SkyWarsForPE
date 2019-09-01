@@ -126,7 +126,6 @@ class FireworksRocket extends Projectile {
 	protected function initEntity(): void{
 		$this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, true);
 		$this->setGenericFlag(self::DATA_FLAG_HAS_COLLISION, true);
-		$this->propertyManager->setItem(self::DATA_DISPLAY_ITEM, $this->fireworksItem);
 		$this->propertyManager->setInt(self::DATA_DISPLAY_OFFSET, 1);
 		$this->propertyManager->setByte(self::DATA_HAS_DISPLAY, 1);
 
