@@ -28,26 +28,38 @@
 
 namespace larryTheCoder\arenaRewrite\api;
 
-
 use larryTheCoder\arenaRewrite\Arena;
+use larryTheCoder\arenaRewrite\tasks\ArenaGameTick;
+use larryTheCoder\arenaRewrite\tasks\SignTickTask;
+use pocketmine\Player;
 
+/**
+ * The runtime handler of the SW game itself. This class handles player
+ * actions and controls the arena acts.
+ *
+ * @package larryTheCoder\arenaRewrite\api
+ */
 class DefaultGameAPI extends GameAPI {
 
 	public function __construct(Arena $arena){
 		parent::__construct($arena);
 	}
 
-	/**
-	 * Called when a player joins into the arena.
-	 */
-	public function joinToArena(): void{
+	public function joinToArena(Player $p): bool{
 		// TODO: Implement joinToArena() method.
 	}
 
-	/**
-	 * Called when a player leaves the arena.
-	 */
-	public function leaveArena(): void{
+	public function leaveArena(Player $p): bool{
 		// TODO: Implement leaveArena() method.
+	}
+
+	/**
+	 * Return the tasks required by the game to run.
+	 * This task will be executed periodically for each 1 seconds
+	 *
+	 * @return array
+	 */
+	public function getRuntimeTasks(): array{
+		return [new ArenaGameTick($this->arena), new SignTickTask($this->arena)];
 	}
 }

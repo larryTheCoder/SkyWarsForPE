@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\utils;
 
+use larryTheCoder\arenaRewrite\Arena;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\FireworksData;
 use pocketmine\{network\mcpe\protocol\AddActorPacket,
@@ -36,7 +37,7 @@ use pocketmine\{network\mcpe\protocol\AddActorPacket,
 	utils\MainLogger,
 	utils\Random,
 	utils\TextFormat as VS};
-use pocketmine\block\{Block, BlockIds};
+use pocketmine\block\{Block, BlockIds, StainedGlass};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item, ItemIds};
 use pocketmine\level\{Level, Location, particle\PortalParticle, Position};
@@ -98,6 +99,29 @@ class Utils {
 		return null;
 	}
 
+	public static function getBlockStatus(Arena $arena){
+//		if($arena->setup == true){
+//			return new StainedGlass(14);
+//		}
+//		if($arena->disabled == true){
+//			return new StainedGlass(14);
+//		}
+//		if($arena->getMode() === \larryTheCoder\arena\Arena::ARENA_WAITING_PLAYERS){
+//			return new StainedGlass(13);
+//		}
+//		if($arena->getPlayers() >= $arena->getMinPlayers()){
+//			return new StainedGlass(4);
+//		}
+//		if($arena->getStatus() === Arena::ARENA_RUNNING){
+//			return new StainedGlass(6);
+//		}
+//		if($arena->getStatus() === Arena::ARENA_CELEBRATING){
+//			return new StainedGlass(11);
+//		}
+
+		return new StainedGlass(0);
+	}
+
 	function centerText(array $lines): string{
 		// First step, clone lines without colors
 		$maximumLines = [];
@@ -140,7 +164,7 @@ class Utils {
 	public static function addFireworks(Position $pos){
 		// Spawn rocket
 		$data = new FireworksData(); // create the generic data
-		$data->random(FireworksData::COLOR_BLUE, FireworksData::TYPE_BURST);
+		$data->random(-1, FireworksData::TYPE_BURST);
 		$rocket = $data->getFireworkEntity($pos);
 
 		$rocket->spawnToAll();

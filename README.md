@@ -14,8 +14,6 @@
 
 SkyWarsForPE is a plugin built for all of the Minecraft PE Community, this source has been moved to open sourced again due to some inactivity in project, as the result, this plugin will be continued to compete with other SkyWars plugin. I ensure you, this plugin is more powerful than ever before. Its all for free!
 
-[![Discord Invite Link](https://cdn.stykers.moe/img/skywars_for_pe_discord.png)](https://discord.gg/8YwS3pr)
-
 ## Implemented features:
 - Build in FormAPI inside, hmm... Great
 - GUI handled setup and settings.

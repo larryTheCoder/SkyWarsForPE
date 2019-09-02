@@ -28,6 +28,9 @@
 
 namespace larryTheCoder\arenaRewrite;
 
+use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\Settings;
+use pocketmine\level\sound\ClickSound;
 use pocketmine\Player;
 
 /**
@@ -50,6 +53,20 @@ trait PlayerHandler {
 	private $maxMembers = 3; // Max members per team.
 
 	public function addPlayer(Player $pl, int $team = -1){
+		# Set the player gamemode first
+		$pl->setGamemode(0);
+		$pl->getInventory()->clearAll();
+		$pl->getArmorInventory()->clearAll();
+
+		# Set the player health and food
+		$pl->setMaxHealth(Settings::$joinHealth);
+		$pl->setMaxHealth($pl->getMaxHealth());
+		# just to be really sure
+		if($pl->getAttributeMap() != null){
+			$pl->setHealth(Settings::$joinHealth);
+			$pl->setFood(20);
+		}
+
 		$this->players[strtolower($pl->getName())] = $pl;
 
 		// Check if the arena is in team mode.
@@ -67,6 +84,24 @@ trait PlayerHandler {
 			if(isset($this->teams[strtolower($pl->getName())])){
 				unset($this->teams[strtolower($pl->getName())]);
 			}
+		}
+	}
+
+	public function setPlayerTeam(Player $pl, int $team){
+
+	}
+
+	public function messageArenaPlayers(string $msg, $popup = true, $toReplace = [], $replacement = []){
+		$inGame = array_merge($this->getPlayers(), $this->getSpectators());
+		/** @var Player $p */
+		foreach($inGame as $p){
+			if($popup){
+				$p->sendPopup(str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg($p, $msg, false)));
+			}else{
+				$p->sendPopup(str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg($p, $msg, false)));
+			}
+
+			$p->getLevel()->addSound(new ClickSound($p));
 		}
 	}
 

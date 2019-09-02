@@ -33,6 +33,7 @@ use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 final class SkyWarsCommand {
@@ -69,6 +70,14 @@ final class SkyWarsCommand {
 		}
 		if(strtolower($cmd->getName()) === "sw" && isset($args[0])){
 			switch(strtolower($args[0])){
+				case "test":
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+						break;
+					}
+
+					Utils::addFireworks($sender->getSide(Vector3::SIDE_NORTH, 4));
+					break;
 				case "help":
 					if(!$sender->hasPermission("sw.command.help")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));

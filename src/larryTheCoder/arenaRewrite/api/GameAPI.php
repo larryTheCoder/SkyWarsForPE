@@ -30,31 +30,50 @@ namespace larryTheCoder\arenaRewrite\api;
 
 
 use larryTheCoder\arenaRewrite\Arena;
+use larryTheCoder\SkyWarsPE;
+use pocketmine\event\Listener;
+use pocketmine\Player;
+use pocketmine\Server;
 
 /**
- * GameAPI, a class that holds the information
- * about how the arena behave towards their players.
- * This is useful when you want to change some of the
- * settings that been set within this code.
+ * GameAPI, a class that holds the information  about how the arena behave towards their players.
+ * This is useful when you want to change some of the settings that been set within this code.
+ * Make it more useful and fun instead of a plain core of skywars itself.
  *
  * @package larryTheCoder\arenaRewrite\api
  */
-abstract class GameAPI {
+abstract class GameAPI implements Listener {
 
 	/** @var Arena */
 	public $arena;
 
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
+
+		Server::getInstance()->getPluginManager()->registerEvents($this, SkyWarsPE::getInstance());
 	}
 
 	/**
-	 * Called when a player joins into the arena.
+	 * Called when a player joins into the arena
+	 *
+	 * @param Player $p
+	 * @return bool
 	 */
-	public abstract function joinToArena(): void;
+	public abstract function joinToArena(Player $p): bool;
 
 	/**
 	 * Called when a player leaves the arena.
+	 *
+	 * @param Player $p
+	 * @return bool
 	 */
-	public abstract function leaveArena(): void;
+	public abstract function leaveArena(Player $p): bool;
+
+	/**
+	 * Return the tasks required by the game to run.
+	 * This task will be executed periodically for each 1s
+	 *
+	 * @return array
+	 */
+	public abstract function getRuntimeTasks(): array;
 }

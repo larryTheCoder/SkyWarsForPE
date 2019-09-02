@@ -51,6 +51,7 @@ trait ArenaData {
 	public $statusLine2 = "";
 	public $statusLine3 = "";
 	public $statusLine4 = "";
+	public $joinSignWorld = "";
 	public $statusLineUpdate = 2;
 
 	// Chest section.
@@ -60,6 +61,9 @@ trait ArenaData {
 	// Arena section.
 	public $arenaWorld = "";
 	public $arenaSpecPos = null;
+	public $maximumPlayers = 0;
+	public $minimumPlayers = 0;
+	public $spawnPedestals = [];
 
 	/**
 	 * Parses the data for the arena

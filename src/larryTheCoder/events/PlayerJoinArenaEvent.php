@@ -29,11 +29,8 @@
 
 namespace larryTheCoder\events;
 
-use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
-use pocketmine\event\{
-	Cancellable, plugin\PluginEvent
-};
+use pocketmine\event\{Cancellable, plugin\PluginEvent};
 use pocketmine\Player;
 
 /**
@@ -47,7 +44,7 @@ class PlayerJoinArenaEvent extends PluginEvent implements Cancellable {
 	protected $player;
 	protected $arena;
 
-	public function __construct(SkyWarsPE $plugin, Player $player, Arena $arena){
+	public function __construct(SkyWarsPE $plugin, Player $player, $arena){
 		parent::__construct($plugin);
 		$this->player = $player;
 		$this->arena = $arena;
