@@ -5,7 +5,14 @@
 ---
 # This version section is to verify this
 # config file.
-version: 2
+version: "2-API-1.0"
+
+# ---
+# Welcome to SkyWarsForPE arena.yml game file. Here you can edit whatever the stuff you
+# want to to make your skywars game interesting. You can also use any supported custom GameAPI
+# for this config too.
+# ---
+
 # You can disable this arena by setting this to false
 enabled: false
 # Pick your own arena name.
@@ -32,8 +39,17 @@ team-settings:
   # will have a set of colors in their inventory
   # hotbar if this is set to false.
   monarchy-system: false
+  # The number of teams in this game.
+  # You must have this set to make sure that the
+  # plugin can work properly.
+  world-teams-avail: 3
+  # Interactive spawns mean that if you have this enabled
+  # The arena will put all of the team members in the same cage.
+  # Otherwise, the players will be placed into isolated cages.
+  interactive-spawns: false
 
 # Lobby settings
+# [Game-API related features]
 lobby-settings:
   # Enable lobby functions. If you enable this. All the players
   # Will be teleported to a world where that has been set as a lobby.

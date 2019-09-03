@@ -36,6 +36,7 @@ use pocketmine\{network\mcpe\protocol\AddActorPacket,
 	Server,
 	utils\MainLogger,
 	utils\Random,
+	utils\TextFormat,
 	utils\TextFormat as VS};
 use pocketmine\block\{Block, BlockIds, StainedGlass};
 use pocketmine\entity\Entity;
@@ -61,6 +62,10 @@ class Utils {
 
 	public static function sendDebug(String $log){
 		MainLogger::getLogger()->debug("SW-DEBUG: " . $log);
+	}
+
+	public static function send(string $string){
+		MainLogger::getLogger()->info(Settings::$prefix . TextFormat::GRAY . $string);
 	}
 
 	public static function getParticleTimer(int $id){

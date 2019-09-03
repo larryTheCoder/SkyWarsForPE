@@ -75,10 +75,10 @@ class Arena {
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
 		$this->data = $plugin->getArenaManager()->getArenaConfig($arenaName);
+		$this->gameAPI = new DefaultGameAPI($this);
 
 		$this->parseData();
 		$this->loadCageHandler();
-		$this->gameAPI = new DefaultGameAPI($this);
 	}
 
 	private function loadCageHandler(){
@@ -144,7 +144,7 @@ class Arena {
 
 		$pl->getInventory()->setHeldItemIndex(1, true);
 		$this->messageArenaPlayers('player-join-2', true, ['{PLAYER}'], [$pl->getName()]);
-		$this->addPlayer($pl);
+		$this->addPlayer($pl, $this->getRandomTeam());
 
 		// Pick one of the cages in the arena.
 		$spawnLoc = array_rand($this->spawnPedestals);
@@ -167,6 +167,18 @@ class Arena {
 		}
 
 		$this->removePlayer($pl);
+	}
+
+	/**
+	 * Get a random pick for the player team.
+	 * This plugin will generate a random colors.
+	 */
+	public function getRandomTeam(): int{
+		if(!$this->teamMode){
+			return -1;
+		}
+
+
 	}
 
 	/**

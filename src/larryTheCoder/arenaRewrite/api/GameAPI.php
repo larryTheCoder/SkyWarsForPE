@@ -48,9 +48,19 @@ abstract class GameAPI implements Listener {
 	public $arena;
 
 	public function __construct(Arena $arena){
+		$arena->gameAPICodename = $this->getCodeName();
 		$this->arena = $arena;
 
 		Server::getInstance()->getPluginManager()->registerEvents($this, SkyWarsPE::getInstance());
+	}
+
+	/**
+	 * The API codename.
+	 *
+	 * @return string
+	 */
+	public function getCodeName(){
+		return "SkyWars-Classic";
 	}
 
 	/**

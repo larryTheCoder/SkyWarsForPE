@@ -37,10 +37,19 @@ namespace larryTheCoder\arenaRewrite;
  */
 trait ArenaData {
 
+	public $configVersion = "2-API-1.0";
+	public $gameAPICodename = "";
+
 	// The root of the config.
 	public $arenaEnable = false;
 	public $arenaName = "";
 	public $arenaMode = Arena::MODE_SOLO;
+
+	// Team settings
+	public $playerPerTeam = 0;
+	public $worldTeamMembers = 0;
+	public $monarchySystem = false;
+	public $interactiveSpawns = false;
 
 	// Signs section.
 	public $enableJoinSign = false;
@@ -59,17 +68,27 @@ trait ArenaData {
 	public $refillRate = 240;
 
 	// Arena section.
+	public $arenaTime = 0;
 	public $arenaWorld = "";
 	public $arenaSpecPos = null;
+	public $spawnPedestals = [];
 	public $maximumPlayers = 0;
 	public $minimumPlayers = 0;
-	public $spawnPedestals = [];
+	public $arenaGraceTime = 0;
+	public $enableSpectator = false;
+	public $arenaBroadcastTM = [];
+	public $arenaMoneyReward = 0;
+	public $arenaStartingTime = 0;
 
 	/**
 	 * Parses the data for the arena
 	 */
 	public function parseData(){
 		$data = $this->getArenaData();
+		if($data['version'] !== $this->configVersion){
+			throw new \InvalidArgumentException("Unsupported config version for {$this->gameAPICodename}");
+		}
+
 		$this->arenaEnable = boolval($data["enabled"]);
 
 	}

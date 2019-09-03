@@ -41,7 +41,7 @@ use pocketmine\Player;
 trait PlayerHandler {
 
 	/** @var bool */
-	private $teamMode = false;
+	public $teamMode = false;
 	/** @var Player[] */
 	private $players = [];
 	/** @var Player[] */
@@ -49,8 +49,6 @@ trait PlayerHandler {
 
 	/** @var int[] */
 	private $teams = []; // "Player" => "Team color"
-	/** @var int */
-	private $maxMembers = 3; // Max members per team.
 
 	public function addPlayer(Player $pl, int $team = -1){
 		# Set the player gamemode first
@@ -87,8 +85,18 @@ trait PlayerHandler {
 		}
 	}
 
+	/**
+	 * Set the player team for the user.
+	 *
+	 * @param Player $pl
+	 * @param int $team
+	 */
 	public function setPlayerTeam(Player $pl, int $team){
+		if(!$this->teamMode){
+			return;
+		}
 
+		$this->teams[strtolower($pl->getName())] = $team;
 	}
 
 	public function messageArenaPlayers(string $msg, $popup = true, $toReplace = [], $replacement = []){
@@ -135,6 +143,15 @@ trait PlayerHandler {
 	 */
 	public function getSpectatorsCount(): int{
 		return count($this->spectators);
+	}
+
+	/**
+	 * Get the teams registered in this arena.
+	 *
+	 * @return array
+	 */
+	public function getTeams(): array{
+		return $this->teams;
 	}
 
 	public function getPlayers(): array{
