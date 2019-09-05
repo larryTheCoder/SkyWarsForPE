@@ -774,7 +774,8 @@ class Arena extends PlayerHandler {
 			if($p instanceof Player){
 				$p->setMaxHealth(Settings::$joinHealth);
 				$p->setMaxHealth($p->getMaxHealth());
-				$p->getInventory()->clearAll();
+				$p->getInventory()->clear(0, true);
+				$p->getInventory()->clear(8, true);
 				$p->getArmorInventory()->clearAll();
 				if($p->getAttributeMap() != null){//just to be really sure
 					$p->setHealth(Settings::$joinHealth);
