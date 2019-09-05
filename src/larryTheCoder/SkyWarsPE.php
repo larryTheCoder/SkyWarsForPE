@@ -100,6 +100,11 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->initConfig();
 		$this->initDatabase();
+
+		$str = ["Somebody" => 5, "Want to told me " => 7, "Uh oh" => 3];
+		asort($str);
+		array_multisort($str);
+		var_dump($str);
 	}
 
 	public function initConfig(){

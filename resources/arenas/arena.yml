@@ -43,6 +43,9 @@ team-settings:
   # You must have this set to make sure that the
   # plugin can work properly.
   world-teams-avail: 3
+  # The minimum number of players needed
+  # for the arena to start it.
+  minimum-teams: 2
   # Interactive spawns mean that if you have this enabled
   # The arena will put all of the team members in the same cage.
   # Otherwise, the players will be placed into isolated cages.

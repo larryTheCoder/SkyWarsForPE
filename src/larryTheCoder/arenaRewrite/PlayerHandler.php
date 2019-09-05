@@ -49,6 +49,14 @@ trait PlayerHandler {
 
 	/** @var int[] */
 	private $teams = []; // "Player" => "Team color"
+	/** @var int[] */
+	public $configuredTeam = []; // "Team Color" => Counts
+	/** @var int */
+	public $maximumMembers = 0;
+	/** @var int */
+	public $maximumTeams = 0;
+	/** @var int */
+	public $minimumMembers = 0;
 
 	public function addPlayer(Player $pl, int $team = -1){
 		# Set the player gamemode first

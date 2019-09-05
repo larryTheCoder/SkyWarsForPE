@@ -31,6 +31,7 @@ namespace larryTheCoder\arenaRewrite\api;
 
 use larryTheCoder\arenaRewrite\Arena;
 use larryTheCoder\SkyWarsPE;
+use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -86,4 +87,12 @@ abstract class GameAPI implements Listener {
 	 * @return array
 	 */
 	public abstract function getRuntimeTasks(): array;
+
+	/**
+	 * Shutdown this API from using this arena.
+	 * You may found this a very useful function.
+	 */
+	public function shutdown(): void{
+		HandlerList::unregisterAll($this);
+	}
 }
