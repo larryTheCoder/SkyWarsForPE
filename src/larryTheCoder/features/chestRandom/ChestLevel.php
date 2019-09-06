@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2019 larryTheCoder and contributors
+ * Copyright (c) 2015-2018 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,40 +26,37 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arenaRewrite\api;
 
-use larryTheCoder\arenaRewrite\Arena;
-use larryTheCoder\arenaRewrite\tasks\ArenaGameTick;
-use larryTheCoder\arenaRewrite\tasks\SignTickTask;
-use pocketmine\Player;
+namespace larryTheCoder\features\chestRandom;
 
-/**
- * The runtime handler of the SW game itself. This class handles player
- * actions and controls the arena acts.
- *
- * @package larryTheCoder\arenaRewrite\api
- */
-class DefaultGameAPI extends GameAPI {
+use pocketmine\item\Item;
 
-	public function __construct(Arena $arena){
-		parent::__construct($arena);
-	}
+class ChestLevel {
 
-	public function joinToArena(Player $p): bool{
-		// TODO: Implement joinToArena() method.
-	}
-
-	public function leaveArena(Player $p): bool{
-		// TODO: Implement leaveArena() method.
-	}
+	/** @var string */
+	public $name;
+	/** @var int */
+	public $itemValue;
+	/** @var int */
+	public $chance;
+	/** @var Item[] */
+	public $items;
 
 	/**
-	 * Return the tasks required by the game to run.
-	 * This task will be executed periodically for each 1 seconds
-	 *
-	 * @return array
+	 * ChestLevel constructor.
+	 * @param string $name
+	 * @param int $itemValue
+	 * @param int $chance
+	 * @param Item[] $items
 	 */
-	public function getRuntimeTasks(): array{
-		return [new ArenaGameTick($this->arena), new SignTickTask($this->arena)];
+	public function __construct(string $name, int $itemValue, int $chance, array $items){
+		$this->name = $name;
+		$this->itemValue = $itemValue;
+		$this->chance = $chance;
+		$this->items = $items;
+	}
+
+	public function __toString(){
+		return "(ChestLevel) $this->name, $this->itemValue, $this->chance";
 	}
 }

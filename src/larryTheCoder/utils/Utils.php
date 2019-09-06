@@ -28,7 +28,8 @@
 
 namespace larryTheCoder\utils;
 
-use larryTheCoder\arenaRewrite\Arena;
+use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\SetData;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\FireworksData;
 use pocketmine\{network\mcpe\protocol\AddActorPacket,
@@ -105,24 +106,24 @@ class Utils {
 	}
 
 	public static function getBlockStatus(Arena $arena){
-//		if($arena->setup == true){
-//			return new StainedGlass(14);
-//		}
-//		if($arena->disabled == true){
-//			return new StainedGlass(14);
-//		}
-//		if($arena->getMode() === \larryTheCoder\arena\Arena::ARENA_WAITING_PLAYERS){
-//			return new StainedGlass(13);
-//		}
-//		if($arena->getPlayers() >= $arena->getMinPlayers()){
-//			return new StainedGlass(4);
-//		}
-//		if($arena->getStatus() === Arena::ARENA_RUNNING){
-//			return new StainedGlass(6);
-//		}
-//		if($arena->getStatus() === Arena::ARENA_CELEBRATING){
-//			return new StainedGlass(11);
-//		}
+		if($arena->inSetup){
+			return new StainedGlass(14);
+		}
+		if($arena->arenaEnable){
+			return new StainedGlass(14);
+		}
+		if($arena->getStatus() <= SetData::STATE_SLOPE_WAITING){
+			return new StainedGlass(13);
+		}
+		if($arena->getPlayers() >= $arena->minimumPlayers){
+			return new StainedGlass(4);
+		}
+		if($arena->getStatus() === SetData::STATE_ARENA_RUNNING){
+			return new StainedGlass(6);
+		}
+		if($arena->getStatus() === SetData::STATE_ARENA_CELEBRATING){
+			return new StainedGlass(11);
+		}
 
 		return new StainedGlass(0);
 	}
@@ -199,7 +200,6 @@ class Utils {
 
 	public static function unloadGame(){
 		foreach(SkyWarsPE::getInstance()->getArenaManager()->getArenas() as $name => $arena){
-			$arena->stopGame(true);
 			$arena->forceShutdown();
 		}
 		SkyWarsPE::getInstance()->getArenaManager()->invalidate();

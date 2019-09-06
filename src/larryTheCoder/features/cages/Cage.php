@@ -26,7 +26,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\cages;
+namespace larryTheCoder\features\cages;
 
 use pocketmine\block\Block;
 use pocketmine\level\Position;

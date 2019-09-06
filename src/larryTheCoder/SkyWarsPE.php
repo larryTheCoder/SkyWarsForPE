@@ -29,15 +29,14 @@
 namespace larryTheCoder;
 
 use larryTheCoder\commands\SkyWarsCommand;
+use larryTheCoder\features\cages\ArenaCage;
+use larryTheCoder\features\chestRandom\RandomChest;
+use larryTheCoder\features\kits\Kits;
+use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\formAPI\FormAPI;
-use larryTheCoder\items\RandomChest;
-use larryTheCoder\libs\cages\ArenaCage;
-use larryTheCoder\libs\kits\Kits;
-use larryTheCoder\npc\FakeHuman;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\{MySqlDatabase, SkyWarsDatabase, SQLite3Database};
 use larryTheCoder\task\NPCValidationTask;
-use larryTheCoder\task\StartLoadArena;
 use larryTheCoder\utils\{Settings, Utils};
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
@@ -187,7 +186,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->checkLibraries();
 		$this->getArenaManager()->checkArenas();
-		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
 		$this->checkLobby();
 		$this->loadHumans();
 

@@ -26,8 +26,10 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arenaRewrite;
+namespace larryTheCoder\arena;
 
+
+use larryTheCoder\utils\Utils;
 
 /**
  * Stores everything about the arena config
@@ -39,11 +41,12 @@ trait ArenaData {
 
 	public $configVersion = "2-API-1.0";
 	public $gameAPICodename = "";
+	public $inSetup = false;
 
 	// The root of the config.
 	public $arenaEnable = false;
 	public $arenaName = "";
-	public $arenaMode = Arena::MODE_SOLO;
+	public $arenaMode = SetData::MODE_SOLO;
 
 	// Team settings
 	public $playerPerTeam = 0;
@@ -85,12 +88,25 @@ trait ArenaData {
 	 */
 	public function parseData(){
 		$data = $this->getArenaData();
-		if($data['version'] !== $this->configVersion){
-			throw new \InvalidArgumentException("Unsupported config version for {$this->gameAPICodename}");
+
+		try{
+			if($data['version'] !== $this->configVersion){
+				throw new \InvalidArgumentException("Unsupported config version for {$this->gameAPICodename}");
+			}
+
+			$this->arenaEnable = boolval($data["enabled"]);
+		}catch(\Exception $ignored){
+			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Failed to verify config files.");
+			$this->arenaEnable = false;
+
+			return;
 		}
 
-		$this->arenaEnable = boolval($data["enabled"]);
-
+		if($this->arenaEnable){
+			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§a Arena loaded and enabled");
+		}else{
+			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Arena disabled");
+		}
 	}
 
 	/**

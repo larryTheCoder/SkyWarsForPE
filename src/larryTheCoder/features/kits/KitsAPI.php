@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2019 larryTheCoder and contributors
+ * Copyright (c) 2015-2018 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,19 +26,61 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\KitUI;
+namespace larryTheCoder\features\kits;
 
+use pocketmine\event\Event;
+use pocketmine\Player;
 
-use pocketmine\event\Listener;
-
-class KitUIRegistration implements Listener {
+/**
+ * This is a KitsAPI, used to register the Kits to
+ * the arena. Used by players. You can extends this
+ * class to make a cool kits for this game.
+ *
+ * @package larryTheCoder\kits
+ */
+abstract class KitsAPI {
 
 	/**
-	 * @param KitEquipEvent $ev
+	 * Get the kit name for the Kit
+	 * @return string
 	 */
-	public function onKitEquipEvent(KitEquipEvent $ev){
-		$ev->getKit();
-	}
+	public abstract function getKitName(): string;
 
+	/**
+	 * The price for the kits, depends on the
+	 * server if they installed any Economy
+	 * plugins
+	 *
+	 * @return int
+	 */
+	public abstract function getKitPrice(): int;
+
+	/**
+	 * Get the description for the Kit
+	 * put 'null' if you don't want them
+	 *
+	 * @return string
+	 */
+	public abstract function getDescription(): string;
+
+	/**
+	 * Provide to execute this kit/feature. This
+	 * kit will be executed when the game has been started.
+	 *
+	 * @param Player $p
+	 */
+	public abstract function executeKit(Player $p);
+
+	/**
+	 * Start to listen to events in the arena from
+	 * this plugin. Its will only be listened to
+	 * the player that owns this kit. No need to worry
+	 * if the event will be executed trough other player.
+	 *
+	 * @param Event $event
+	 */
+	public function eventExecution(Event $event){
+
+	}
 
 }

@@ -26,7 +26,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\cages;
+namespace larryTheCoder\features\cages;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;

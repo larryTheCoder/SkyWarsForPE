@@ -26,7 +26,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\kits;
+namespace larryTheCoder\features\kits;
 
 
 use pocketmine\item\Item;

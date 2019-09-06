@@ -29,7 +29,7 @@
 
 namespace larryTheCoder\commands;
 
-use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\SetData;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
@@ -178,7 +178,7 @@ final class SkyWarsCommand {
 					Utils::unLoadGame();
 					$this->plugin->getArenaManager()->checkArenas();
 					foreach($this->plugin->getArenaManager()->getArenas() as $arena){
-						$arena->recheckArena();
+						$arena->resetArena();
 					}
 
 					$sender->sendMessage($this->plugin->getMsg($sender, 'plugin-reload'));
@@ -243,7 +243,7 @@ final class SkyWarsCommand {
 							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
 							break;
 						}
-						if($this->plugin->getArenaManager()->getArena($args[1])->getMode() !== Arena::ARENA_RUNNING){
+						if($this->plugin->getArenaManager()->getArena($args[1])->getStatus() !== SetData::STATE_ARENA_RUNNING){
 							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
 							break;
 						}
@@ -254,7 +254,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'stop-usage'));
 						break;
 					}
-					if($this->plugin->getArenaManager()->getPlayerArena($sender)->getMode() !== Arena::ARENA_RUNNING){
+					if($this->plugin->getArenaManager()->getPlayerArena($sender)->getStatus() !== SetData::STATE_ARENA_RUNNING){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
 						break;
 					}
@@ -281,7 +281,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
 						break;
 					}
-					if($this->plugin->getArenaManager()->getArena($args[1])->inArena($sender)){
+					if($this->plugin->getArenaManager()->getArena($args[1])->isInArena($sender)){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-running'));
 						break;
 					}
@@ -324,7 +324,7 @@ final class SkyWarsCommand {
 					$command = strtolower($args[1]);
 					if($command === "teleportnearest"){
 						$e = $this->plugin->getArenaManager()->getPlayerArena($sender);
-						if(is_null($e) || $e->getPlayerMode($sender) === 0){
+						if(is_null($e) || $e->getPlayerState($sender) === 0){
 							break;
 						}
 						$this->plugin->panel->showSpectatorPanel($sender, $e);

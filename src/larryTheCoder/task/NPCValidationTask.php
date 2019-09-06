@@ -28,7 +28,7 @@
 
 namespace larryTheCoder\task;
 
-use larryTheCoder\npc\FakeHuman;
+use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\entity\Entity;

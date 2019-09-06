@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2019 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,32 +26,19 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\features\kits;
 
-namespace larryTheCoder\task;
 
-use larryTheCoder\SkyWarsPE;
-use pocketmine\scheduler\Task;
-use pocketmine\Server;
+use pocketmine\event\Listener;
 
-class StartLoadArena extends Task {
-
-	private $plugin;
-
-	public function __construct(SkyWarsPE $plugin){
-		$this->plugin = $plugin;
-	}
+class KitUIRegistration implements Listener {
 
 	/**
-	 * Actions to execute when run
-	 *
-	 * @param $currentTick
-	 *
-	 * @return void
+	 * @param KitEquipEvent $ev
 	 */
-	public function onRun(int $currentTick){
-		Server::getInstance()->getLogger()->info($this->plugin->getPrefix() . "§aStarted to load arenas worlds...");
-		foreach($this->plugin->getArenaManager()->getArenas() as $arenas){
-			$arenas->recheckArena();
-		}
+	public function onKitEquipEvent(KitEquipEvent $ev){
+		$ev->getKit();
 	}
+
+
 }

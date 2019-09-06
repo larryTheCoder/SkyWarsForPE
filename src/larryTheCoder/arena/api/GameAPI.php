@@ -26,10 +26,10 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arenaRewrite\api;
+namespace larryTheCoder\arena\api;
 
 
-use larryTheCoder\arenaRewrite\Arena;
+use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
 use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
@@ -87,6 +87,12 @@ abstract class GameAPI implements Listener {
 	 * @return array
 	 */
 	public abstract function getRuntimeTasks(): array;
+
+	/**
+	 * Do something when the code is trying to remove every players
+	 * from the list.
+	 */
+	public abstract function removeAllPlayers();
 
 	/**
 	 * Shutdown this API from using this arena.

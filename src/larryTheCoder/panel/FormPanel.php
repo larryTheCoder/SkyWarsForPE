@@ -30,6 +30,7 @@ namespace larryTheCoder\panel;
 
 
 use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\SetData;
 use larryTheCoder\formAPI\{event\FormRespondedEvent,
 	response\FormResponseCustom,
 	response\FormResponseModal,
@@ -96,7 +97,7 @@ class FormPanel implements Listener {
 		$form = $this->plugin->formAPI->createSimpleForm();
 
 		$players = [];
-		foreach($arena->players as $inGame){
+		foreach($arena->getPlayers() as $inGame){
 			$path = $this->plugin->getDataFolder() . 'image/' . strtolower($inGame->getName()) . ".png";
 			$form->addButton($inGame->getName(), 0, $path);
 			$players[] = $inGame->getName();
@@ -142,7 +143,7 @@ class FormPanel implements Listener {
 			}
 
 			foreach($this->plugin->getArenaManager()->getArenas() as $arena){
-				if(strtolower($arena->getArenaLevel()->getFolderName()) === strtolower($file)){
+				if(strtolower($arena->getLevel()->getFolderName()) === strtolower($file)){
 					continue 2;
 				}
 			}
@@ -451,7 +452,7 @@ class FormPanel implements Listener {
 			return;
 		}
 		$a = $this->plugin->getArenaManager()->getArena($arena->arenaName);
-		if($a->getMode() >= Arena::ARENA_RUNNING || count(array_merge($a->players, $a->spec)) > 0){
+		if($a->getStatus() >= SetData::STATE_ARENA_RUNNING || $a->getPlayersCount() > 0){
 			$player->sendMessage($this->plugin->getMsg($player, 'arena-running'));
 
 			return;
@@ -475,9 +476,9 @@ class FormPanel implements Listener {
 
 	private function toData(Arena $arena): SkyWarsData{
 		$data = new SkyWarsData();
-		$data->maxPlayer = $arena->getMaxPlayers();
-		$data->minPlayer = $arena->getMinPlayers();
-		$data->arenaLevel = $arena->getLevelName();
+		$data->maxPlayer = $arena->maximumPlayers;
+		$data->minPlayer = $arena->minimumPlayers;
+		$data->arenaLevel = $arena->arenaWorld;
 		$data->arenaName = $arena->getArenaName();
 		$data->spectator = $arena->data["arena"]["spectator_mode"];
 		$data->startWhenFull = $arena->data["arena"]["start_when_full"];

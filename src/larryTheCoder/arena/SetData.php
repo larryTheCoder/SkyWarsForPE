@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2019 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,37 +26,24 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\arena;
 
-namespace larryTheCoder\items;
 
-use pocketmine\item\Item;
+interface SetData {
 
-class ChestLevel {
+	// Arena modes
+	const MODE_SOLO = 0;
+	const MODE_TEAM = 1;
 
-	/** @var string */
-	public $name;
-	/** @var int */
-	public $itemValue;
-	/** @var int */
-	public $chance;
-	/** @var Item[] */
-	public $items;
+	// Arena states
+	const STATE_WAITING = 0;
+	const STATE_SLOPE_WAITING = 1;
+	const STATE_ARENA_RUNNING = 2;
+	const STATE_ARENA_CELEBRATING = 3;
 
-	/**
-	 * ChestLevel constructor.
-	 * @param string $name
-	 * @param int $itemValue
-	 * @param int $chance
-	 * @param Item[] $items
-	 */
-	public function __construct(string $name, int $itemValue, int $chance, array $items){
-		$this->name = $name;
-		$this->itemValue = $itemValue;
-		$this->chance = $chance;
-		$this->items = $items;
-	}
-
-	public function __toString(){
-		return "(ChestLevel) $this->name, $this->itemValue, $this->chance";
-	}
+	// Player states
+	const PLAYER_UNSET = 0;
+	const PLAYER_ALIVE = 1;
+	const PLAYER_SPECTATE = 2;
+	const PLAYER_SPECIAL = 3;
 }

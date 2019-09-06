@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2019 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,61 +26,48 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\libs\kits;
+namespace larryTheCoder\arena\api;
 
-use pocketmine\event\Event;
+use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\tasks\ArenaGameTick;
+use larryTheCoder\arena\tasks\SignTickTask;
 use pocketmine\Player;
 
 /**
- * This is a KitsAPI, used to register the Kits to
- * the arena. Used by players. You can extends this
- * class to make a cool kits for this game.
+ * The runtime handler of the SW game itself. This class handles player
+ * actions and controls the arena acts.
  *
- * @package larryTheCoder\kits
+ * @package larryTheCoder\arenaRewrite\api
  */
-abstract class KitsAPI {
+class DefaultGameAPI extends GameAPI {
 
-	/**
-	 * Get the kit name for the Kit
-	 * @return string
-	 */
-	public abstract function getKitName(): string;
-
-	/**
-	 * The price for the kits, depends on the
-	 * server if they installed any Economy
-	 * plugins
-	 *
-	 * @return int
-	 */
-	public abstract function getKitPrice(): int;
-
-	/**
-	 * Get the description for the Kit
-	 * put 'null' if you don't want them
-	 *
-	 * @return string
-	 */
-	public abstract function getDescription(): string;
-
-	/**
-	 * Provide to execute this kit/feature. This
-	 * kit will be executed when the game has been started.
-	 *
-	 * @param Player $p
-	 */
-	public abstract function executeKit(Player $p);
-
-	/**
-	 * Start to listen to events in the arena from
-	 * this plugin. Its will only be listened to
-	 * the player that owns this kit. No need to worry
-	 * if the event will be executed trough other player.
-	 *
-	 * @param Event $event
-	 */
-	public function eventExecution(Event $event){
-
+	public function __construct(Arena $arena){
+		parent::__construct($arena);
 	}
 
+	public function joinToArena(Player $p): bool{
+		return false; // TODO: Implement joinToArena() method.
+	}
+
+	public function leaveArena(Player $p): bool{
+		return false; // TODO: Implement leaveArena() method.
+	}
+
+	/**
+	 * Return the tasks required by the game to run.
+	 * This task will be executed periodically for each 1 seconds
+	 *
+	 * @return array
+	 */
+	public function getRuntimeTasks(): array{
+		return [new ArenaGameTick($this->arena), new SignTickTask($this->arena)];
+	}
+
+	/**
+	 * Do something when the code is trying to remove every players
+	 * from the list.
+	 */
+	public function removeAllPlayers(){
+		// TODO: Implement removeAllPlayers() method.
+	}
 }

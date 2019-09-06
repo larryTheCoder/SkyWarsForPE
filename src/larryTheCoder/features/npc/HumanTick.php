@@ -26,7 +26,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\npc;
+namespace larryTheCoder\features\npc;
 
 use larryTheCoder\SkyWarsPE;
 use pocketmine\entity\Skin;
