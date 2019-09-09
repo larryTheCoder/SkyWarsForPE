@@ -65,6 +65,18 @@ abstract class GameAPI implements Listener {
 	}
 
 	/**
+	 * Start the arena, begin the match in the
+	 * arena provided.
+	 */
+	public abstract function startArena(): void;
+
+	/**
+	 * Stop the arena, rollback to defaults and
+	 * reset the arena if possible.
+	 */
+	public abstract function stopArena(): void;
+
+	/**
 	 * Called when a player joins into the arena
 	 *
 	 * @param Player $p
@@ -76,9 +88,10 @@ abstract class GameAPI implements Listener {
 	 * Called when a player leaves the arena.
 	 *
 	 * @param Player $p
+	 * @param bool $force
 	 * @return bool
 	 */
-	public abstract function leaveArena(Player $p): bool;
+	public abstract function leaveArena(Player $p, bool $force = false): bool;
 
 	/**
 	 * Return the tasks required by the game to run.

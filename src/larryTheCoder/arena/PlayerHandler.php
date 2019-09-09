@@ -86,6 +86,10 @@ trait PlayerHandler {
 		}
 	}
 
+	public function checkAlive(){
+		// TODO
+	}
+
 	public function removePlayer(Player $pl){
 		// Check if the player do exists
 		if(isset($this->players[strtolower($pl->getName())])){
@@ -95,6 +99,10 @@ trait PlayerHandler {
 			if(isset($this->teams[strtolower($pl->getName())])){
 				unset($this->teams[strtolower($pl->getName())]);
 			}
+		}
+
+		if(isset($this->spectators[strtolower($pl->getName())])){
+			unset($this->spectators[strtolower($pl->getName())]);
 		}
 	}
 

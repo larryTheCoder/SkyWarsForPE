@@ -35,6 +35,7 @@ use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
@@ -59,11 +60,13 @@ class Arena {
 	public $gameAPI;
 	/** @var array */
 	public $data;
+	/** @var float */
+	private $startedTime = 0;
 
-	/** @var Position[] */
+	/** @var Vector3[] */
 	private $freePedestals;
-	/** @var Position[] */
-	private $usedPedestals;
+	/** @var Vector3[] */
+	public $usedPedestals;
 
 	/** @var TaskHandler[] */
 	private $taskRunning = [];
@@ -73,15 +76,27 @@ class Arena {
 		$this->plugin = $plugin;
 		$this->gameAPI = new DefaultGameAPI($this);
 
-		$this->resetArena();
+		$this->resetArena(true);
 	}
 
+	/**
+	 * Start this arena and set the arena state.
+	 */
 	public function startGame(){
-		// TODO: Start game functions.
+		$this->gameAPI->startArena();
+
+		$this->startedTime = microtime(true);
+		$this->setStatus(SetData::STATE_ARENA_RUNNING);
+		$this->messageArenaPlayers('arena-start', false);
 	}
 
+	/**
+	 * Stop this arena and set the arena state.
+	 */
 	public function stopGame(){
-		// TODO: Stop game functions.
+		$this->gameAPI->stopArena();
+
+		$this->resetArena();
 	}
 
 	/**
@@ -93,17 +108,23 @@ class Arena {
 
 	/**
 	 * Forcefully reset the arena to its original state.
+	 *
+	 * @param bool $resetConfig
 	 */
-	public function resetArena(){
-		$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName);
+	public function resetArena(bool $resetConfig = false){
+		if($resetConfig){
+			$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName);
 
-		$this->parseData();
+			$this->parseData();
+			$this->configTeam($this->getArenaData());
+		}
+
 		$this->loadCageHandler();
 		$this->saveArenaWorld();
-		$this->configTeam($this->getArenaData());
 		$this->resetPlayers();
 
 		$this->arenaLevel = $this->getLevel();
+		$this->startedTime = 0;
 
 		// Remove the task first.
 		$tasks = $this->gameAPI->getRuntimeTasks();
@@ -167,13 +188,12 @@ class Arena {
 	 * @since 3.0
 	 */
 	public function resetArenaWorld(){
-		$levelName = $this->data['arena']['arena_world'];
-		if($this->plugin->getServer()->isLevelLoaded($levelName)){
-			$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($levelName));
+		if($this->plugin->getServer()->isLevelLoaded($this->arenaWorld)){
+			$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($this->arenaWorld));
 		}
 
-		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName;
-		$toPath = $this->plugin->getServer()->getDataPath() . "/worlds/" . $levelName;
+		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaWorld;
+		$toPath = $this->plugin->getServer()->getDataPath() . "/worlds/" . $this->arenaWorld;
 
 		Utils::deleteDirectory($toPath);
 		if(!Settings::$zipArchive){
@@ -214,7 +234,7 @@ class Arena {
 	 */
 	public function joinToArena(Player $pl){
 		// Maximum players reached furthermore player can't join.
-		if($this->getPlayers() >= $this->maximumPlayers){
+		if(count($this->getPlayers()) >= $this->maximumPlayers){
 			$pl->sendMessage($this->plugin->getMsg($pl, 'arena-full'));
 
 			return;
@@ -234,24 +254,27 @@ class Arena {
 			return;
 		}
 
-		Utils::loadFirst($this->data['arena']['arena_world']); # load the level
-		$this->arenaLevel = $this->plugin->getServer()->getLevelByName($this->data['arena']['arena_world']); # Reset the current state of level
+		Utils::loadFirst($this->arenaWorld); # load the level
+		$this->arenaLevel = $this->plugin->getServer()->getLevelByName($this->arenaWorld); # Reset the current state of level
+
+		// Pick one of the cages in the arena.
+		/** @var Vector3 $spawnPos */
+		$spawnLoc = array_rand($this->spawnPedestals);
+		$spawnPos = $this->spawnPedestals[$spawnLoc];
+		$this->usedPedestals[$pl->getName()] = [$spawnPos, $spawnLoc];
 
 		// Here you can see, the code passes to the game API to check
 		// If its allowed to enter the arena or not.
 		if(!$this->gameAPI->joinToArena($pl)){
+			unset($this->usedPedestals[$pl->getName()]);
+
 			return;
 		}
 
 		$pl->getInventory()->setHeldItemIndex(1, true);
 		$this->addPlayer($pl, $this->getRandomTeam());
 
-		// Pick one of the cages in the arena.
-		$spawnLoc = array_rand($this->spawnPedestals);
-		$spawnPos = $this->spawnPedestals[$spawnLoc];
-		$this->usedPedestals[$pl->getName()] = [$spawnPos, $spawnPos];
-
-		$pl->teleport($spawnPos);
+		$pl->teleport(Position::fromObject($spawnPos->add(0.5, 0, 0.5), $this->getLevel()));
 
 		unset($this->spawnPedestals[$spawnLoc]);
 	}
@@ -260,14 +283,24 @@ class Arena {
 	 * Leave a player from an arena.
 	 *
 	 * @param Player $pl
+	 * @param bool $force
 	 * @since 3.0
 	 */
-	public function leaveArena(Player $pl){
-		if(!$this->gameAPI->leaveArena($pl)){
+	public function leaveArena(Player $pl, bool $force = false){
+		if(!$this->gameAPI->leaveArena($pl, $force)){
 			return;
 		}
 
 		$this->removePlayer($pl);
+
+		// Remove the spawn pedestals
+		$valObj = $this->usedPedestals[$pl->getName()][0];
+		$keyObj = $this->usedPedestals[$pl->getName()][1];
+		$this->spawnPedestals[$keyObj] = $valObj;
+
+		$pl->teleport(SkyWarsPE::getInstance()->getDatabase()->getLobby());
+
+		unset($this->usedPedestals[$pl->getName()]);
 	}
 
 	/**

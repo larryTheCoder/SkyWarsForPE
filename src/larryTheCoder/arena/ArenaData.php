@@ -30,6 +30,7 @@ namespace larryTheCoder\arena;
 
 
 use larryTheCoder\utils\Utils;
+use pocketmine\math\Vector3;
 
 /**
  * Stores everything about the arena config
@@ -50,15 +51,14 @@ trait ArenaData {
 
 	// Team settings
 	public $playerPerTeam = 0;
+	public $playerMinimum = 0;
 	public $worldTeamMembers = 0;
 	public $monarchySystem = false;
 	public $interactiveSpawns = false;
 
 	// Signs section.
 	public $enableJoinSign = false;
-	public $joinSignX = 0;
-	public $joinSignY = 0;
-	public $joinSignZ = 0;
+	public $joinSignVec = null;
 	public $statusLine1 = "";
 	public $statusLine2 = "";
 	public $statusLine3 = "";
@@ -79,6 +79,7 @@ trait ArenaData {
 	public $minimumPlayers = 0;
 	public $arenaGraceTime = 0;
 	public $enableSpectator = false;
+	public $arenaStartOnFull = false;
 	public $arenaBroadcastTM = [];
 	public $arenaMoneyReward = 0;
 	public $arenaStartingTime = 0;
@@ -94,7 +95,49 @@ trait ArenaData {
 				throw new \InvalidArgumentException("Unsupported config version for {$this->gameAPICodename}");
 			}
 
+			// Root of the config.
 			$this->arenaEnable = boolval($data["enabled"]);
+			$this->arenaName = $data['arena-name'];
+			$this->arenaMode = $data['arena-mode'];
+
+			// Signs config.
+			$signs = $data['signs'];
+			$this->enableJoinSign = boolval($signs['enable-status']);
+			$this->joinSignVec = new Vector3($signs['join-sign-x'], $signs['join-sign-y'], $signs['join-sign-z']);
+			$this->statusLine1 = $signs['status-line-1'];
+			$this->statusLine2 = $signs['status-line-2'];
+			$this->statusLine3 = $signs['status-line-3'];
+			$this->statusLine4 = $signs['status-line-4'];
+			$this->joinSignWorld = $signs['join-sign-world'];
+			$this->statusLineUpdate = $signs['sign-update-time'];
+
+			// Chest config
+			$chest = $data['chest'];
+			$this->refillChest = boolval($chest['refill']);
+			$this->refillRate = intval($chest['refill-rate']);
+
+			// Arena config
+			$arena = $data['arena'];
+			$this->arenaWorld = $arena['arena-world'];
+			$this->arenaSpecPos = new Vector3($arena['spec-spawn-x'], $arena['spec-spawn-y'], $arena['spec-spawn-z']);
+			$this->arenaGraceTime = intval($arena['grace-time']);
+			$this->enableSpectator = boolval($arena['spectator-mode']);
+			if(is_int($arena['time'])){
+				$this->arenaTime = intval($arena['time']);
+			}else{
+				$this->arenaTime = str_replace(['true', 'day', 'night'], [-1, 6000, 18000], $arena['time']);
+			}
+			$this->arenaMoneyReward = intval($arena['money-reward']);
+			$this->arenaBroadcastTM = explode(':', $arena['finish-msg-levels']);
+			$this->arenaStartOnFull = boolval($arena['start-when-full']);
+			$this->maximumPlayers = intval($arena['max-players']);
+			$this->minimumPlayers = intval($arena['min-players']);
+			$this->arenaStartingTime = intval($arena['starting-time']);
+			foreach($arena['spawn-positions'] as $val => $pos){
+				$strPos = explode(':', $pos);
+
+				$this->spawnPedestals[] = new Vector3(intval($strPos[0]), intval($strPos[1]), intval($strPos[2]));
+			}
 		}catch(\Exception $ignored){
 			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Failed to verify config files.");
 			$this->arenaEnable = false;

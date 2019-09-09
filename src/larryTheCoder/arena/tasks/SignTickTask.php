@@ -32,7 +32,6 @@ use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\WallSign;
-use pocketmine\math\Vector3;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\tile\Sign;
@@ -63,7 +62,7 @@ class SignTickTask extends Task {
 			if($level === null){
 				goto skipUpdate;
 			}
-			$tile = $level->getTile(new Vector3($this->arena->joinSignX, $this->arena->joinSignY, $this->arena->joinSignZ));
+			$tile = $level->getTile($this->arena->joinSignVec);
 			if($tile instanceof Sign){
 				$block = $tile->getLevel()->getBlock($tile);
 				if($block instanceof WallSign){

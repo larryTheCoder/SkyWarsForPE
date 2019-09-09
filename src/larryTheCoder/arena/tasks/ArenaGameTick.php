@@ -29,12 +29,21 @@
 namespace larryTheCoder\arena\tasks;
 
 
+use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\SetData;
 use pocketmine\scheduler\Task;
 
 class ArenaGameTick extends Task {
 
-	public function __construct(Arena $arena){
+	/**@var Arena */
+	private $arena;
+	/** @var DefaultGameAPI */
+	private $gameAPI;
+
+	public function __construct(Arena $arena, DefaultGameAPI $gameAPI){
+		$this->arena = $arena;
+		$this->gameAPI = $gameAPI;
 	}
 
 	/**
@@ -45,6 +54,9 @@ class ArenaGameTick extends Task {
 	 * @return void
 	 */
 	public function onRun(int $currentTick){
-		// TODO: Implement onRun() method.
+		switch($this->arena->getStatus()){
+			case SetData::STATE_WAITING:
+
+		}
 	}
 }

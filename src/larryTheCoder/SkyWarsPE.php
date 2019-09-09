@@ -326,14 +326,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 	 */
 	private function checkLibraries(){
 		// No its private, you can't have it, do not open an issue about that.
-		$cagesModule = class_exists("\larryTheCoder\libs\cages\ArenaCage");
-		$kitsModule = class_exists("\larryTheCoder\libs\kits\Kits");
-		if($cagesModule){
-			$this->cage = new ArenaCage($this);
-		}
-		if($kitsModule){
-			$this->kits = new Kits($this);
-		}
+		$this->cage = new ArenaCage($this);
+		$this->kits = new Kits($this);
 	}
 
 	/**

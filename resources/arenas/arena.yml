@@ -141,9 +141,9 @@ arena:
   # You have EconomyAPI plugin setup.
   money-reward: 20
   # Finish message level / world
-  # ex: world,SkyWars,{{YOUR-MAIN-WORLD}}
-  # You can use " , " 
-  finish-msg-levels: "world, SkyWars, lobby"
+  # If you want to broadcast to every world, set this to 'all'
+  # Format: "level-a:level-b:level-c" - ':'
+  finish-msg-levels: "world:deviantart:joshuaa"
   # Start when the arena is full
   # for me, I will do `true`
   start-when-full: true

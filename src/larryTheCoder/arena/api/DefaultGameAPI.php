@@ -29,8 +29,14 @@
 namespace larryTheCoder\arena\api;
 
 use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\SetData;
 use larryTheCoder\arena\tasks\ArenaGameTick;
 use larryTheCoder\arena\tasks\SignTickTask;
+use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\Settings;
+use larryTheCoder\utils\Utils;
+use pocketmine\block\Block;
+use pocketmine\level\Position;
 use pocketmine\Player;
 
 /**
@@ -41,16 +47,99 @@ use pocketmine\Player;
  */
 class DefaultGameAPI extends GameAPI {
 
+	/** @var Player[] */
+	private $players;
+	/** @var int[] */
+	private $kills;
+	/** @var Position[] */
+	private $cageToRemove;
+	/** @var SkyWarsPE */
+	private $plugin;
+
 	public function __construct(Arena $arena){
 		parent::__construct($arena);
+
+		$this->plugin = SkyWarsPE::getInstance();
 	}
 
 	public function joinToArena(Player $p): bool{
-		return false; // TODO: Implement joinToArena() method.
+		# Set the player gamemode first
+		$p->setGamemode(0);
+		$p->getInventory()->clearAll();
+		$p->getArmorInventory()->clearAll();
+
+		# Set the player health and food
+		$p->setMaxHealth(Settings::$joinHealth);
+		$p->setMaxHealth($p->getMaxHealth());
+		# just to be really sure
+		if($p->getAttributeMap() != null){
+			$p->setHealth(Settings::$joinHealth);
+			$p->setFood(20);
+		}
+
+		# Then we save the data
+		$this->players[strtolower($p->getName())] = $p;
+		$this->kills[strtolower($p->getName())] = 0;
+
+		# Okay saved then we get the spawn for the player
+		$spawn = $this->arena->usedPedestals[$p->getName()][0];
+
+		# Get the custom cages
+		$cageLib = SkyWarsPE::getInstance()->getCage();
+		$cage = $cageLib->getPlayerCage($p);
+		$this->cageToRemove[strtolower($p->getName())] = $cage->build(Position::fromObject($spawn, $this->arena->getLevel()));
+
+		$p->sendMessage(str_replace("{PLAYER}", $p->getName(), $this->plugin->getMsg($p, 'player-join')));
+
+		return true;
 	}
 
-	public function leaveArena(Player $p): bool{
-		return false; // TODO: Implement leaveArena() method.
+	public function leaveArena(Player $p, bool $force = false): bool{
+		if($this->arena->getPlayerState($p) === SetData::PLAYER_ALIVE){
+			if($this->arena->getStatus() !== SetData::STATE_ARENA_RUNNING || $force){
+				unset($this->players[strtolower($p->getName())]);
+				if($force){
+					$this->arena->messageArenaPlayers('leave-others', true, ["%1", "%2"], [$p->getName(), count($this->players)]);
+				}
+				$this->arena->checkAlive();
+				$this->removeCage($p);
+			}else{
+				$p->sendMessage($this->plugin->getMsg($p, 'arena-running'));
+
+				return false;
+			}
+		}
+		if(!$force) $p->sendMessage($this->plugin->getMsg($p, 'player-leave-2'));
+
+		# Reset the XP Level
+		$p->setXpLevel(0);
+		$p->removeAllEffects();
+		$p->setGamemode(0);
+		$p->getInventory()->clearAll();
+		$p->getArmorInventory()->clearAll();
+
+		Utils::sendDebug("leaveArena() is being called");
+		Utils::sendDebug("User " . $p->getName() . " is leaving the arena.");
+
+		return true;
+	}
+
+	/**
+	 * Remove cage of the player
+	 *
+	 * @param Player $p
+	 * @return bool
+	 */
+	public function removeCage(Player $p): bool{
+		if(!isset($this->cageToRemove[strtolower($p->getName())])){
+			return false;
+		}
+		foreach($this->cageToRemove[strtolower($p->getName())] as $pos){
+			$this->arena->getLevel()->setBlock($pos, Block::get(0));
+		}
+		unset($this->cageToRemove[strtolower($p->getName())]);
+
+		return true;
 	}
 
 	/**
@@ -60,7 +149,7 @@ class DefaultGameAPI extends GameAPI {
 	 * @return array
 	 */
 	public function getRuntimeTasks(): array{
-		return [new ArenaGameTick($this->arena), new SignTickTask($this->arena)];
+		return [new ArenaGameTick($this->arena, $this), new SignTickTask($this->arena)];
 	}
 
 	/**
@@ -69,5 +158,21 @@ class DefaultGameAPI extends GameAPI {
 	 */
 	public function removeAllPlayers(){
 		// TODO: Implement removeAllPlayers() method.
+	}
+
+	/**
+	 * Start the arena, begin the match in the
+	 * arena provided.
+	 */
+	public function startArena(): void{
+		// TODO: Implement startArena() method.
+	}
+
+	/**
+	 * Stop the arena, rollback to defaults and
+	 * reset the arena if possible.
+	 */
+	public function stopArena(): void{
+		// TODO: Implement stopArena() method.
 	}
 }
