@@ -31,7 +31,7 @@ namespace larryTheCoder\arena\tasks;
 
 use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\SetData;
+use larryTheCoder\arena\State;
 use pocketmine\scheduler\Task;
 
 class ArenaGameTick extends Task {
@@ -55,7 +55,7 @@ class ArenaGameTick extends Task {
 	 */
 	public function onRun(int $currentTick){
 		switch($this->arena->getStatus()){
-			case SetData::STATE_WAITING:
+			case State::STATE_WAITING:
 
 		}
 	}

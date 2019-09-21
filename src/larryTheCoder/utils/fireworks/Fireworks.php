@@ -28,89 +28,89 @@
 
 namespace larryTheCoder\utils\fireworks;
 
-use larryTheCoder\utils\fireworks\entity\FireworksRocket;
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
-use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\NBT;
-use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\Player;
-use pocketmine\utils\Random;
 
 class Fireworks extends Item {
 
-	public $spread = 5.0;
+	/** @var float */
+	public const BOOST_POWER = 1.25;
 
-	public function __construct($meta = 0){
+	public const TYPE_SMALL_SPHERE = 0;
+	public const TYPE_HUGE_SPHERE = 1;
+	public const TYPE_STAR = 2;
+	public const TYPE_CREEPER_HEAD = 3;
+	public const TYPE_BURST = 4;
+
+	public const COLOR_BLACK = "\x00";
+	public const COLOR_RED = "\x01";
+	public const COLOR_DARK_GREEN = "\x02";
+	public const COLOR_BROWN = "\x03";
+	public const COLOR_BLUE = "\x04";
+	public const COLOR_DARK_PURPLE = "\x05";
+	public const COLOR_DARK_AQUA = "\x06";
+	public const COLOR_GRAY = "\x07";
+	public const COLOR_DARK_GRAY = "\x08";
+	public const COLOR_PINK = "\x09";
+	public const COLOR_GREEN = "\x0a";
+	public const COLOR_YELLOW = "\x0b";
+	public const COLOR_LIGHT_AQUA = "\x0c";
+	public const COLOR_DARK_PINK = "\x0d";
+	public const COLOR_GOLD = "\x0e";
+	public const COLOR_WHITE = "\x0f";
+
+	public function __construct(int $meta = 0){
 		parent::__construct(self::FIREWORKS, $meta, "Fireworks");
 	}
 
-	public static function ToNbt(FireworksData $data, Position $pos, int $yaw, int $pitch): CompoundTag{
-		$value = [];
-		$root = new CompoundTag();
-		$tag = new CompoundTag();
-		$tag->setByteArray("FireworkColor", strval($data->fireworkColor));
-		$tag->setByteArray("FireworkFade", strval($data->fireworkFade));
-		$tag->setByte("FireworkFlicker", ($data->fireworkFlicker ? 1 : 0));
-		$tag->setByte("FireworkTrail", ($data->fireworkTrail ? 1 : 0));
-		$tag->setByte("FireworkType", $data->fireworkType);
-		$value[] = $tag;
+	public function getFlightDuration(): int{
+		return $this->getExplosionsTag()->getByte("Flight", 1);
+	}
 
-		$explosions = new ListTag("Explosions", $value, NBT::TAG_Compound);
-		$root->setTag(new CompoundTag("Fireworks",
-				[
-					$explosions,
-					new ByteTag("Flight", $data->flight),
-				])
-		);
+	public function getRandomizedFlightDuration(): int{
+		return ($this->getFlightDuration() + 1) * 10 + mt_rand(0, 5) + mt_rand(0, 6);
+	}
 
-		$root->setTag(new ListTag("Pos", [
-			new DoubleTag("", $pos->x),
-			new DoubleTag("", $pos->y),
-			new DoubleTag("", $pos->z),
-		]));
-		$root->setTag(new ListTag("Motion", [
-			new DoubleTag("", 0.0),
-			new DoubleTag("", 0.0),
-			new DoubleTag("", 0.0),
-		]));
-		$root->setTag(new ListTag("Rotation", [
-			new FloatTag("", $yaw),
-			new FloatTag("", $pitch),
-		]));
+	public function setFlightDuration(int $duration): void{
+		$tag = $this->getExplosionsTag();
+		$tag->setByte("Flight", $duration);
+		$this->setNamedTagEntry($tag);
+	}
 
-		return $root;
+	protected function getExplosionsTag(): CompoundTag{
+		return $this->getNamedTag()->getCompoundTag("Fireworks") ?? new CompoundTag("Fireworks");
+	}
+
+	public function addExplosion(int $type, string $color, string $fade = "", int $flicker = 0, int $trail = 0): void{
+		$explosion = new CompoundTag();
+		$explosion->setByte("FireworkType", $type);
+		$explosion->setByteArray("FireworkColor", $color);
+		$explosion->setByteArray("FireworkFade", $fade);
+		$explosion->setByte("FireworkFlicker", $flicker);
+		$explosion->setByte("FireworkTrail", $trail);
+		$tag = $this->getExplosionsTag();
+		$explosions = $tag->getListTag("Explosions") ?? new ListTag("Explosions");
+		$explosions->push($explosion);
+		$tag->setTag($explosions);
+		$this->setNamedTagEntry($tag);
 	}
 
 	public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector): bool{
-		$random = new Random();
-		$yaw = $random->nextBoundedInt(360);
-		$pitch = -1 * (float)(90 + ($random->nextFloat() * $this->spread - $this->spread / 2));
-		$nbt = Entity::createBaseNBT($blockReplace->add(0.5, 0, 0.5), null, $yaw, $pitch);
-		/** @var CompoundTag $tags */
-		$tags = $this->getNamedTagEntry("Fireworks");
-		if(!is_null($tags)){
-			$nbt->setTag($tags);
-		}
-
-		$rocket = new FireworksRocket($player->getLevel(), $nbt, $this, $player);
-		$player->getLevel()->addEntity($rocket);
-
-		if($rocket instanceof Entity){
-			if($player->isSurvival()){
-				--$this->count;
-			}
-			$rocket->spawnToAll();
+		$nbt = Entity::createBaseNBT($blockReplace->add(0.5, 0, 0.5), new Vector3(0.001, 0.05, 0.001), lcg_value() * 360, 90);
+		$entity = Entity::createEntity("FireworksRocket", $player->getLevel(), $nbt, $this);
+		if($entity instanceof Entity){
+			$this->pop();
+			$entity->spawnToAll();
 
 			return true;
 		}
 
 		return false;
 	}
+
 }

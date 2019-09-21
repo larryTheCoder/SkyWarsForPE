@@ -40,14 +40,14 @@ use pocketmine\math\Vector3;
  */
 trait ArenaData {
 
-	public $configVersion = "2-API-1.0";
+	public $configVersion = 1;
 	public $gameAPICodename = "";
 	public $inSetup = false;
 
 	// The root of the config.
 	public $arenaEnable = false;
 	public $arenaName = "";
-	public $arenaMode = SetData::MODE_SOLO;
+	public $arenaMode = State::MODE_SOLO;
 
 	// Team settings
 	public $playerPerTeam = 0;
@@ -78,6 +78,7 @@ trait ArenaData {
 	public $maximumPlayers = 0;
 	public $minimumPlayers = 0;
 	public $arenaGraceTime = 0;
+	public $spectateWaiting = 0;
 	public $enableSpectator = false;
 	public $arenaStartOnFull = false;
 	public $arenaBroadcastTM = [];
@@ -137,6 +138,25 @@ trait ArenaData {
 				$strPos = explode(':', $pos);
 
 				$this->spawnPedestals[] = new Vector3(intval($strPos[0]), intval($strPos[1]), intval($strPos[2]));
+			}
+
+			// Team data(s)
+			if($data['arena-mode'] === State::MODE_TEAM){
+				Utils::sendDebug("Overriding {$this->arenaName} default players settings");
+
+				$this->maximumTeams = $data['team-settings']['world-teams-avail'];     // Maximum teams   in arena
+				$this->maximumMembers = $data['team-settings']['players-per-team'];    // Maximum members in team
+				$this->maximumPlayers = $this->maximumMembers * $this->maximumTeams;   // Maximum players in arena
+				$this->minimumPlayers = $this->minimumMembers * $this->maximumTeams;   // Minimum players in arena
+			}
+
+			// Verify spawn pedestals.
+			$spawnPedestals = count($this->spawnPedestals);
+			if(($this->teamMode && ($this->playerPerTeam * $this->worldTeamMembers) > $spawnPedestals) || $this->maximumPlayers > $spawnPedestals){
+				Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Spawn pedestals is not configured correctly.");
+				throw new \Exception("Spawn pedestals is not configured correctly.");
+			}elseif(($this->teamMode && ($this->playerPerTeam * $this->worldTeamMembers) < $spawnPedestals) || $this->maximumPlayers < $spawnPedestals){
+				Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§e Spawn pedestals is over configured.");
 			}
 		}catch(\Exception $ignored){
 			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Failed to verify config files.");

@@ -29,7 +29,7 @@
 namespace larryTheCoder\arena;
 
 
-interface SetData {
+interface State {
 
 	// Arena modes
 	const MODE_SOLO = 0;

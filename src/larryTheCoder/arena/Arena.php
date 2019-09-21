@@ -37,6 +37,7 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
 use pocketmine\utils\Config;
@@ -54,14 +55,14 @@ class Arena {
 	/*** @var SkyWarsPE */
 	private $plugin;
 	/** @var int */
-	private $arenaStatus = SetData::STATE_WAITING;
+	private $arenaStatus = State::STATE_WAITING;
 
 	/** @var GameAPI */
 	public $gameAPI;
 	/** @var array */
 	public $data;
 	/** @var float */
-	private $startedTime = 0;
+	public $startedTime = 0;
 
 	/** @var Vector3[] */
 	private $freePedestals;
@@ -74,7 +75,6 @@ class Arena {
 	public function __construct(string $arenaName, SkyWarsPE $plugin){
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
-		$this->gameAPI = new DefaultGameAPI($this);
 
 		$this->resetArena(true);
 	}
@@ -86,7 +86,7 @@ class Arena {
 		$this->gameAPI->startArena();
 
 		$this->startedTime = microtime(true);
-		$this->setStatus(SetData::STATE_ARENA_RUNNING);
+		$this->setStatus(State::STATE_ARENA_RUNNING);
 		$this->messageArenaPlayers('arena-start', false);
 	}
 
@@ -104,6 +104,50 @@ class Arena {
 	 */
 	public function getLevel(): ?Level{
 		return Server::getInstance()->getLevelByName($this->arenaWorld);
+	}
+
+	/**
+	 * This function is used to handle player deaths or 'knocked outs'.
+	 * It is to make sure that this player will be removed from the game correctly
+	 * according to what is configured in the config file.
+	 *
+	 * @param Player $pl
+	 */
+	public function knockedOut(Player $pl){
+		// Remove the player from the list.
+		if(isset($this->players[strtolower($pl->getName())])) unset($this->players[strtolower($pl->getName())]);
+
+		if($this->enableSpectator){
+			$this->spectators[strtolower($pl->getName())] = $pl;
+		}elseif($this->spectateWaiting > 0){
+			$flops = (new class($this, $pl) extends Task {
+
+				/** @var Player */
+				private $player;
+				/** @var Arena */
+				private $arena;
+
+				public function __construct(Arena $arena, Player $pl){
+					$this->player = $pl;
+					$this->arena = $arena;
+				}
+
+				/**
+				 * Actions to execute when run
+				 *
+				 * @param int $currentTick
+				 *
+				 * @return void
+				 */
+				public function onRun(int $currentTick){
+					$this->arena->leaveArena($this->player);
+				}
+			});
+
+			$this->plugin->getScheduler()->scheduleDelayedTask($flops, 10);
+		}else{
+			$this->leaveArena($pl);
+		}
 	}
 
 	/**
@@ -125,6 +169,8 @@ class Arena {
 
 		$this->arenaLevel = $this->getLevel();
 		$this->startedTime = 0;
+
+		if($this->gameAPI === null) $this->gameAPI = new DefaultGameAPI($this);
 
 		// Remove the task first.
 		$tasks = $this->gameAPI->getRuntimeTasks();
@@ -241,7 +287,7 @@ class Arena {
 		}
 
 		// Arena is in game.
-		if($this->getStatus() >= SetData::STATE_ARENA_RUNNING){
+		if($this->getStatus() >= State::STATE_ARENA_RUNNING){
 			$pl->sendMessage($this->plugin->getMsg($pl, 'arena-running'));
 
 			return;
@@ -362,16 +408,9 @@ class Arena {
 	}
 
 	private function configTeam(array $data){
-		if(!isset($data['arena-mode']) || $data['arena-mode'] == SetData::MODE_SOLO){
+		if(!isset($data['arena-mode']) || $data['arena-mode'] == State::MODE_SOLO){
 			return;
 		}
-
-		Utils::sendDebug("Overriding {$this->arenaName} default players settings");
-
-		$this->maximumTeams = $data['team-settings']['world-teams-avail'];     // Maximum teams   in arena
-		$this->maximumMembers = $data['team-settings']['players-per-team'];    // Maximum members in team
-		$this->maximumPlayers = $this->maximumMembers * $this->maximumTeams;   // Maximum players in arena
-		$this->minimumPlayers = $this->minimumMembers * $this->maximumTeams;   // Minimum players in arena
 
 		// The colours of the wool
 		// [See I use color instead of colours? Blame British English]

@@ -29,10 +29,12 @@
 namespace larryTheCoder\utils;
 
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\SetData;
+use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\fireworks\FireworksData;
-use pocketmine\{network\mcpe\protocol\AddActorPacket,
+use larryTheCoder\utils\fireworks\entity\FireworksRocket;
+use larryTheCoder\utils\fireworks\Fireworks;
+use pocketmine\{event\entity\EntityDamageEvent,
+	network\mcpe\protocol\AddActorPacket,
 	Player,
 	Server,
 	utils\MainLogger,
@@ -112,20 +114,51 @@ class Utils {
 		if($arena->arenaEnable){
 			return new StainedGlass(14);
 		}
-		if($arena->getStatus() <= SetData::STATE_SLOPE_WAITING){
+		if($arena->getStatus() <= State::STATE_SLOPE_WAITING){
 			return new StainedGlass(13);
 		}
 		if($arena->getPlayers() >= $arena->minimumPlayers){
 			return new StainedGlass(4);
 		}
-		if($arena->getStatus() === SetData::STATE_ARENA_RUNNING){
+		if($arena->getStatus() === State::STATE_ARENA_RUNNING){
 			return new StainedGlass(6);
 		}
-		if($arena->getStatus() === SetData::STATE_ARENA_CELEBRATING){
+		if($arena->getStatus() === State::STATE_ARENA_CELEBRATING){
 			return new StainedGlass(11);
 		}
 
 		return new StainedGlass(0);
+	}
+
+	public static function getDeathMessageById(int $id){
+		switch($id){
+			case EntityDamageEvent::CAUSE_VOID:
+				return "death-message-void";
+			case EntityDamageEvent::CAUSE_SUICIDE:
+				return "death-message-suicide";
+			case EntityDamageEvent::CAUSE_SUFFOCATION:
+				return "death-message-suffocated";
+			case EntityDamageEvent::CAUSE_FIRE:
+				return "death-message-burned";
+			case EntityDamageEvent::CAUSE_CONTACT:
+				return "death-message-catused";
+			case EntityDamageEvent::CAUSE_FALL:
+				return "death-message-fall";
+			case EntityDamageEvent::CAUSE_LAVA:
+				return "death-message-toasted";
+			case EntityDamageEvent::CAUSE_DROWNING:
+				return "death-message-drowned";
+			case EntityDamageEvent::CAUSE_STARVATION:
+				return "death-message-nature";
+			case EntityDamageEvent::CAUSE_BLOCK_EXPLOSION:
+			case EntityDamageEvent::CAUSE_ENTITY_EXPLOSION:
+				return "death-message-explode";
+			case EntityDamageEvent::CAUSE_CUSTOM:
+				return "death-message-magic";
+		}
+
+		return "death-message-unknown";
+
 	}
 
 	function centerText(array $lines): string{
@@ -168,10 +201,11 @@ class Utils {
 	}
 
 	public static function addFireworks(Position $pos){
-		// Spawn rocket
-		$data = new FireworksData(); // create the generic data
-		$data->random(-1, FireworksData::TYPE_BURST);
-		$rocket = $data->getFireworkEntity($pos);
+		$data = new Fireworks();
+		$data->addExplosion(Fireworks::TYPE_BURST, rand(1, 15), 1, 1);
+
+		$nbt = Entity::createBaseNBT($pos, null, lcg_value() * 360, 90);
+		$rocket = new FireworksRocket($pos->getLevel(), $nbt, $data);
 
 		$rocket->spawnToAll();
 	}

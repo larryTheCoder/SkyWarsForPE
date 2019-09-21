@@ -29,7 +29,7 @@
 namespace larryTheCoder;
 
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\SetData;
+use larryTheCoder\arena\State;
 use larryTheCoder\utils\Utils;
 use pocketmine\entity\Entity;
 use pocketmine\Player;
@@ -149,7 +149,7 @@ final class ArenaManager {
 		$arena = $this->getArenas();
 		# Check if there is a player in one of the arenas
 		foreach($arena as $selector){
-			if(!empty($selector->getPlayers()) && $selector->getStatus() <= SetData::STATE_SLOPE_WAITING){
+			if(!empty($selector->getPlayers()) && $selector->getStatus() <= State::STATE_SLOPE_WAITING){
 				return $selector;
 			}
 		}
@@ -158,7 +158,7 @@ final class ArenaManager {
 		# By not letting the player to join a started arena
 		$arenas = [];
 		foreach($arena as $selector){
-			if($selector->getStatus() <= SetData::STATE_SLOPE_WAITING && $selector->arenaEnable){
+			if($selector->getStatus() <= State::STATE_SLOPE_WAITING && $selector->arenaEnable){
 				$arenas[] = $selector;
 			}
 		}

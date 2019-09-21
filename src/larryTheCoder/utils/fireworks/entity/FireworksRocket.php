@@ -29,107 +29,93 @@
 namespace larryTheCoder\utils\fireworks\entity;
 
 use larryTheCoder\utils\fireworks\Fireworks;
-use pocketmine\entity\Entity;
-use pocketmine\entity\EntityIds;
 use pocketmine\entity\projectile\Projectile;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
-use pocketmine\Player;
-use pocketmine\utils\Random;
 
 class FireworksRocket extends Projectile {
 
-	public const NETWORK_ID = EntityIds::FIREWORKS_ROCKET;
-
-	public const DATA_DISPLAY_ITEM = 16; //int (id | (data << 16))
-	public const DATA_DISPLAY_OFFSET = 17; //int
-	public const DATA_HAS_DISPLAY = 18; //byte (must be 1 for minecart to show block inside)
+	public const NETWORK_ID = self::FIREWORKS_ROCKET;
 
 	public $width = 0.25;
 	public $height = 0.25;
-	/** @var Fireworks */
-	public $fireworksItem;
+
 	/** @var int */
-	public $lifeTime;
-	/** @var float */
-	protected $gravity = 0.0;
-	/** @var float */
-	protected $drag = 0.1;
+	protected $lifeTime = 0;
 
-	public function __construct(Level $level, CompoundTag $nbt, Fireworks $fireworks, Entity $shootingEntity = null){
-		$this->fireworksItem = $fireworks;
-		$random = new Random();
-		$flyTime = 1;
-		$lifeTime = null;
-		parent::__construct($level, $nbt, $shootingEntity);
-
-		if($nbt->hasTag("Fireworks", CompoundTag::class)){
-			$fireworkCompound = $nbt->getCompoundTag("Fireworks");
-			$flyTime = $fireworkCompound->getByte("Flight", 1);
-			$lifeTime = $fireworkCompound->getInt("LifeTime", 10 * $flyTime + $random->nextBoundedInt(6) + $random->nextBoundedInt(7));
+	public function __construct(Level $level, CompoundTag $nbt, ?Fireworks $fireworks = null){
+		parent::__construct($level, $nbt);
+		if($fireworks !== null && $fireworks->getNamedTagEntry("Fireworks") instanceof CompoundTag){
+			$this->propertyManager->setCompoundTag(self::DATA_MINECART_DISPLAY_BLOCK, $fireworks->getNamedTag());
+			$this->setLifeTime($fireworks->getRandomizedFlightDuration());
 		}
-
-		$this->lifeTime = $lifeTime ?? 10 * $flyTime + $random->nextBoundedInt(6) + $random->nextBoundedInt(7);
-
-		$this->motion->x = ($this->nextGaussian() * 0.001);
-		$this->motion->z = ($this->nextGaussian() * 0.001);
-		$this->motion->y = 0.05;
-
-		$nbt->setInt("Life", $this->lifeTime);
-		$nbt->setInt("LifeTime", $this->lifeTime);
+		$level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_LAUNCH);
 	}
 
-	public function nextGaussian(){
-		$v = 2;
-		$u1 = 0;
-		while($v > 1){
-			$u1 = rand(0, 9999) / 9999;
-			$u2 = rand(0, 9999) / 9999;
-
-			$v = (2 * $u1 - 1) * (2 * $u1 - 1) + (2 * $u2 - 1) * (2 * $u2 - 1);
-		}
-
-		return (2 * $u1 - 1) * ((-2 * log($v) / $v) ^ 0.5);
-	}
-
-	public function spawnTo(Player $player): void{
-		$this->setMotion($this->getDirectionVector());
-		$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_LAUNCH);
-		parent::spawnTo($player);
-	}
-
-	public function despawnFromAll(): void{
-		$this->broadcastEntityEvent(ActorEventPacket::FIREWORK_PARTICLES, 0);
-		parent::despawnFromAll();
-		$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_BLAST);
+	protected function tryChangeMovement(): void{
+		$this->motion->x *= 1.15;
+		$this->motion->y += 0.04;
+		$this->motion->z *= 1.15;
 	}
 
 	public function entityBaseTick(int $tickDiff = 1): bool{
-		if($this->lifeTime-- <= 0){
-			$this->flagForDespawn();
-		}else{
-			$this->motion->y += 0.04;
-			$this->updateMovement();
+		if($this->closed){
+			return false;
+		}
+		$hasUpdate = parent::entityBaseTick($tickDiff);
+		if($this->doLifeTimeTick()){
+			$hasUpdate = true;
+		}
 
-			$f = sqrt($this->motion->x * $this->motion->x + $this->motion->z * $this->motion->z);
-			$this->yaw = atan2($this->motion->x, $this->motion->z) * (180 / M_PI);
-			$this->pitch = atan2($this->motion->y, $f) * (180 / M_PI);
+		return $hasUpdate;
+	}
+
+	public function setLifeTime(int $life): void{
+		$this->lifeTime = $life;
+	}
+
+	protected function doLifeTimeTick(): bool{
+		if(!$this->isFlaggedForDespawn() and --$this->lifeTime < 0){
+			$this->doExplosionAnimation();
+			$this->flagForDespawn();
 
 			return true;
 		}
 
-		return true;
+		return false;
 	}
 
-	protected function initEntity(): void{
-		$this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, true);
-		$this->setGenericFlag(self::DATA_FLAG_HAS_COLLISION, true);
-		$this->propertyManager->setInt(self::DATA_DISPLAY_ITEM, $this->fireworksItem->getId() | ($this->fireworksItem->getDamage() << 16)); // (id | (data << 16))
-		$this->propertyManager->setInt(self::DATA_DISPLAY_OFFSET, 1);
-		$this->propertyManager->setByte(self::DATA_HAS_DISPLAY, 1);
-
-		parent::initEntity();
+	protected function doExplosionAnimation(): void{
+		$fireworks_nbt = $this->propertyManager->getCompoundTag(self::DATA_MINECART_DISPLAY_BLOCK);
+		if($fireworks_nbt === null){
+			return;
+		}
+		$fireworks_nbt = $fireworks_nbt->getCompoundTag("Fireworks");
+		if($fireworks_nbt === null){
+			return;
+		}
+		$explosions = $fireworks_nbt->getListTag("Explosions");
+		if($explosions === null){
+			return;
+		}
+		/** @var CompoundTag $explosion */
+		foreach($explosions->getAllValues() as $explosion){
+			switch($explosion->getByte("FireworkType")){
+				case Fireworks::TYPE_SMALL_SPHERE:
+					$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_BLAST);
+					break;
+				case Fireworks::TYPE_HUGE_SPHERE:
+					$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_LARGE_BLAST);
+					break;
+				case Fireworks::TYPE_STAR:
+				case Fireworks::TYPE_BURST:
+				case Fireworks::TYPE_CREEPER_HEAD:
+					$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_TWINKLE);
+					break;
+			}
+		}
+		$this->broadcastEntityEvent(ActorEventPacket::FIREWORK_PARTICLES);
 	}
 }

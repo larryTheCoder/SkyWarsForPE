@@ -30,20 +30,17 @@ namespace larryTheCoder\arena\api;
 
 
 use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
 use pocketmine\event\HandlerList;
-use pocketmine\event\Listener;
 use pocketmine\Player;
-use pocketmine\Server;
 
 /**
  * GameAPI, a class that holds the information  about how the arena behave towards their players.
  * This is useful when you want to change some of the settings that been set within this code.
  * Make it more useful and fun instead of a plain core of skywars itself.
  *
- * @package larryTheCoder\arenaRewrite\api
+ * @package larryTheCoder\arena\api
  */
-abstract class GameAPI implements Listener {
+abstract class GameAPI {
 
 	/** @var Arena */
 	public $arena;
@@ -51,8 +48,6 @@ abstract class GameAPI implements Listener {
 	public function __construct(Arena $arena){
 		$arena->gameAPICodename = $this->getCodeName();
 		$this->arena = $arena;
-
-		Server::getInstance()->getPluginManager()->registerEvents($this, SkyWarsPE::getInstance());
 	}
 
 	/**

@@ -196,15 +196,15 @@ trait PlayerHandler {
 	public function getPlayerState($sender): int{
 		if($sender instanceof Player){
 			if(isset($this->players[strtolower($sender->getName())])){
-				return SetData::PLAYER_ALIVE;
+				return State::PLAYER_ALIVE;
 			}elseif(isset($this->spectators[strtolower($sender->getName())])){
-				return SetData::PLAYER_SPECTATE;
+				return State::PLAYER_SPECTATE;
 			}elseif($this->arenaLevel !== null && strtolower($sender->getLevel()->getName()) === strtolower($this->arenaLevel->getName())){
-				return SetData::PLAYER_SPECIAL;
+				return State::PLAYER_SPECIAL;
 			}
 		}
 
-		return SetData::PLAYER_UNSET;
+		return State::PLAYER_UNSET;
 	}
 
 	public function resetPlayers(){

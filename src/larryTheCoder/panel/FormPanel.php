@@ -30,7 +30,7 @@ namespace larryTheCoder\panel;
 
 
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\SetData;
+use larryTheCoder\arena\State;
 use larryTheCoder\formAPI\{event\FormRespondedEvent,
 	response\FormResponseCustom,
 	response\FormResponseModal,
@@ -452,7 +452,7 @@ class FormPanel implements Listener {
 			return;
 		}
 		$a = $this->plugin->getArenaManager()->getArena($arena->arenaName);
-		if($a->getStatus() >= SetData::STATE_ARENA_RUNNING || $a->getPlayersCount() > 0){
+		if($a->getStatus() >= State::STATE_ARENA_RUNNING || $a->getPlayersCount() > 0){
 			$player->sendMessage($this->plugin->getMsg($player, 'arena-running'));
 
 			return;

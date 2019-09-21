@@ -28,8 +28,9 @@
 
 namespace larryTheCoder\arena\api;
 
+use larryTheCoder\arena\api\listener\BasicListener;
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\SetData;
+use larryTheCoder\arena\State;
 use larryTheCoder\arena\tasks\ArenaGameTick;
 use larryTheCoder\arena\tasks\SignTickTask;
 use larryTheCoder\SkyWarsPE;
@@ -38,28 +39,31 @@ use larryTheCoder\utils\Utils;
 use pocketmine\block\Block;
 use pocketmine\level\Position;
 use pocketmine\Player;
+use pocketmine\Server;
 
 /**
  * The runtime handler of the SW game itself. This class handles player
  * actions and controls the arena acts.
  *
- * @package larryTheCoder\arenaRewrite\api
+ * @package larryTheCoder\arena\api
  */
 class DefaultGameAPI extends GameAPI {
 
-	/** @var Player[] */
-	private $players;
+	/** @var SkyWarsPE */
+	public $plugin;
+	/** @var int */
+	public $fallTime;
 	/** @var int[] */
-	private $kills;
+	public $kills;
+
 	/** @var Position[] */
 	private $cageToRemove;
-	/** @var SkyWarsPE */
-	private $plugin;
 
 	public function __construct(Arena $arena){
 		parent::__construct($arena);
 
 		$this->plugin = SkyWarsPE::getInstance();
+		Server::getInstance()->getPluginManager()->registerEvents(new BasicListener($this), $this->plugin);
 	}
 
 	public function joinToArena(Player $p): bool{
@@ -78,14 +82,13 @@ class DefaultGameAPI extends GameAPI {
 		}
 
 		# Then we save the data
-		$this->players[strtolower($p->getName())] = $p;
 		$this->kills[strtolower($p->getName())] = 0;
 
 		# Okay saved then we get the spawn for the player
 		$spawn = $this->arena->usedPedestals[$p->getName()][0];
 
 		# Get the custom cages
-		$cageLib = SkyWarsPE::getInstance()->getCage();
+		$cageLib = $this->plugin->getCage();
 		$cage = $cageLib->getPlayerCage($p);
 		$this->cageToRemove[strtolower($p->getName())] = $cage->build(Position::fromObject($spawn, $this->arena->getLevel()));
 
@@ -95,11 +98,10 @@ class DefaultGameAPI extends GameAPI {
 	}
 
 	public function leaveArena(Player $p, bool $force = false): bool{
-		if($this->arena->getPlayerState($p) === SetData::PLAYER_ALIVE){
-			if($this->arena->getStatus() !== SetData::STATE_ARENA_RUNNING || $force){
-				unset($this->players[strtolower($p->getName())]);
+		if($this->arena->getPlayerState($p) === State::PLAYER_ALIVE){
+			if($this->arena->getStatus() !== State::STATE_ARENA_RUNNING || $force){
 				if($force){
-					$this->arena->messageArenaPlayers('leave-others', true, ["%1", "%2"], [$p->getName(), count($this->players)]);
+					$this->arena->messageArenaPlayers('leave-others', true, ["%1", "%2"], [$p->getName(), $this->arena->getPlayersCount()]);
 				}
 				$this->arena->checkAlive();
 				$this->removeCage($p);
@@ -174,5 +176,9 @@ class DefaultGameAPI extends GameAPI {
 	 */
 	public function stopArena(): void{
 		// TODO: Implement stopArena() method.
+	}
+
+	public function giveGameItems(Player $p, bool $true){
+		// TODO
 	}
 }

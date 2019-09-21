@@ -29,10 +29,11 @@
 
 namespace larryTheCoder\commands;
 
-use larryTheCoder\arena\SetData;
+use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 final class SkyWarsCommand {
@@ -75,7 +76,7 @@ final class SkyWarsCommand {
 						break;
 					}
 
-					Utils::send($sender->getPosition());
+					Utils::addFireworks($sender->getSide(Vector3::SIDE_NORTH, 4));
 					break;
 				case "help":
 					if(!$sender->hasPermission("sw.command.help")){
@@ -242,7 +243,7 @@ final class SkyWarsCommand {
 							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
 							break;
 						}
-						if($this->plugin->getArenaManager()->getArena($args[1])->getStatus() !== SetData::STATE_ARENA_RUNNING){
+						if($this->plugin->getArenaManager()->getArena($args[1])->getStatus() !== State::STATE_ARENA_RUNNING){
 							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
 							break;
 						}
@@ -253,7 +254,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'stop-usage'));
 						break;
 					}
-					if($this->plugin->getArenaManager()->getPlayerArena($sender)->getStatus() !== SetData::STATE_ARENA_RUNNING){
+					if($this->plugin->getArenaManager()->getPlayerArena($sender)->getStatus() !== State::STATE_ARENA_RUNNING){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
 						break;
 					}
