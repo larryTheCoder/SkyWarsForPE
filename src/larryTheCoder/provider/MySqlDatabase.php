@@ -162,8 +162,6 @@ class MySqlDatabase extends SkyWarsDatabase {
 			return self::DATA_EXECUTE_EMPTY;
 		}
 
-		var_dump($pd);
-
 		$stmt = $this->sqlUpdateNewData;
 		$stmt->reset();
 		$stmt->bind_param("iiiiis", $time, $kills, $deaths, $wins, $loses, $player);
@@ -181,8 +179,6 @@ class MySqlDatabase extends SkyWarsDatabase {
 
 			return self::DATA_EXECUTE_FAILED;
 		}
-
-		var_dump($this->getPlayerData($p));
 
 		return self::DATA_EXECUTE_SUCCESS;
 	}

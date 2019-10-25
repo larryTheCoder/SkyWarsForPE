@@ -308,10 +308,12 @@ class BasicListener implements Listener {
 						$d->hidePlayer($p);
 					}
 				}
-			}else{
-				$e->setRespawnPosition($this->gameAPI->plugin->getDatabase()->getLobby());
+
+				return;
 			}
 		}
+
+		$e->setRespawnPosition($this->gameAPI->plugin->getDatabase()->getLobby());
 	}
 
 	/**
