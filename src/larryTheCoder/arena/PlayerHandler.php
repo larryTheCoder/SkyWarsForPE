@@ -41,7 +41,10 @@ use pocketmine\Player;
  */
 trait PlayerHandler {
 
-	// Higher accuracy to detect player present
+	//
+	// Take note that these arrays (Player names) are stored in
+	// lowercase letters. Use the function given to access the right player name
+	//
 
 	/** @var Player[] */
 	private $players = [];
@@ -135,14 +138,52 @@ trait PlayerHandler {
 	}
 
 	/**
+	 * Return the default player name for this string. This function is perhaps
+	 * to get the player information within this class.
+	 *
+	 * @param string $name
+	 * @return string The original name of this player.
+	 */
+	public function getOriginName(string $name): ?string{
+		if(!$this->isInArena($name)){
+			return null;
+		}
+
+		return $this->getOriginPlayer($name)->getName();
+	}
+
+	/**
+	 * Return the player class code for this string name. It checks if this handler
+	 * stores its data inside the arrays.
+	 *
+	 * @param string $name
+	 * @return Player The player itself.
+	 */
+	public function getOriginPlayer(string $name): ?Player{
+		if(isset($this->players[strtolower($name)])){
+			return $this->players[strtolower($name)];
+		}elseif(isset($this->spectators[strtolower($name)])){
+			return $this->spectators[strtolower($name)];
+		}else{
+			return null;
+		}
+	}
+
+	/**
 	 * Checks either the player is inside
 	 * the arena or not.
 	 *
-	 * @param Player $pl
+	 * @param mixed $pl
 	 * @return bool
 	 */
-	public function isInArena(Player $pl): bool{
-		return isset($this->players[strtolower($pl->getName())]) || isset($this->spectators[strtolower($pl->getName())]);
+	public function isInArena($pl): bool{
+		if($pl instanceof Player){
+			return isset($this->players[strtolower($pl->getName())]) || isset($this->spectators[strtolower($pl->getName())]);
+		}elseif(is_string($pl)){
+			return isset($this->players[strtolower($pl)]) || isset($this->spectators[strtolower($pl)]);
+		}else{
+			return false;
+		}
 	}
 
 	/**

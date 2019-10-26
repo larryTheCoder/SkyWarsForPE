@@ -26,25 +26,38 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena;
+namespace larryTheCoder\utils\BossBarAPI;
 
+use pocketmine\entity\Attribute;
 
-interface State {
+class BossBarValues extends Attribute {
 
-	// Arena modes
-	const MODE_SOLO = 0;
-	const MODE_TEAM = 1;
+	public $min, $max, $value, $name;
 
-	// Arena states
-	const STATE_WAITING = 0;       // Arena is idling...
-	const STATE_SLOPE_WAITING = 1; // Arena is begin to start
-	const STATE_ARENA_RUNNING = 2;
-	const STATE_ARENA_CELEBRATING = 3;
-	const STATE_ARENA_INSETUP = 4;
+	public function __construct($min, $max, $value, $name){
+		$this->min = $min;
+		$this->max = $max;
+		$this->value = $value;
+		$this->name = $name;
+	}
 
-	// Player states
-	const PLAYER_UNSET = 0;
-	const PLAYER_ALIVE = 1;
-	const PLAYER_SPECTATE = 2;
-	const PLAYER_SPECIAL = 3;
+	public function getMinValue(): float{
+		return $this->min;
+	}
+
+	public function getMaxValue(): float{
+		return $this->max;
+	}
+
+	public function getValue(): float{
+		return $this->value;
+	}
+
+	public function getName(): string{
+		return $this->name;
+	}
+
+	public function getDefaultValue(): float{
+		return $this->min;
+	}
 }

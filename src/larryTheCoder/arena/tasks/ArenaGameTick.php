@@ -32,17 +32,31 @@ namespace larryTheCoder\arena\tasks;
 use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\State;
+use larryTheCoder\SkyWarsPE;
+use pocketmine\Player;
 use pocketmine\scheduler\Task;
 
 class ArenaGameTick extends Task {
 
+	// In a classic SW game, there is not ending time.
+	// Therefore, all the players have to die in order to find
+	// The true winner.
+
 	/**@var Arena */
 	private $arena;
+	/** @var SkyWarsPE */
+	private $plugin;
 	/** @var DefaultGameAPI */
 	private $gameAPI;
 
+	/** @var int */
+	private $startTime;
+	/** @var int */
+	private $stopTime;
+
 	public function __construct(Arena $arena, DefaultGameAPI $gameAPI){
 		$this->arena = $arena;
+		$this->plugin = $gameAPI->plugin;
 		$this->gameAPI = $gameAPI;
 	}
 
@@ -54,9 +68,53 @@ class ArenaGameTick extends Task {
 	 * @return void
 	 */
 	public function onRun(int $currentTick){
+		$this->checkLevelTime();
+		$this->gameAPI->statusUpdate();
 		switch($this->arena->getStatus()){
 			case State::STATE_WAITING:
+				if($this->arena->getPlayersCount() > $this->arena->minimumPlayers - 1){
+					$this->arena->setStatus(State::STATE_SLOPE_WAITING);
+					break;
+				}
 
+				foreach($this->arena->getPlayers() as $p){
+					if($this->startTime < 60){
+						$p->sendPopup($this->plugin->getMsg($p, "arena-low-players", false));
+					}else{
+						$p->sendPopup($this->plugin->getMsg($p, "arena-wait-players", false));
+					}
+				}
+
+				$this->startTime = 60;
+				$this->stopTime = 0;
+				break;
+			case State::STATE_SLOPE_WAITING:
+			case State::STATE_ARENA_RUNNING:
+				break;
+			case State::STATE_ARENA_CELEBRATING:
+				break;
 		}
+
+		foreach($this->arena->getPlayers() as $pl){
+			$this->gameAPI->scoreboard->updateScoreboard($pl);
+		}
+	}
+
+	private function useScoreboard(){
+
+	}
+
+	private function tickBossBar(Player $p, int $id, $data = null){
+		// TODO: Boss bar feature.
+	}
+
+	private function checkLevelTime(){
+		$tickTime = $this->arena->arenaTime;
+		if(!$tickTime){
+			return;
+		}
+
+		$this->arena->getLevel()->setTime($tickTime);
+		$this->arena->getLevel()->stopTime();
 	}
 }

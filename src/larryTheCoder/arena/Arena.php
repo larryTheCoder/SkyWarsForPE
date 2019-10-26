@@ -103,6 +103,8 @@ class Arena {
 	 * @return Level|null
 	 */
 	public function getLevel(): ?Level{
+		Utils::loadFirst($this->arenaWorld, true);
+
 		return Server::getInstance()->getLevelByName($this->arenaWorld);
 	}
 

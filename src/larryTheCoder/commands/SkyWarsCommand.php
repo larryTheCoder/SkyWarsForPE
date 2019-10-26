@@ -142,7 +142,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage("§cNo available arena, please try again later");
 						break;
 					}
-					$this->plugin->getArenaManager()->getArena($arena->getArenaName())->joinToArena($sender);
+					$arena->joinToArena($sender);
 					break;
 				case "reload":
 					if(!$sender->hasPermission("sw.command.reload")){
