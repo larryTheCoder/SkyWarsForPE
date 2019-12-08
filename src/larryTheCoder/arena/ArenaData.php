@@ -84,6 +84,7 @@ trait ArenaData {
 	public $arenaBroadcastTM = [];
 	public $arenaMoneyReward = 0;
 	public $arenaStartingTime = 0;
+	public $enableInGameEffects = false;
 
 	/**
 	 * Parses the data for the arena

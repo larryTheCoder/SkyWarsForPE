@@ -62,6 +62,7 @@ class DefaultGameAPI extends GameAPI {
 	public function __construct(Arena $arena){
 		parent::__construct($arena);
 
+		$this->fallTime = $arena->arenaGraceTime;
 		$this->plugin = SkyWarsPE::getInstance();
 		Server::getInstance()->getPluginManager()->registerEvents(new BasicListener($this), $this->plugin);
 	}

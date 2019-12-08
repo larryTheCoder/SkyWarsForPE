@@ -10,7 +10,7 @@
     Its time to burn those old fancy paid plugins and beat them in face!
 
 ## Introduction
-**This plugin is unstable and not ready to be used, use with caution.**
+**This plugin is unstable and inconsistence, it is not ready to be used, use with caution.**
 
 SkyWarsForPE is a plugin built for all of the Minecraft PE Community, this source has been moved to open sourced again due to some inactivity in project, as the result, this plugin will be continued to compete with other SkyWars plugin. I ensure you, this plugin is more powerful than ever before. Its all for free!
 
