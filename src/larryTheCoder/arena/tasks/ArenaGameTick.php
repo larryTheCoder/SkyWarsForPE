@@ -67,6 +67,8 @@ class ArenaGameTick extends Task {
 	public function onRun(int $currentTick){
 		// Uwu u found me, now tell myself that I need to finish my code.
 		$this->arenaTicks++;
+		$this->checkLevelTime();
+		$this->gameAPI->statusUpdate();
 		switch($this->arena->getStatus()){
 			case State::STATE_WAITING:
 				// Nothing interesting in this state yet...
@@ -134,9 +136,31 @@ class ArenaGameTick extends Task {
 				// TODO: Write arena running state.
 				break;
 		}
+
+		foreach($this->arena->getPlayers() as $pl){
+			$this->gameAPI->scoreboard->updateScoreboard($pl);
+		}
 	}
 
 	public function getMessage(?CommandSender $p, $key, $prefix = true){
 		return SkyWarsPE::getInstance()->getMsg($p, $key, $prefix);
+	}
+
+	private function useScoreboard(){
+
+	}
+
+	private function tickBossBar(Player $p, int $id, $data = null){
+		// TODO: Boss bar feature.
+	}
+
+	private function checkLevelTime(){
+		$tickTime = $this->arena->arenaTime;
+		if(!$tickTime){
+			return;
+		}
+
+		$this->arena->getLevel()->setTime($tickTime);
+		$this->arena->getLevel()->stopTime();
 	}
 }

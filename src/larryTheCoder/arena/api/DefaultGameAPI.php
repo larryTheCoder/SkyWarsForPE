@@ -52,9 +52,15 @@ class DefaultGameAPI extends GameAPI {
 	/** @var SkyWarsPE */
 	public $plugin;
 	/** @var int */
-	public $fallTime;
+	public $fallTime = 0;
 	/** @var int[] */
-	public $kills;
+	public $kills = [];
+	/** @var string[] */
+	public $winners = [];
+	/** @var int[] */
+	public $winnersFixed = [];
+	/** @var ArenaScoreboard */
+	public $scoreboard;
 
 	/** @var Position[] */
 	private $cageToRemove;
@@ -64,6 +70,7 @@ class DefaultGameAPI extends GameAPI {
 
 		$this->fallTime = $arena->arenaGraceTime;
 		$this->plugin = SkyWarsPE::getInstance();
+		$this->scoreboard = new ArenaScoreboard($this);
 		Server::getInstance()->getPluginManager()->registerEvents(new BasicListener($this), $this->plugin);
 	}
 
@@ -81,6 +88,8 @@ class DefaultGameAPI extends GameAPI {
 			$p->setHealth(Settings::$joinHealth);
 			$p->setFood(20);
 		}
+
+		$this->scoreboard->addPlayer($p);
 
 		# Then we save the data
 		$this->kills[strtolower($p->getName())] = 0;
@@ -120,6 +129,7 @@ class DefaultGameAPI extends GameAPI {
 		$p->setGamemode(0);
 		$p->getInventory()->clearAll();
 		$p->getArmorInventory()->clearAll();
+		$this->scoreboard->removePlayer($p);
 
 		Utils::sendDebug("leaveArena() is being called");
 		Utils::sendDebug("User " . $p->getName() . " is leaving the arena.");
@@ -153,6 +163,24 @@ class DefaultGameAPI extends GameAPI {
 	 */
 	public function getRuntimeTasks(): array{
 		return [new ArenaGameTick($this->arena, $this), new SignTickTask($this->arena)];
+	}
+
+	public function statusUpdate(){
+		$i = 0;
+		arsort($this->kills);
+		foreach($this->kills as $player => $kills){
+			$this->winners[$i] = [$player, $kills];
+			$this->winnersFixed[$player] = $i + 1;
+			$i++;
+		}
+
+		$i = $this->arena->maximumPlayers - 1;
+		while($i >= 0){
+			if(!isset($this->winners[$i])){
+				$this->winners[$i] = ["§7...", 0];
+			}
+			$i--;
+		}
 	}
 
 	/**

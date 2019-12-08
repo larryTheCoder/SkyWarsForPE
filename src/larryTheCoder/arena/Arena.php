@@ -30,6 +30,7 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\api\GameAPI;
+use larryTheCoder\arena\tasks\PlayerDeathTask;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
@@ -37,7 +38,6 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
-use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
 use pocketmine\utils\Config;
@@ -103,6 +103,8 @@ class Arena {
 	 * @return Level|null
 	 */
 	public function getLevel(): ?Level{
+		Utils::loadFirst($this->arenaWorld, true);
+
 		return Server::getInstance()->getLevelByName($this->arenaWorld);
 	}
 
@@ -120,31 +122,7 @@ class Arena {
 		if($this->enableSpectator){
 			$this->spectators[strtolower($pl->getName())] = $pl;
 		}elseif($this->spectateWaiting > 0){
-			$flops = (new class($this, $pl) extends Task {
-
-				/** @var Player */
-				private $player;
-				/** @var Arena */
-				private $arena;
-
-				public function __construct(Arena $arena, Player $pl){
-					$this->player = $pl;
-					$this->arena = $arena;
-				}
-
-				/**
-				 * Actions to execute when run
-				 *
-				 * @param int $currentTick
-				 *
-				 * @return void
-				 */
-				public function onRun(int $currentTick){
-					$this->arena->leaveArena($this->player);
-				}
-			});
-
-			$this->plugin->getScheduler()->scheduleDelayedTask($flops, 10);
+			$this->plugin->getScheduler()->scheduleDelayedTask(new PlayerDeathTask($this, $pl), 10);
 		}else{
 			$this->leaveArena($pl);
 		}

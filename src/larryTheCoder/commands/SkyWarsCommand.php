@@ -35,6 +35,7 @@ use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 
 final class SkyWarsCommand {
 
@@ -127,18 +128,6 @@ final class SkyWarsCommand {
 
 					$sender->sendMessage($this->plugin->getMsg($sender, 'about-help', false));
 					break;
-				case "cage":
-					if(!$sender->hasPermission("sw.command.cage")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
-						$this->consoleSender($sender);
-						break;
-					}
-
-					$this->plugin->panel->showChooseCage($sender);
-					break;
 				case "random":
 					if(!$sender->hasPermission("sw.command.random")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
@@ -153,19 +142,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage("§cNo available arena, please try again later");
 						break;
 					}
-					$this->plugin->getArenaManager()->getArena($arena->getArenaName())->joinToArena($sender);
-					break;
-				case "stats":
-					if(!$sender->hasPermission("sw.command.stats")){
-						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
-						break;
-					}
-					if(!$sender instanceof Player){
-						$this->consoleSender($sender);
-						break;
-					}
-
-					$this->plugin->panel->showStatsPanel($sender);
+					$arena->joinToArena($sender);
 					break;
 				case "reload":
 					if(!$sender->hasPermission("sw.command.reload")){
@@ -182,30 +159,6 @@ final class SkyWarsCommand {
 					}
 
 					$sender->sendMessage($this->plugin->getMsg($sender, 'plugin-reload'));
-					break;
-				case "npc":
-					if(!$sender->hasPermission("sw.command.npc")){
-						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
-						break;
-					}
-					if(!$sender instanceof Player){
-						$this->consoleSender($sender);
-						break;
-					}
-
-					$this->plugin->panel->showNPCConfiguration($sender);
-					break;
-				case "create":
-					if(!$sender->hasPermission('sw.command.create')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
-						$this->consoleSender($sender);
-						break;
-					}
-
-					$this->plugin->panel->setupArena($sender);
 					break;
 				case "start":
 					if(!$sender->hasPermission('sw.command.start')){
@@ -287,19 +240,6 @@ final class SkyWarsCommand {
 					}
 					$this->plugin->getArenaManager()->getArena($args[1])->joinToArena($sender);
 					break;
-				case "settings":
-					if(!$sender->hasPermission('sw.command.set')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
-						$this->consoleSender($sender);
-						break;
-					}
-
-					$this->plugin->panel->showSettingPanel($sender);
-
-					return true;
 				case "setlobby":
 					if(!$sender->hasPermission('sw.command.setlobby')){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
@@ -313,27 +253,16 @@ final class SkyWarsCommand {
 					$this->plugin->getDatabase()->setLobby($sender->getPosition());
 					$sender->sendMessage($this->plugin->getMsg($sender, 'main-lobby-set'));
 					break;
-				case "execute":
-					if(!isset($args[1])){
-						break;
-					}
-					if(!$sender instanceof Player){
-						break;
-					}
-					// Well use this when in game
-					$command = strtolower($args[1]);
-					if($command === "teleportnearest"){
-						$e = $this->plugin->getArenaManager()->getPlayerArena($sender);
-						if(is_null($e) || $e->getPlayerState($sender) === 0){
-							break;
-						}
-						$this->plugin->panel->showSpectatorPanel($sender, $e);
-						break;
-					}
+				case "stats":
+				case "cage":
+				case "npc":
+				case "create":
+				case "settings":
+					$sender->sendMessage(TextFormat::RED . "Feature is no longer available, please configure it manually");
 					break;
 				case "about":
 					$ver = $this->plugin->getDescription()->getVersion();
-					$sender->sendMessage("§aSkyWarsForPE, §eDream Become Possible.");
+					$sender->sendMessage("§aSkyWarsForPE, §dSliver of Straw.");
 					$sender->sendMessage("This plugin is running SkyWarsForPE v" . $ver . " by larryTheCoder!");
 					$sender->sendMessage("Source-link: https://github.com/larryTheCoder/SkyWarsForPE");
 					break;

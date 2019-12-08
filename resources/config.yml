@@ -5,7 +5,7 @@
 ---
 # Config version node. Unique Config name.
 # No reason to edit this
-config-version: "CrazyDave"
+config-version: 2
 
 # General in-game configuration.
 general:
@@ -130,10 +130,11 @@ item:
 
 # Database for SkyWars
 database:
-  # Choose your database. Make sure its fit
-  # With your configurations. Non-Case-Sensitive
-  # Database solutions: MySQL, SQLite
-  selected-database: "SQLite"
+  # Choose your database. This is required in order to save player
+  # data. Make sure that you know how to use them and what is its cons
+  # Recommended Database: JSON
+  # Database solutions: MySQL, SQLite, JSON
+  selected-database: "JSON"
   # Data configuration for selected database
   # MySQL and sqlite
   mysql:
@@ -159,6 +160,11 @@ database:
     # The path must be available and assessable otherwise it will not create a new database.
     # Variables: %1 => The server absolute path %2 => The plugin absolute path
     path: "%2/SkyWars.db"
+  json:
+    # The JSON server path.
+    # This must be a directory and must the folder must be exists.
+    # Variables: %1 => The server absolute path %2 => The plugin absolute path
+    path: "%2/database"
 
 # Trailer for SkyWars (lifeboat)
 # Implementation. Edit the config in trailer.yml
