@@ -32,6 +32,7 @@ use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\State;
 use larryTheCoder\provider\SkyWarsDatabase;
+use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
@@ -47,12 +48,16 @@ use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
+use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\level\Location;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\network\mcpe\protocol\MapInfoRequestPacket;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\utils\Color;
 
 /**
  * A very basic listener for the arena.
@@ -345,6 +350,46 @@ class BasicListener implements Listener {
 		if($this->arena->isInArena($event->getPlayer())){
 			$this->arena->leaveArena($event->getPlayer(), true);
 			$this->arena->checkAlive();
+		}
+	}
+
+	public function onDataPacket(DataPacketReceiveEvent $event){
+		$packet = $event->getPacket();
+		$p = $event->getPlayer();
+		if($packet instanceof MapInfoRequestPacket){
+			if($packet->mapId === 18293883){
+				$folder = SkyWarsPE::getInstance()->getDataFolder() . "image/";
+				$colors = [];
+				$imaged = @imagecreatefrompng($folder . "map.png");
+				if(!$imaged){
+					Utils::sendDebug("Error: Cannot load map");
+
+					return;
+				}
+				$anchor = 128;
+				$altars = 128;
+				$imaged = imagescale($imaged, $anchor, $altars, IMG_NEAREST_NEIGHBOUR);
+				imagepng($imaged, $folder . "map.png");
+				for($y = 0; $y < $altars; ++$y){
+					for($x = 0; $x < $anchor; ++$x){
+						$rgb = imagecolorat($imaged, $x, $y);
+						$color = imagecolorsforindex($imaged, $rgb);
+						$r = $color["red"];
+						$g = $color["green"];
+						$b = $color["blue"];
+						$colors[$y][$x] = new Color($r, $g, $b, 0xff);
+					}
+				}
+
+				$pk = new ClientboundMapItemDataPacket();
+				$pk->mapId = 18293883;
+				$pk->type = ClientboundMapItemDataPacket::BITFLAG_TEXTURE_UPDATE;
+				$pk->height = 128;
+				$pk->width = 128;
+				$pk->scale = 1;
+				$pk->colors = $colors;
+				$p->dataPacket($pk);
+			}
 		}
 	}
 

@@ -30,8 +30,10 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
+use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\level\sound\ClickSound;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 
 /**
@@ -52,6 +54,8 @@ trait PlayerHandler {
 	private $spectators = [];
 	/** @var Level|null */
 	private $arenaLevel;
+	/** @var int[] */
+	public $kills = [];
 
 	/** @var bool */
 	public $teamMode = false;
@@ -87,10 +91,6 @@ trait PlayerHandler {
 		if($this->teamMode){
 			$this->teams[strtolower($pl->getName())] = $team;
 		}
-	}
-
-	public function checkAlive(){
-		// TODO
 	}
 
 	public function removePlayer(Player $pl){
@@ -134,6 +134,50 @@ trait PlayerHandler {
 			}
 
 			$p->getLevel()->addSound(new ClickSound($p));
+		}
+	}
+
+	/**
+	 * Give the player the items that required in config.yml
+	 * For spectator or NON-Spectator
+	 *
+	 * @param Player $p
+	 * @param bool $spectate
+	 */
+	public function giveGameItems(Player $p, bool $spectate){
+		if(!Settings::$enableSpecialItem){
+			return;
+		}
+		foreach(Settings::$items as $item){
+			/** @var Item $toGive */
+			$toGive = $item[0];
+			$placeAt = $item[1];
+			$itemPermission = $item[2];
+			$itemSpectate = $item[3];
+			$giveAtWin = $item[6];
+			# Set a new compound tag
+
+			if($toGive->getId() === Item::FILLED_MAP){
+				$tag = new CompoundTag();
+				$tag->setTag(new CompoundTag("", []));
+				$tag->setString("map_uuid", 18293883);
+				$toGive->setCompoundTag($tag);
+			}
+			if(empty($itemPermission) || $p->hasPermission($itemPermission)){
+				if($giveAtWin && $this->getStatus() === State::STATE_ARENA_CELEBRATING){
+					$p->getInventory()->setItem($placeAt, $toGive, true);
+					continue;
+				}
+				if($spectate && $itemSpectate){
+					$p->getInventory()->setItem($placeAt, $toGive, true);
+					continue;
+				}
+
+				if(!$spectate && !$itemSpectate){
+					$p->getInventory()->setItem($placeAt, $toGive, true);
+					continue;
+				} //Squid turning into kid
+			}
 		}
 	}
 
@@ -252,5 +296,6 @@ trait PlayerHandler {
 		$this->spectators = [];
 		$this->players = [];
 		$this->teams = [];
+		$this->kills = [];
 	}
 }

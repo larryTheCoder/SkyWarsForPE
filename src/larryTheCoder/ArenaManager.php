@@ -56,14 +56,19 @@ final class ArenaManager {
 		foreach(glob($this->pl->getDataFolder() . "arenas/*.yml") as $file){
 			$arena = new Config($file, Config::YAML);
 			$arenaName = basename($file, ".yml");
-			# How this could possibly been?
-			if(Utils::checkFile($arena) === false){
-				$this->pl->getServer()->getLogger()->warning("§cFile §7$arenaName §ccould not be loaded.");
-				continue;
-			}
+
 			$this->arenaRealName[strtolower($arenaName)] = $arenaName;
 			$this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
-			$this->arenas[strtolower($arenaName)] = new Arena($arenaName, $this->pl);
+
+			$baseArena = new Arena($arenaName, $this->pl);
+			if(!$baseArena->configChecked){
+				unset($this->arenaRealName[strtolower($arenaName)]);
+				unset($this->arenaConfig[strtolower($arenaName)]);
+				continue;
+			}
+			$baseArena->resetArena();
+
+			$this->arenas[strtolower($arenaName)] = $baseArena;
 		}
 	}
 

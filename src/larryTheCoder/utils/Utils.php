@@ -240,6 +240,10 @@ class Utils {
 	}
 
 	public static function loadFirst(string $levelName, bool $load = true){
+		if(empty($levelName)){
+			return;
+		}
+
 		Server::getInstance()->generateLevel($levelName);
 		if($load){
 			Server::getInstance()->loadLevel($levelName);

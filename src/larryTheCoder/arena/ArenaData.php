@@ -31,6 +31,7 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\utils\Utils;
 use pocketmine\math\Vector3;
+use pocketmine\Server;
 
 /**
  * Stores everything about the arena config
@@ -41,8 +42,9 @@ use pocketmine\math\Vector3;
 trait ArenaData {
 
 	public $configVersion = 1;
-	public $gameAPICodename = "";
+	public $gameAPICodename = "Default API";
 	public $inSetup = false;
+	public $configChecked = false;
 
 	// The root of the config.
 	public $arenaEnable = false;
@@ -56,6 +58,9 @@ trait ArenaData {
 	public $monarchySystem = false;
 	public $interactiveSpawns = false;
 
+	// Winners section
+	public $winnersCommand = [];
+
 	// Signs section.
 	public $enableJoinSign = false;
 	public $joinSignVec = null;
@@ -68,7 +73,7 @@ trait ArenaData {
 
 	// Chest section.
 	public $refillChest = true;
-	public $refillRate = 240;
+	public $refillAverage = [240];
 
 	// Arena section.
 	public $arenaTime = 0;
@@ -84,7 +89,6 @@ trait ArenaData {
 	public $arenaBroadcastTM = [];
 	public $arenaMoneyReward = 0;
 	public $arenaStartingTime = 0;
-	public $enableInGameEffects = false;
 
 	/**
 	 * Parses the data for the arena
@@ -116,7 +120,17 @@ trait ArenaData {
 			// Chest config
 			$chest = $data['chest'];
 			$this->refillChest = boolval($chest['refill']);
-			$this->refillRate = intval($chest['refill-rate']);
+			$this->refillAverage = $chest['refill-average'];
+
+			// Winner config
+			$winner = $data['winners'];
+			if(!is_array($winner)){
+				$this->winnersCommand[] = $winner["command-execute"];
+			}else{
+				foreach($winner as $id => $command){
+					$this->winnersCommand[] = $command;
+				}
+			}
 
 			// Arena config
 			$arena = $data['arena'];
@@ -159,12 +173,13 @@ trait ArenaData {
 			}elseif(($this->teamMode && ($this->playerPerTeam * $this->worldTeamMembers) < $spawnPedestals) || $this->maximumPlayers < $spawnPedestals){
 				Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§e Spawn pedestals is over configured.");
 			}
-		}catch(\Exception $ignored){
+		}catch(\Exception $ex){
 			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Failed to verify config files.");
 			$this->arenaEnable = false;
 
-			return;
+			Server::getInstance()->getLogger()->logException($ex);
 		}
+		$this->configChecked = true;
 
 		if($this->arenaEnable){
 			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§a Arena loaded and enabled");

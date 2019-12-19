@@ -111,7 +111,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->saveResource("config.yml");
 		$this->saveResource("scoreboard.yml");
 		$this->saveResource("image/map.png");
-		$this->saveResource("arenas/default.yml");
+		$this->saveResource("arenas/default.yml", true);
 		$this->saveResource("language/en_US.yml");
 		$this->saveResource("language/pt_BR.yml");
 

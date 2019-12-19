@@ -67,14 +67,13 @@ class ArenaScoreboard {
 	}
 
 	/**
-	 * Sets the current event of the arena.
-	 * This is to show the current status or
+	 * Sets the current event of the arena. This is to show the current status or
 	 * events that is happening inside the arena.
 	 *
 	 * @param string $event
 	 */
 	public function setCurrentEvent(string $event){
-		if(empty($event)){
+		if($event === null || empty($event)){
 			$event = "Nothing";
 		}
 		$this->events = $event;

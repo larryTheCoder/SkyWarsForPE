@@ -32,11 +32,14 @@ use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\task\ParticleTask;
 use larryTheCoder\utils\Settings;
+use larryTheCoder\utils\Utils;
 use pocketmine\command\CommandSender;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\Player;
 use pocketmine\scheduler\Task;
+use pocketmine\tile\Chest;
 
 class ArenaGameTick extends Task {
 
@@ -49,12 +52,18 @@ class ArenaGameTick extends Task {
 	private $startTime = 0;
 	/** @var int */
 	private $arenaTicks = 0;
+	/** @var int */
+	private $refillCountdown = 0;
+	private $endTime;
 
 	public function __construct(Arena $arena, DefaultGameAPI $gameAPI){
 		$this->arena = $arena;
 		$this->gameAPI = $gameAPI;
 
 		$this->gameAPI->fallTime = $arena->arenaGraceTime;
+
+		$refillAvg = $this->arena->refillAverage;
+		$this->refillCountdown = $refillAvg[array_rand($refillAvg)];
 	}
 
 	/**
@@ -65,8 +74,8 @@ class ArenaGameTick extends Task {
 	 * @return void
 	 */
 	public function onRun(int $currentTick){
-		// Uwu u found me, now tell myself that I need to finish my code.
-		$this->arenaTicks++;
+		$this->arenaTicks++; // Uwu u found me, now tell myself that I need to finish my code.
+
 		$this->checkLevelTime();
 		$this->gameAPI->statusUpdate();
 		switch($this->arena->getStatus()){
@@ -133,10 +142,50 @@ class ArenaGameTick extends Task {
 					$this->gameAPI->fallTime--;
 				}
 
-				// TODO: Write arena running state.
+				// Chest refill and such...
+				if($this->refillCountdown <= 0 && $this->arena->refillChest){
+					$this->gameAPI->refillChests();
+
+					$refillAvg = $this->arena->refillAverage;
+					$this->refillCountdown = $refillAvg[array_rand($refillAvg)];
+
+					foreach($this->arena->getLevel()->getTiles() as $tiles){
+						if($tiles instanceof Chest){
+							$task = new ParticleTask($tiles);
+							SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask($task, 1);
+						}
+					}
+				}
+
+				break;
+			case State::STATE_ARENA_CELEBRATING:
+				if($this->endTime === 0){
+					$this->gameAPI->broadcastResult();
+				}
+
+				if(empty($this->arena->getPlayers())){
+					$this->arena->stopGame();
+					$this->endTime = 0;
+
+					break;
+				}
+
+				foreach($this->arena->getPlayers() as $player){
+					$facing = $player->getDirection();
+					$vec = $player->getSide($facing, -3);
+					Utils::addFireworks($vec);
+				}
+
+				if($this->endTime > 10){
+					$this->arena->stopGame();
+					$this->endTime = 0;
+				}
+
+				$this->endTime++;
 				break;
 		}
 
+		$this->arena->checkAlive();
 		foreach($this->arena->getPlayers() as $pl){
 			$this->gameAPI->scoreboard->updateScoreboard($pl);
 		}
@@ -144,10 +193,6 @@ class ArenaGameTick extends Task {
 
 	public function getMessage(?CommandSender $p, $key, $prefix = true){
 		return SkyWarsPE::getInstance()->getMsg($p, $key, $prefix);
-	}
-
-	private function useScoreboard(){
-
 	}
 
 	private function tickBossBar(Player $p, int $id, $data = null){

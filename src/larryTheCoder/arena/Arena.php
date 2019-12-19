@@ -43,8 +43,20 @@ use pocketmine\Server;
 use pocketmine\utils\Config;
 
 /**
- * Presenting the arena of the SkyWars.
- * Improved and rewrites old arena code.
+ * Presenting a custom implementation of arena-game-code. You can do
+ * anything within this arena as long the API exists and valid. This class provides
+ * the function to store players data, pedestals info, arena data, team info and player's gameplay
+ * data itself.
+ *
+ * This code is separated from the codebase to implement better gameplay in the future.
+ * Better statuses and consistence variables.
+ *
+ * This class holds these information:
+ * - Extensive spawn pedestal information (Locations, spacing, etc)
+ * - Handles teams and its settings.
+ * - Holds config data and stores them into a set of variables.
+ * - Holds player information/data consistently
+ * - Handles reset/shutdown properly.
  *
  * @package larryTheCoder\arenaRewrite
  */
@@ -76,7 +88,10 @@ class Arena {
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
 
-		$this->resetArena(true);
+		$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName);
+
+		$this->parseData();
+		$this->configTeam($this->getArenaData());
 	}
 
 	/**
@@ -97,6 +112,8 @@ class Arena {
 		$this->gameAPI->stopArena();
 
 		$this->resetArena();
+		$this->resetArenaWorld();
+		$this->setStatus(State::STATE_WAITING);
 	}
 
 	/**
@@ -130,16 +147,9 @@ class Arena {
 
 	/**
 	 * Forcefully reset the arena to its original state.
-	 *
-	 * @param bool $resetConfig
 	 */
-	public function resetArena(bool $resetConfig = false){
-		if($resetConfig){
-			$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName);
-
-			$this->parseData();
-			$this->configTeam($this->getArenaData());
-		}
+	public function resetArena(){
+		Utils::sendDebug("Force reset to original state...");
 
 		$this->loadCageHandler();
 		$this->saveArenaWorld();
@@ -154,7 +164,7 @@ class Arena {
 		$tasks = $this->gameAPI->getRuntimeTasks();
 		if(!empty($this->taskRunning)){
 			foreach($this->taskRunning as $id => $data){
-				$data->cancel();
+				SkyWarsPE::getInstance()->getScheduler()->cancelTask($id);
 
 				unset($this->taskRunning[$id]);
 			}
@@ -212,6 +222,8 @@ class Arena {
 	 * @since 3.0
 	 */
 	public function resetArenaWorld(){
+		Utils::sendDebug("Final state: Reset Arena...");
+
 		if($this->plugin->getServer()->isLevelLoaded($this->arenaWorld)){
 			$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($this->arenaWorld));
 		}
@@ -283,8 +295,8 @@ class Arena {
 
 		// Pick one of the cages in the arena.
 		/** @var Vector3 $spawnPos */
-		$spawnLoc = array_rand($this->spawnPedestals);
-		$spawnPos = $this->spawnPedestals[$spawnLoc];
+		$spawnLoc = array_rand($this->freePedestals);
+		$spawnPos = $this->freePedestals[$spawnLoc];
 		$this->usedPedestals[$pl->getName()] = [$spawnPos, $spawnLoc];
 
 		// Here you can see, the code passes to the game API to check
@@ -294,13 +306,14 @@ class Arena {
 
 			return;
 		}
+		$this->kills[strtolower($pl->getName())] = 0;
 
 		$pl->getInventory()->setHeldItemIndex(1, true);
 		$this->addPlayer($pl, $this->getRandomTeam());
 
 		$pl->teleport(Position::fromObject($spawnPos->add(0.5, 0, 0.5), $this->getLevel()));
 
-		unset($this->spawnPedestals[$spawnLoc]);
+		unset($this->freePedestals[$spawnLoc]);
 	}
 
 	/**
@@ -320,11 +333,12 @@ class Arena {
 		// Remove the spawn pedestals
 		$valObj = $this->usedPedestals[$pl->getName()][0];
 		$keyObj = $this->usedPedestals[$pl->getName()][1];
-		$this->spawnPedestals[$keyObj] = $valObj;
+		$this->freePedestals[$keyObj] = $valObj;
 
 		$pl->teleport(SkyWarsPE::getInstance()->getDatabase()->getLobby());
 
 		unset($this->usedPedestals[$pl->getName()]);
+		unset($this->kills[strtolower($pl->getName())]);
 	}
 
 	/**
@@ -338,6 +352,25 @@ class Arena {
 			unset($this->players[strtolower($p->getName())]);
 
 			$p->teleport($this->plugin->getDatabase()->getLobby());
+		}
+
+		$this->resetPlayers();
+	}
+
+	public function checkAlive(){
+		if(count($this->getPlayers()) === 1 and $this->getStatus() === State::STATE_ARENA_RUNNING){
+			$this->setStatus(State::STATE_ARENA_CELEBRATING);
+			foreach($this->players as $player){
+				$player->setXpLevel(0);
+				$player->removeAllEffects();
+				$player->setGamemode(0);
+				$player->getInventory()->clearAll();
+				$player->getArmorInventory()->clearAll();
+				$player->setGamemode(Player::SPECTATOR);
+				$this->giveGameItems($player, true);
+			}
+		}elseif(empty($this->players) && ($this->getStatus() !== State::STATE_SLOPE_WAITING || $this->getStatus() !== State::STATE_WAITING)){
+			$this->stopGame();
 		}
 	}
 

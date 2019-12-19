@@ -37,9 +37,17 @@ use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\Block;
+use pocketmine\command\ConsoleCommandSender;
+use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\Item;
 use pocketmine\level\Position;
+use pocketmine\level\sound\GenericSound;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\tile\Chest;
+use pocketmine\utils\TextFormat;
 
 /**
  * The runtime handler of the SW game itself. This class handles player
@@ -188,7 +196,8 @@ class DefaultGameAPI extends GameAPI {
 	 * from the list.
 	 */
 	public function removeAllPlayers(){
-		// TODO: Implement removeAllPlayers() method.
+		$this->kills = [];
+		$this->cageToRemove = [];
 	}
 
 	/**
@@ -196,7 +205,32 @@ class DefaultGameAPI extends GameAPI {
 	 * arena provided.
 	 */
 	public function startArena(): void{
-		// TODO: Implement startArena() method.
+		foreach($this->arena->getPlayers() as $p){
+			if($p instanceof Player){
+				$p->setMaxHealth(Settings::$joinHealth);
+				$p->setMaxHealth($p->getMaxHealth());
+				$p->getInventory()->clear(0, true);
+				$p->getInventory()->clear(8, true);
+				$p->getArmorInventory()->clearAll();
+				if($p->getAttributeMap() != null){//just to be really sure
+					$p->setHealth(Settings::$joinHealth);
+					$p->setFood(20);
+				}
+
+				$this->removeCage($p);
+
+				$p->setXpLevel(0);
+				$p->addTitle($this->plugin->getMsg($p, "arena-game-started", false));
+				$p->getLevel()->addSound(new GenericSound($p, LevelEventPacket::EVENT_SOUND_ORB, 3));
+
+				Utils::addParticles($p->getLevel(), $p->getPosition()->add(0, -5, 0), 100);
+			}
+		}
+
+		$this->scoreboard->setCurrentEvent(TextFormat::RED . "In match");
+
+		$this->refillChests();
+		$this->arena->messageArenaPlayers('arena-start', false);
 	}
 
 	/**
@@ -204,10 +238,74 @@ class DefaultGameAPI extends GameAPI {
 	 * reset the arena if possible.
 	 */
 	public function stopArena(): void{
-		// TODO: Implement stopArena() method.
+		$this->broadcastResult();
 	}
 
 	public function giveGameItems(Player $p, bool $true){
 		// TODO
+	}
+
+	/**
+	 * Refills chest that is available in this arena.
+	 *
+	 * TODO: Chest items can be configured in the config file.
+	 */
+	public function refillChests(){
+		$contents = Utils::getChestContents();
+		foreach($this->arena->getLevel()->getTiles() as $tile){
+			if($tile instanceof Chest){
+				//CLEARS CHESTS
+				$tile->getInventory()->clearAll();
+				//SET CONTENTS
+				if(empty($contents)) $contents = Utils::getChestContents();
+				foreach(array_shift($contents) as $key => $val){
+					$item = Item::get($val[0], 0, $val[1]);
+					if($item->getId() == Item::IRON_SWORD ||
+						$item->getId() == Item::DIAMOND_SWORD){
+						$enchantment = Enchantment::getEnchantment(Enchantment::SHARPNESS);
+						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
+					}elseif($item->getId() == Item::LEATHER_TUNIC ||
+						$item->getId() == Item::CHAIN_CHESTPLATE ||
+						$item->getId() == Item::IRON_CHESTPLATE ||
+						$item->getId() == Item::GOLD_CHESTPLATE ||
+						$item->getId() == Item::DIAMOND_CHESTPLATE ||
+						$item->getId() == Item::DIAMOND_LEGGINGS ||
+						$item->getId() == Item::DIAMOND_HELMET){
+						$enchantment = Enchantment::getEnchantment(Enchantment::PROTECTION);
+						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
+					}elseif($item->getId() == Item::BOW){
+						$enchantment = Enchantment::getEnchantment(Enchantment::POWER);
+						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
+					}
+
+					$tile->getInventory()->addItem($item);
+				}
+			}
+		}
+		unset($contents, $tile);
+	}
+
+	public function broadcastResult(){
+		foreach($this->arena->getPlayers() as $p){
+			$p->setXpLevel(0);
+		}
+
+		// Execute a command for each winners.
+		foreach($this->winners as $slot => $player){
+			if(!isset($this->arena->winnersCommand[$slot])){
+				break;
+			}
+
+			$command = $this->arena->winnersCommand[$slot];
+			if(!is_array($command)){
+				Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), $command);
+			}else{
+				foreach($command as $cmd){
+					Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), $cmd);
+				}
+			}
+		}
+
+		// TODO: Broadcast winners to other players?
 	}
 }
