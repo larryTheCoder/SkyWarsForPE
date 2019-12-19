@@ -26,40 +26,25 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arenaRewrite\api;
+namespace larryTheCoder\arena;
 
-use larryTheCoder\arenaRewrite\Arena;
-use larryTheCoder\arenaRewrite\tasks\ArenaGameTick;
-use larryTheCoder\arenaRewrite\tasks\SignTickTask;
-use pocketmine\Player;
 
-/**
- * The runtime handler of the SW game itself. This class handles player
- * actions and controls the arena acts.
- *
- * @package larryTheCoder\arenaRewrite\api
- */
-class DefaultGameAPI extends GameAPI {
+interface State {
 
-	public function __construct(Arena $arena){
-		parent::__construct($arena);
-	}
+	// Arena modes
+	const MODE_SOLO = 0;
+	const MODE_TEAM = 1;
 
-	public function joinToArena(Player $p): bool{
-		// TODO: Implement joinToArena() method.
-	}
+	// Arena states
+	const STATE_WAITING = 0;       // Arena is idling...
+	const STATE_SLOPE_WAITING = 1; // Arena is begin to start
+	const STATE_ARENA_RUNNING = 2;
+	const STATE_ARENA_CELEBRATING = 3;
+	const STATE_ARENA_INSETUP = 4;
 
-	public function leaveArena(Player $p): bool{
-		// TODO: Implement leaveArena() method.
-	}
-
-	/**
-	 * Return the tasks required by the game to run.
-	 * This task will be executed periodically for each 1 seconds
-	 *
-	 * @return array
-	 */
-	public function getRuntimeTasks(): array{
-		return [new ArenaGameTick($this->arena), new SignTickTask($this->arena)];
-	}
+	// Player states
+	const PLAYER_UNSET = 0;
+	const PLAYER_ALIVE = 1;
+	const PLAYER_SPECTATE = 2;
+	const PLAYER_SPECIAL = 3;
 }

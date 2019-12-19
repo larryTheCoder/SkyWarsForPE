@@ -28,187 +28,274 @@
 
 namespace larryTheCoder\arena;
 
-
-use larryTheCoder\utils\Utils;
-use pocketmine\block\Block;
-use pocketmine\entity\Entity;
-use pocketmine\level\Position;
+use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\Settings;
+use pocketmine\item\Item;
+use pocketmine\level\Level;
+use pocketmine\level\sound\ClickSound;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 
 /**
- * This class handles everything related to the player
- * and the player side-things.
+ * Handles everything regarding the player.
  *
- * @package larryTheCoder\arena
+ * @package larryTheCoder\arenaRewrite
  */
-abstract class PlayerHandler {
+trait PlayerHandler {
 
-	// PHASE 1: SEPARATE  [Done]
-	// PHASE 2: REWRITE
-	// PHASE 3: TEST
+	//
+	// Take note that these arrays (Player names) are stored in
+	// lowercase letters. Use the function given to access the right player name
+	//
 
-	const TEAM_BLUE = 0;
-	const TEAM_YELLOW = 1;
-	const TEAM_GREEN = 2;
-	const TEAM_RED = 3;
-	const TEAM_ORANGE = 4;
-	const TEAM_PURPLE = 5;
-
-	/** @var string[] */
-	public $playerNameFixed;
 	/** @var Player[] */
-	public $players = [];
+	private $players = [];
 	/** @var Player[] */
-	public $spec = [];
-
-	/** @var array */
-	public $kills = [];
-	/** @var object[][] */
-	public $winners = [];
+	private $spectators = [];
+	/** @var Level|null */
+	private $arenaLevel;
 	/** @var int[] */
-	public $winnersFixed = [];
+	public $kills = [];
 
-	/** @var Position */
-	public $cageToRemove = [];
-	/** @var integer[] */
-	public $claimedPedestals = [];
-	/** @var Position[] */
-	public $spawnPedestals = [];
-
+	/** @var bool */
+	public $teamMode = false;
+	/** @var int[] */
+	private $teams = []; // "Player" => "Team color"
+	/** @var int[] */
+	public $configuredTeam = []; // "Team Color" => Counts
 	/** @var int */
-	public $fallTime = 0;
-
+	public $maximumMembers = 0;
 	/** @var int */
-	public $teammates = [];
+	public $maximumTeams = 0;
+	/** @var int */
+	public $minimumMembers = 0;
 
-	/** @var Arena */
-	private $arena;
+	public function addPlayer(Player $pl, int $team = -1){
+		# Set the player gamemode first
+		$pl->setGamemode(0);
+		$pl->getInventory()->clearAll();
+		$pl->getArmorInventory()->clearAll();
 
-	public function __construct(Arena $arena){
-		$this->arena = $arena;
-	}
-
-	/**
-	 * @param $p
-	 * @return mixed
-	 */
-	public abstract function kickPlayer($p);
-
-	/**
-	 * @param Player $p
-	 * @param bool $kicked
-	 * @return mixed
-	 */
-	public abstract function leaveArena(Player $p, $kicked = false);
-
-	/**
-	 * @return mixed
-	 */
-	public abstract function checkAlive();
-
-	/**
-	 * @return mixed
-	 */
-	public abstract function broadcastResult();
-
-	/**
-	 * @return mixed
-	 */
-	public abstract function unsetAllPlayers();
-
-	/**
-	 * @return Player[]
-	 */
-	public function getAllPlayers(): array{
-		return array_merge($this->players, $this->spec);
-	}
-
-	/**
-	 * @param Player $p
-	 * @return bool|int
-	 */
-	public function getPlayerMode(Player $p){
-		if(isset($this->players[strtolower($p->getName())])){
-			return 0;
-		}
-		if(isset($this->spec[strtolower($p->getName())])){
-			return 1;
+		# Set the player health and food
+		$pl->setMaxHealth(Settings::$joinHealth);
+		$pl->setMaxHealth($pl->getMaxHealth());
+		# just to be really sure
+		if($pl->getAttributeMap() != null){
+			$pl->setHealth(Settings::$joinHealth);
+			$pl->setFood(20);
 		}
 
-		return false;
+		$this->players[strtolower($pl->getName())] = $pl;
+
+		// Check if the arena is in team mode.
+		if($this->teamMode){
+			$this->teams[strtolower($pl->getName())] = $team;
+		}
+	}
+
+	public function removePlayer(Player $pl){
+		// Check if the player do exists
+		if(isset($this->players[strtolower($pl->getName())])){
+			unset($this->players[strtolower($pl->getName())]);
+
+			// Unset the player from this team.
+			if(isset($this->teams[strtolower($pl->getName())])){
+				unset($this->teams[strtolower($pl->getName())]);
+			}
+		}
+
+		if(isset($this->spectators[strtolower($pl->getName())])){
+			unset($this->spectators[strtolower($pl->getName())]);
+		}
 	}
 
 	/**
-	 * Remove cage of the player
+	 * Set the player team for the user.
+	 *
+	 * @param Player $pl
+	 * @param int $team
+	 */
+	public function setPlayerTeam(Player $pl, int $team){
+		if(!$this->teamMode){
+			return;
+		}
+
+		$this->teams[strtolower($pl->getName())] = $team;
+	}
+
+	public function messageArenaPlayers(string $msg, $popup = true, $toReplace = [], $replacement = []){
+		$inGame = array_merge($this->getPlayers(), $this->getSpectators());
+		/** @var Player $p */
+		foreach($inGame as $p){
+			if($popup){
+				$p->sendPopup(str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg($p, $msg, false)));
+			}else{
+				$p->sendPopup(str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg($p, $msg, false)));
+			}
+
+			$p->getLevel()->addSound(new ClickSound($p));
+		}
+	}
+
+	/**
+	 * Give the player the items that required in config.yml
+	 * For spectator or NON-Spectator
 	 *
 	 * @param Player $p
+	 * @param bool $spectate
+	 */
+	public function giveGameItems(Player $p, bool $spectate){
+		if(!Settings::$enableSpecialItem){
+			return;
+		}
+		foreach(Settings::$items as $item){
+			/** @var Item $toGive */
+			$toGive = $item[0];
+			$placeAt = $item[1];
+			$itemPermission = $item[2];
+			$itemSpectate = $item[3];
+			$giveAtWin = $item[6];
+			# Set a new compound tag
+
+			if($toGive->getId() === Item::FILLED_MAP){
+				$tag = new CompoundTag();
+				$tag->setTag(new CompoundTag("", []));
+				$tag->setString("map_uuid", 18293883);
+				$toGive->setCompoundTag($tag);
+			}
+			if(empty($itemPermission) || $p->hasPermission($itemPermission)){
+				if($giveAtWin && $this->getStatus() === State::STATE_ARENA_CELEBRATING){
+					$p->getInventory()->setItem($placeAt, $toGive, true);
+					continue;
+				}
+				if($spectate && $itemSpectate){
+					$p->getInventory()->setItem($placeAt, $toGive, true);
+					continue;
+				}
+
+				if(!$spectate && !$itemSpectate){
+					$p->getInventory()->setItem($placeAt, $toGive, true);
+					continue;
+				} //Squid turning into kid
+			}
+		}
+	}
+
+	/**
+	 * Return the default player name for this string. This function is perhaps
+	 * to get the player information within this class.
+	 *
+	 * @param string $name
+	 * @return string The original name of this player.
+	 */
+	public function getOriginName(string $name): ?string{
+		if(!$this->isInArena($name)){
+			return null;
+		}
+
+		return $this->getOriginPlayer($name)->getName();
+	}
+
+	/**
+	 * Return the player class code for this string name. It checks if this handler
+	 * stores its data inside the arrays.
+	 *
+	 * @param string $name
+	 * @return Player The player itself.
+	 */
+	public function getOriginPlayer(string $name): ?Player{
+		if(isset($this->players[strtolower($name)])){
+			return $this->players[strtolower($name)];
+		}elseif(isset($this->spectators[strtolower($name)])){
+			return $this->spectators[strtolower($name)];
+		}else{
+			return null;
+		}
+	}
+
+	/**
+	 * Checks either the player is inside
+	 * the arena or not.
+	 *
+	 * @param mixed $pl
 	 * @return bool
 	 */
-	public function removeCage(Player $p): bool{
-		if(!isset($this->cageToRemove[strtolower($p->getName())])){
+	public function isInArena($pl): bool{
+		if($pl instanceof Player){
+			return isset($this->players[strtolower($pl->getName())]) || isset($this->spectators[strtolower($pl->getName())]);
+		}elseif(is_string($pl)){
+			return isset($this->players[strtolower($pl)]) || isset($this->spectators[strtolower($pl)]);
+		}else{
 			return false;
 		}
-		foreach($this->cageToRemove[strtolower($p->getName())] as $pos){
-			$this->arena->getArenaLevel()->setBlock($pos, Block::get(0));
-		}
-		unset($this->cageToRemove[strtolower($p->getName())]);
-
-		return true;
 	}
 
 	/**
-	 * Updates the status of the arena.
-	 * This changes the amount of kills represented by
-	 * the players every 1 seconds.
-	 */
-	public function statusUpdate(){
-		$i = 0;
-		arsort($this->kills);
-		foreach($this->kills as $player => $kills){
-			$this->winners[$i] = [$player, $kills];
-			$this->winnersFixed[$player] = $i + 1;
-			$i++;
-		}
-
-		$i = $this->arena->getMaxPlayers() - 1;
-		while($i >= 0){
-			if(!isset($this->winners[$i])){
-				$this->winners[$i] = ["§7...", 0];
-			}
-			$i--;
-		}
-	}
-
-	/**
-	 * Get the numbers of player in arena
+	 * Get the number of players in the arena.
+	 * This returns the number of player that is alive
+	 * inside the arena.
 	 *
 	 * @return int
 	 */
-	public function getPlayers(): int{
+	public function getPlayersCount(): int{
 		return count($this->players);
 	}
 
 	/**
-	 * Check if the entity is in this arena
+	 * This will return the number of spectators
+	 * that is inside the arena.
 	 *
-	 * @param Entity|string $p
-	 * @param bool $test
-	 * @return bool
+	 * @return int
 	 */
-	public function inArena($p, bool $test = false): bool{
-		$players = array_merge($this->players, $this->spec);
-		if($p instanceof Player){
-			if($test){
-				Utils::sendDebug("The player node");
+	public function getSpectatorsCount(): int{
+		return count($this->spectators);
+	}
+
+	/**
+	 * Get the teams registered in this arena.
+	 *
+	 * @return int[]
+	 */
+	public function getTeams(): array{
+		return $this->teams;
+	}
+
+	/**
+	 * @return Player[]
+	 */
+	public function getPlayers(): array{
+		return $this->players;
+	}
+
+	/**
+	 * @return Player[]
+	 */
+	public function getSpectators(): array{
+		return $this->spectators;
+	}
+
+	/**
+	 * @param $sender
+	 * @return int
+	 */
+	public function getPlayerState($sender): int{
+		if($sender instanceof Player){
+			if(isset($this->players[strtolower($sender->getName())])){
+				return State::PLAYER_ALIVE;
+			}elseif(isset($this->spectators[strtolower($sender->getName())])){
+				return State::PLAYER_SPECTATE;
+			}elseif($this->arenaLevel !== null && strtolower($sender->getLevel()->getName()) === strtolower($this->arenaLevel->getName())){
+				return State::PLAYER_SPECIAL;
 			}
-
-			return isset($players[strtolower($p->getName())]);
 		}
 
-		if($test){
-			Utils::sendDebug("The string node");
-		}
+		return State::PLAYER_UNSET;
+	}
 
-		return isset($players[strtolower($p)]);
+	public function resetPlayers(){
+		$this->spectators = [];
+		$this->players = [];
+		$this->teams = [];
+		$this->kills = [];
 	}
 }

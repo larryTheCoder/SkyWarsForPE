@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2019 larryTheCoder and contributors
+ * Copyright (c) 2015-2018 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,58 +26,37 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arenaRewrite;
 
+namespace larryTheCoder\features\chestRandom;
 
-/**
- * Stores everything about the arena config
- * file into a set of variables.
- *
- * @package larryTheCoder\arenaRewrite
- */
-trait ArenaData {
+use pocketmine\item\Item;
 
-	// The root of the config.
-	public $arenaEnable = false;
-	public $arenaName = "";
-	public $arenaMode = Arena::MODE_SOLO;
+class ChestLevel {
 
-	// Signs section.
-	public $enableJoinSign = false;
-	public $joinSignX = 0;
-	public $joinSignY = 0;
-	public $joinSignZ = 0;
-	public $statusLine1 = "";
-	public $statusLine2 = "";
-	public $statusLine3 = "";
-	public $statusLine4 = "";
-	public $joinSignWorld = "";
-	public $statusLineUpdate = 2;
-
-	// Chest section.
-	public $refillChest = true;
-	public $refillRate = 240;
-
-	// Arena section.
-	public $arenaWorld = "";
-	public $arenaSpecPos = null;
-	public $maximumPlayers = 0;
-	public $minimumPlayers = 0;
-	public $spawnPedestals = [];
+	/** @var string */
+	public $name;
+	/** @var int */
+	public $itemValue;
+	/** @var int */
+	public $chance;
+	/** @var Item[] */
+	public $items;
 
 	/**
-	 * Parses the data for the arena
+	 * ChestLevel constructor.
+	 * @param string $name
+	 * @param int $itemValue
+	 * @param int $chance
+	 * @param Item[] $items
 	 */
-	public function parseData(){
-		$data = $this->getArenaData();
-		$this->arenaEnable = boolval($data["enabled"]);
-
+	public function __construct(string $name, int $itemValue, int $chance, array $items){
+		$this->name = $name;
+		$this->itemValue = $itemValue;
+		$this->chance = $chance;
+		$this->items = $items;
 	}
 
-	/**
-	 * Returns the data of the arena.
-	 *
-	 * @return array
-	 */
-	public abstract function getArenaData();
+	public function __toString(){
+		return "(ChestLevel) $this->name, $this->itemValue, $this->chance";
+	}
 }

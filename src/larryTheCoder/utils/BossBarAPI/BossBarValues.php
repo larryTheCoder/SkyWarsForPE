@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2019 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,32 +26,38 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\utils\BossBarAPI;
 
-namespace larryTheCoder\task;
+use pocketmine\entity\Attribute;
 
-use larryTheCoder\SkyWarsPE;
-use pocketmine\scheduler\Task;
-use pocketmine\Server;
+class BossBarValues extends Attribute {
 
-class StartLoadArena extends Task {
+	public $min, $max, $value, $name;
 
-	private $plugin;
-
-	public function __construct(SkyWarsPE $plugin){
-		$this->plugin = $plugin;
+	public function __construct($min, $max, $value, $name){
+		$this->min = $min;
+		$this->max = $max;
+		$this->value = $value;
+		$this->name = $name;
 	}
 
-	/**
-	 * Actions to execute when run
-	 *
-	 * @param $currentTick
-	 *
-	 * @return void
-	 */
-	public function onRun(int $currentTick){
-		Server::getInstance()->getLogger()->info($this->plugin->getPrefix() . "§aStarted to load arenas worlds...");
-		foreach($this->plugin->getArenaManager()->getArenas() as $arenas){
-			$arenas->recheckArena();
-		}
+	public function getMinValue(): float{
+		return $this->min;
+	}
+
+	public function getMaxValue(): float{
+		return $this->max;
+	}
+
+	public function getValue(): float{
+		return $this->value;
+	}
+
+	public function getName(): string{
+		return $this->name;
+	}
+
+	public function getDefaultValue(): float{
+		return $this->min;
 	}
 }

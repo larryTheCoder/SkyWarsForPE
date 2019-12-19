@@ -26,8 +26,10 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena;
+namespace larryTheCoder\arena\api;
 
+use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\State;
 use larryTheCoder\utils\scoreboard\StandardScoreboard;
 use larryTheCoder\utils\Utils;
 use pocketmine\Player;
@@ -47,28 +49,31 @@ class ArenaScoreboard {
 	private $scoreboards = [];
 	/** @var Config */
 	private $config;
-	/** @var Arena */
-	private $arena;
-
+	/** @var DefaultGameAPI */
+	private $gameAPI;
 	/** @var string */
 	private $events;
+	/** @var Arena */
+	private $arena;
+	/** @var array[] */
+	private $tempEmptyCache = [];
 
-	public function __construct(Arena $arena){
-		$this->arena = $arena;
-		$this->config = Utils::loadDefaultConfig();
-
+	public function __construct(DefaultGameAPI $gAPI){
+		$this->gameAPI = $gAPI;
+		$this->arena = $gAPI->arena;
 		$this->events = "Nothing";
+
+		$this->config = Utils::loadDefaultConfig();
 	}
 
 	/**
-	 * Sets the current event of the arena.
-	 * This is to show the current status or
+	 * Sets the current event of the arena. This is to show the current status or
 	 * events that is happening inside the arena.
 	 *
 	 * @param string $event
 	 */
 	public function setCurrentEvent(string $event){
-		if(empty($event)){
+		if($event === null || empty($event)){
 			$event = "Nothing";
 		}
 		$this->events = $event;
@@ -84,103 +89,16 @@ class ArenaScoreboard {
 		$this->updateScoreboard($pl);
 	}
 
-	/**
-	 * Removes the player from the list.
-	 *
-	 * @param Player $pl
-	 */
-	public function removePlayer(Player $pl){
-		if(isset($this->scoreboards[$pl->getName()])){
-			unset($this->scoreboards[$pl->getName()]);
-		}
-
-		StandardScoreboard::removeScore($pl);
-	}
-
-	/** @var array[] */
-	private $tempEmptyCache = [];
-
-	public function passData(Player $pl, string $line): string{
-		if(!isset($this->tempEmptyCache[$pl->getName()])){
-			// Temporary spaces. Ah thanks mojang, wait no.
-			$this->tempEmptyCache[$pl->getName()] = ["§0\e", "§1\e", "§2\e", "§3\e", "§4\e", "§5\e", "§6\e", "§7\e", "§8\e", "§9\e", "§a\e", "§b\e", "§c\e", "§d\e", "§e\e"];
-		}
-
-		if(empty($line)){
-			foreach($this->tempEmptyCache[$pl->getName()] as $obj => $image){
-				unset($this->tempEmptyCache[$pl->getName()][$obj]);
-
-				return $image;
-			}
-		}
-
-		// Arrays really likes to complains if there is the object
-		// doesn't exists
-		$kills = isset($this->arena->kills[strtolower($pl->getName())])
-			? $this->arena->kills[strtolower($pl->getName())] : 0;
-		$playerPlacing = isset($this->arena->winnersFixed[strtolower($pl->getName())])
-			? Utils::addPrefix($this->arena->winnersFixed[strtolower($pl->getName())]) : "Not ranked";
-		$topPlayer = (isset($this->arena->winners[0]) && isset($this->arena->winners[0][0]))
-			? $this->arena->winners[0][0] : "No data";
-		$topKill = (isset($this->arena->winners[0]) && isset($this->arena->winners[0][1]))
-			? $this->arena->winners[0][1] : "No data";
-		$topPlayer = isset($this->arena->playerNameFixed[$topPlayer])
-			? $this->arena->playerNameFixed[$topPlayer] : $topPlayer;
-
-		// Tags information..?
-		$search = [
-			"{arena_mode}",
-			"{arena_map}",
-			"{arena_status}",
-			"{top_player}",
-			"{top_kills}",
-			"{player_kills}",
-			"{player_place}",
-			"{players_left}",
-			"{max_players}",
-			"{min_players}",
-			"{player_name}",
-			"&",
-		];
-		$replace = [
-			$this->arena->getArenaMode(),
-			$this->arena->getArenaName(),
-			$this->events,
-			$topPlayer,
-			$topKill,
-			$kills,
-			$playerPlacing,
-			$this->arena->getPlayers(),
-			$this->arena->getMaxPlayers(),
-			$this->arena->getMinPlayers(),
-			$pl->getName(),
-			TextFormat::ESCAPE,
-		];
-
-		foreach($this->arena->winners as $i => $data){
-			/** @var string $plName */
-			$plName = $data[0];
-			$plName = isset($this->arena->playerNameFixed[$plName])
-				? $this->arena->playerNameFixed[$plName] : $plName;
-
-			array_push($search, "{kills_top_" . ($i + 1) . "}");
-			array_push($search, "{player_top_" . ($i + 1) . "}");
-			array_push($replace, $data[1]);
-			array_push($replace, $plName);
-		}
-
-		return " " . str_replace($search, $replace, $line);
-	}
-
 	public function updateScoreboard(Player $pl){
-		switch($this->arena->getMode()){
-			case Arena::ARENA_WAITING_PLAYERS:
+		switch($this->arena->getStatus()){
+			case State::STATE_SLOPE_WAITING: // Evaluate if we do need another custom scoreboard for this
+			case State::STATE_WAITING:
 				$data = $this->config->get("wait-arena", [""]);
 				break;
-			case Arena::ARENA_RUNNING:
+			case State::STATE_ARENA_RUNNING:
 				$data = $this->config->get("in-game-arena", [""]);
 				break;
-			case Arena::ARENA_CELEBRATING:
+			case State::STATE_ARENA_CELEBRATING:
 				$data = $this->config->get("ending-state-arena", [""]);
 				break;
 			default:
@@ -198,7 +116,80 @@ class ArenaScoreboard {
 			$pLine = $this->passData($pl, $message);
 			StandardScoreboard::setScoreLine($pl, $line + 1, $pLine);
 		}
-
 		$this->tempEmptyCache = []; // Reset the cache.
+	}
+
+	public function passData(Player $pl, string $line): string{
+		if(!isset($this->tempEmptyCache[$pl->getName()])){
+			// Temporary spaces. Ah thanks mojang, wait no.
+			$this->tempEmptyCache[$pl->getName()] = ["§0\e", "§1\e", "§2\e", "§3\e", "§4\e", "§5\e", "§6\e", "§7\e", "§8\e", "§9\e", "§a\e", "§b\e", "§c\e", "§d\e", "§e\e"];
+		}
+		if(empty($line)){
+			foreach($this->tempEmptyCache[$pl->getName()] as $obj => $image){
+				unset($this->tempEmptyCache[$pl->getName()][$obj]);
+
+				return $image;
+			}
+		}
+
+		// Arrays really likes to complains if there is the object doesn't exists
+		$kills = isset($this->gameAPI->kills[strtolower($pl->getName())])
+			? $this->gameAPI->kills[strtolower($pl->getName())] : 0;
+		$playerPlacing = $this->arena->isInArena($pl)
+			? Utils::addPrefix($this->gameAPI->winnersFixed[strtolower($pl->getName())]) : "Not ranked";
+		$topPlayer = (isset($this->gameAPI->winners[0]) && isset($this->gameAPI->winners[0][0]))
+			? $this->gameAPI->winners[0][0] : "No data";
+		$topKill = (isset($this->gameAPI->winners[0]) && isset($this->gameAPI->winners[0][1]))
+			? $this->gameAPI->winners[0][1] : "No data";
+		$topPlayer = $this->arena->getOriginName($topPlayer);
+		// Tags information..?
+		$search = [
+			"{arena_mode}",
+			"{arena_map}",
+			"{arena_status}",
+			"{top_player}",
+			"{top_kills}",
+			"{player_kills}",
+			"{player_place}",
+			"{players_left}",
+			"{max_players}",
+			"{min_players}",
+			"{player_name}",
+			"&",
+		];
+		$replace = [
+			$this->arena->arenaMode === State::MODE_SOLO ? "SOLO" : "TEAM",
+			$this->arena->arenaName,
+			$this->events,
+			$topPlayer,
+			$topKill,
+			$kills,
+			$playerPlacing,
+			$this->arena->getPlayersCount(),
+			$this->arena->maximumPlayers,
+			$this->arena->minimumPlayers,
+			$pl->getName(),
+			TextFormat::ESCAPE,
+		];
+		foreach($this->gameAPI->winners as $i => $data){
+			array_push($search, "{kills_top_" . ($i + 1) . "}");
+			array_push($search, "{player_top_" . ($i + 1) . "}");
+			array_push($replace, $data[1]);
+			array_push($replace, $data[0]);
+		}
+
+		return " " . str_replace($search, $replace, $line) . " ";
+	}
+
+	/**
+	 * Removes the player from the list.
+	 *
+	 * @param Player $pl
+	 */
+	public function removePlayer(Player $pl){
+		if(isset($this->scoreboards[$pl->getName()])){
+			unset($this->scoreboards[$pl->getName()]);
+		}
+		StandardScoreboard::removeScore($pl);
 	}
 }

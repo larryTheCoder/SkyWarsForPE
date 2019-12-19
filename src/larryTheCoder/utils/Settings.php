@@ -99,6 +99,8 @@ class Settings {
 	public static $mysqlPrefix = "";
 	/** @var string */
 	public static $sqlitePath = "";
+	/** @var string */
+	public static $jsonPath = "";
 
 	# ============ DATABASE CONFIG ============
 
@@ -156,6 +158,8 @@ class Settings {
 		self::$mysqlPassword = $database["mysql"]["password"];
 		# Sqlite Configuration
 		self::$sqlitePath = str_replace(["%1", "%2"], [Server::getInstance()->getDataPath(), SkyWarsPE::getInstance()->getDataFolder()], $database["sqlite"]["path"]);
+		# JSON Configuration
+		self::$jsonPath = str_replace(["%1", "%2"], [Server::getInstance()->getDataPath(), SkyWarsPE::getInstance()->getDataFolder()], $database["json"]["path"]);
 
 		# ============ DATABASE CONFIG ============
 

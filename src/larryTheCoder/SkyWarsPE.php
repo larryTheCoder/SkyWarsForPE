@@ -29,15 +29,13 @@
 namespace larryTheCoder;
 
 use larryTheCoder\commands\SkyWarsCommand;
+use larryTheCoder\features\cages\ArenaCage;
+use larryTheCoder\features\chestRandom\RandomChest;
+use larryTheCoder\features\kits\Kits;
+use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\formAPI\FormAPI;
-use larryTheCoder\items\RandomChest;
-use larryTheCoder\libs\cages\ArenaCage;
-use larryTheCoder\libs\kits\Kits;
-use larryTheCoder\npc\FakeHuman;
-use larryTheCoder\panel\FormPanel;
-use larryTheCoder\provider\{MySqlDatabase, SkyWarsDatabase, SQLite3Database};
+use larryTheCoder\provider\{JsonDatabase, MySqlDatabase, SkyWarsDatabase, SQLite3Database};
 use larryTheCoder\task\NPCValidationTask;
-use larryTheCoder\task\StartLoadArena;
 use larryTheCoder\utils\{Settings, Utils};
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
@@ -57,7 +55,8 @@ use pocketmine\utils\{Config, TextFormat};
  */
 class SkyWarsPE extends PluginBase implements Listener {
 
-	const CONFIG_VERSION = "CrazyDave";
+	const CONFIG_VERSION = 2;
+
 	/** @var SkyWarsPE */
 	public static $instance;
 	/** @var Config */
@@ -72,8 +71,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 	public $economy;
 	/** @var FormAPI */
 	public $formAPI;
-	/** @var FormPanel */
-	public $panel;
+	///** @var FormPanel */
+	//public $panel;
 	/** @var RandomChest */
 	public $chest;
 	/** @var FakeHuman[] */
@@ -84,12 +83,12 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private $arenaManager;
 	/** @var SkyWarsDatabase */
 	private $database;
-	/** @var bool */
-	private $disabled;
 	/** @var ArenaCage */
 	private $cage = null;
 	/** @var Kits */
 	private $kits = null;
+	/** @var bool */
+	public $disabled;
 
 	public static function getInstance(){
 		return self::$instance;
@@ -155,6 +154,12 @@ class SkyWarsPE extends PluginBase implements Listener {
 			case "mysql":
 				$this->database = new MySqlDatabase($this);
 				break;
+			case "json":
+				@mkdir(Settings::$jsonPath, 0770);
+				@mkdir(Settings::$jsonPath . "/" . JsonDatabase::PLAYERS_PATH, 0770);
+
+				$this->database = new JsonDatabase($this);
+				break;
 			default:
 				$this->getServer()->getLogger()->warning($this->getPrefix() . "§cUnknown database §e" . Settings::$selectedDatabase);
 				$this->getServer()->getLogger()->warning($this->getPrefix() . "§aUsing default database: sqlite");
@@ -177,12 +182,11 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager($this);
 		$this->formAPI = new FormAPI($this);
-		$this->panel = new FormPanel($this);
+		//$this->panel = new FormPanel($this);
 		$this->chest = new RandomChest($this);
 
 		$this->checkLibraries();
 		$this->getArenaManager()->checkArenas();
-		$this->getScheduler()->scheduleDelayedTask(new StartLoadArena($this), 40);
 		$this->checkLobby();
 		$this->loadHumans();
 
@@ -323,14 +327,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 	 */
 	private function checkLibraries(){
 		// No its private, you can't have it, do not open an issue about that.
-		$cagesModule = class_exists("\larryTheCoder\libs\cages\ArenaCage");
-		$kitsModule = class_exists("\larryTheCoder\libs\kits\Kits");
-		if($cagesModule){
-			$this->cage = new ArenaCage($this);
-		}
-		if($kitsModule){
-			$this->kits = new Kits($this);
-		}
+		$this->cage = new ArenaCage($this);
+		$this->kits = new Kits($this);
 	}
 
 	/**

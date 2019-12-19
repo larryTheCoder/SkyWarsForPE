@@ -28,14 +28,18 @@
 
 namespace larryTheCoder\utils;
 
-use larryTheCoder\arenaRewrite\Arena;
+use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\fireworks\FireworksData;
-use pocketmine\{network\mcpe\protocol\AddActorPacket,
+use larryTheCoder\utils\fireworks\entity\FireworksRocket;
+use larryTheCoder\utils\fireworks\Fireworks;
+use pocketmine\{event\entity\EntityDamageEvent,
+	network\mcpe\protocol\AddActorPacket,
 	Player,
 	Server,
 	utils\MainLogger,
 	utils\Random,
+	utils\TextFormat,
 	utils\TextFormat as VS};
 use pocketmine\block\{Block, BlockIds, StainedGlass};
 use pocketmine\entity\Entity;
@@ -61,6 +65,10 @@ class Utils {
 
 	public static function sendDebug(String $log){
 		MainLogger::getLogger()->debug("SW-DEBUG: " . $log);
+	}
+
+	public static function send(string $string){
+		MainLogger::getLogger()->info(Settings::$prefix . TextFormat::GRAY . $string);
 	}
 
 	public static function getParticleTimer(int $id){
@@ -100,26 +108,57 @@ class Utils {
 	}
 
 	public static function getBlockStatus(Arena $arena){
-//		if($arena->setup == true){
-//			return new StainedGlass(14);
-//		}
-//		if($arena->disabled == true){
-//			return new StainedGlass(14);
-//		}
-//		if($arena->getMode() === \larryTheCoder\arena\Arena::ARENA_WAITING_PLAYERS){
-//			return new StainedGlass(13);
-//		}
-//		if($arena->getPlayers() >= $arena->getMinPlayers()){
-//			return new StainedGlass(4);
-//		}
-//		if($arena->getStatus() === Arena::ARENA_RUNNING){
-//			return new StainedGlass(6);
-//		}
-//		if($arena->getStatus() === Arena::ARENA_CELEBRATING){
-//			return new StainedGlass(11);
-//		}
+		if($arena->inSetup){
+			return new StainedGlass(14);
+		}
+		if($arena->arenaEnable){
+			return new StainedGlass(14);
+		}
+		if($arena->getStatus() <= State::STATE_SLOPE_WAITING){
+			return new StainedGlass(13);
+		}
+		if($arena->getPlayers() >= $arena->minimumPlayers){
+			return new StainedGlass(4);
+		}
+		if($arena->getStatus() === State::STATE_ARENA_RUNNING){
+			return new StainedGlass(6);
+		}
+		if($arena->getStatus() === State::STATE_ARENA_CELEBRATING){
+			return new StainedGlass(11);
+		}
 
 		return new StainedGlass(0);
+	}
+
+	public static function getDeathMessageById(int $id){
+		switch($id){
+			case EntityDamageEvent::CAUSE_VOID:
+				return "death-message-void";
+			case EntityDamageEvent::CAUSE_SUICIDE:
+				return "death-message-suicide";
+			case EntityDamageEvent::CAUSE_SUFFOCATION:
+				return "death-message-suffocated";
+			case EntityDamageEvent::CAUSE_FIRE:
+				return "death-message-burned";
+			case EntityDamageEvent::CAUSE_CONTACT:
+				return "death-message-catused";
+			case EntityDamageEvent::CAUSE_FALL:
+				return "death-message-fall";
+			case EntityDamageEvent::CAUSE_LAVA:
+				return "death-message-toasted";
+			case EntityDamageEvent::CAUSE_DROWNING:
+				return "death-message-drowned";
+			case EntityDamageEvent::CAUSE_STARVATION:
+				return "death-message-nature";
+			case EntityDamageEvent::CAUSE_BLOCK_EXPLOSION:
+			case EntityDamageEvent::CAUSE_ENTITY_EXPLOSION:
+				return "death-message-explode";
+			case EntityDamageEvent::CAUSE_CUSTOM:
+				return "death-message-magic";
+		}
+
+		return "death-message-unknown";
+
 	}
 
 	function centerText(array $lines): string{
@@ -162,10 +201,11 @@ class Utils {
 	}
 
 	public static function addFireworks(Position $pos){
-		// Spawn rocket
-		$data = new FireworksData(); // create the generic data
-		$data->random(-1, FireworksData::TYPE_BURST);
-		$rocket = $data->getFireworkEntity($pos);
+		$data = new Fireworks();
+		$data->addExplosion(Fireworks::TYPE_BURST, rand(1, 15), 1, 1);
+
+		$nbt = Entity::createBaseNBT($pos, null, lcg_value() * 360, 90);
+		$rocket = new FireworksRocket($pos->getLevel(), $nbt, $data);
 
 		$rocket->spawnToAll();
 	}
@@ -194,13 +234,16 @@ class Utils {
 
 	public static function unloadGame(){
 		foreach(SkyWarsPE::getInstance()->getArenaManager()->getArenas() as $name => $arena){
-			$arena->stopGame(true);
 			$arena->forceShutdown();
 		}
 		SkyWarsPE::getInstance()->getArenaManager()->invalidate();
 	}
 
 	public static function loadFirst(string $levelName, bool $load = true){
+		if(empty($levelName)){
+			return;
+		}
+
 		Server::getInstance()->generateLevel($levelName);
 		if($load){
 			Server::getInstance()->loadLevel($levelName);

@@ -26,32 +26,50 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arenaRewrite\api;
+namespace larryTheCoder\arena\api;
 
 
-use larryTheCoder\arenaRewrite\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\Listener;
+use larryTheCoder\arena\Arena;
+use pocketmine\event\HandlerList;
 use pocketmine\Player;
-use pocketmine\Server;
 
 /**
  * GameAPI, a class that holds the information  about how the arena behave towards their players.
  * This is useful when you want to change some of the settings that been set within this code.
  * Make it more useful and fun instead of a plain core of skywars itself.
  *
- * @package larryTheCoder\arenaRewrite\api
+ * @package larryTheCoder\arena\api
  */
-abstract class GameAPI implements Listener {
+abstract class GameAPI {
 
 	/** @var Arena */
 	public $arena;
 
 	public function __construct(Arena $arena){
+		$arena->gameAPICodename = $this->getCodeName();
 		$this->arena = $arena;
-
-		Server::getInstance()->getPluginManager()->registerEvents($this, SkyWarsPE::getInstance());
 	}
+
+	/**
+	 * The API codename.
+	 *
+	 * @return string
+	 */
+	public function getCodeName(){
+		return "SkyWars-Classic";
+	}
+
+	/**
+	 * Start the arena, begin the match in the
+	 * arena provided.
+	 */
+	public abstract function startArena(): void;
+
+	/**
+	 * Stop the arena, rollback to defaults and
+	 * reset the arena if possible.
+	 */
+	public abstract function stopArena(): void;
 
 	/**
 	 * Called when a player joins into the arena
@@ -65,9 +83,10 @@ abstract class GameAPI implements Listener {
 	 * Called when a player leaves the arena.
 	 *
 	 * @param Player $p
+	 * @param bool $force
 	 * @return bool
 	 */
-	public abstract function leaveArena(Player $p): bool;
+	public abstract function leaveArena(Player $p, bool $force = false): bool;
 
 	/**
 	 * Return the tasks required by the game to run.
@@ -76,4 +95,18 @@ abstract class GameAPI implements Listener {
 	 * @return array
 	 */
 	public abstract function getRuntimeTasks(): array;
+
+	/**
+	 * Do something when the code is trying to remove every players
+	 * from the list.
+	 */
+	public abstract function removeAllPlayers();
+
+	/**
+	 * Shutdown this API from using this arena.
+	 * You may found this a very useful function.
+	 */
+	public function shutdown(): void{
+		HandlerList::unregisterAll($this);
+	}
 }

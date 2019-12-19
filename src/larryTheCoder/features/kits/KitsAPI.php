@@ -26,37 +26,61 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\features\kits;
 
-namespace larryTheCoder\items;
+use pocketmine\event\Event;
+use pocketmine\Player;
 
-use pocketmine\item\Item;
-
-class ChestLevel {
-
-	/** @var string */
-	public $name;
-	/** @var int */
-	public $itemValue;
-	/** @var int */
-	public $chance;
-	/** @var Item[] */
-	public $items;
+/**
+ * This is a KitsAPI, used to register the Kits to
+ * the arena. Used by players. You can extends this
+ * class to make a cool kits for this game.
+ *
+ * @package larryTheCoder\kits
+ */
+abstract class KitsAPI {
 
 	/**
-	 * ChestLevel constructor.
-	 * @param string $name
-	 * @param int $itemValue
-	 * @param int $chance
-	 * @param Item[] $items
+	 * Get the kit name for the Kit
+	 * @return string
 	 */
-	public function __construct(string $name, int $itemValue, int $chance, array $items){
-		$this->name = $name;
-		$this->itemValue = $itemValue;
-		$this->chance = $chance;
-		$this->items = $items;
+	public abstract function getKitName(): string;
+
+	/**
+	 * The price for the kits, depends on the
+	 * server if they installed any Economy
+	 * plugins
+	 *
+	 * @return int
+	 */
+	public abstract function getKitPrice(): int;
+
+	/**
+	 * Get the description for the Kit
+	 * put 'null' if you don't want them
+	 *
+	 * @return string
+	 */
+	public abstract function getDescription(): string;
+
+	/**
+	 * Provide to execute this kit/feature. This
+	 * kit will be executed when the game has been started.
+	 *
+	 * @param Player $p
+	 */
+	public abstract function executeKit(Player $p);
+
+	/**
+	 * Start to listen to events in the arena from
+	 * this plugin. Its will only be listened to
+	 * the player that owns this kit. No need to worry
+	 * if the event will be executed trough other player.
+	 *
+	 * @param Event $event
+	 */
+	public function eventExecution(Event $event){
+
 	}
 
-	public function __toString(){
-		return "(ChestLevel) $this->name, $this->itemValue, $this->chance";
-	}
 }

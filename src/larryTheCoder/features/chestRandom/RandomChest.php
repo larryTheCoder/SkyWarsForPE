@@ -27,7 +27,7 @@
  */
 
 
-namespace larryTheCoder\items;
+namespace larryTheCoder\features\chestRandom;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
