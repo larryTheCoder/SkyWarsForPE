@@ -39,21 +39,24 @@ use pocketmine\utils\Config;
  */
 class ConfigManager {
 
+	/** @var Config */
 	public $arena;
-	private $id;
+	/** @var string */
+	private $arenaName;
+	/** @var SkyWarsPE */
 	private $plugin;
 
-	public function __construct(string $id, SkyWarsPE $plugin){
-		$this->id = $id;
+	public function __construct(string $arenaName, SkyWarsPE $plugin){
+		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
-		$this->arena = new Config($this->plugin->getDataFolder() . "arenas/$id.yml", Config::YAML);
+		$this->arena = new Config($this->plugin->getDataFolder() . "arenas/$arenaName.yml", Config::YAML);
 	}
 
 	public function setJoinSign(int $x, int $y, int $z, string $level){ # OK
-		$this->arena->setNested('signs.join_sign_x', $x);
-		$this->arena->setNested('signs.join_sign_y', $y);
-		$this->arena->setNested('signs.join_sign_z', $z);
-		$this->arena->setNested('signs.join_sign_world', $level);
+		$this->arena->setNested('signs.join-sign-x', $x);
+		$this->arena->setNested('signs.join-sign-y', $y);
+		$this->arena->setNested('signs.join-sign-z', $z);
+		$this->arena->setNested('signs.join-sign-world', $level);
 		$this->arena->save();
 	}
 
@@ -62,60 +65,41 @@ class ConfigManager {
 		$this->arena->save();
 	}
 
-	public function setMoney(int $type){
-		$this->arena->setNested('arena.money_reward', $type);
-		$this->arena->save();
-	}
-
 	public function setStatus(bool $type){# OK
-		$this->arena->setNested('signs.enable_status', $type);
+		$this->arena->setNested('signs.enable-status', $type);
 		$this->arena->save();
 	}
 
 	public function setStatusLine(int $line, string $type){# OK
-		$this->arena->setNested("signs.status_line_$line", $type);
-		$this->arena->save();
-	}
-
-	public function setUpdateTime(int $type){# OK
-		$this->arena->setNested('signs.sign_update_time', $type);
+		$this->arena->setNested("signs.status-line-$line", $type);
 		$this->arena->save();
 	}
 
 	public function setArenaWorld(string $type){# OK
-		$this->arena->setNested('arena.arena_world', $type);
+		$this->arena->setNested('arena.arena-world', $type);
 		$this->arena->save();
 	}
 
-	public function setSpectator(bool $data){# OK
-		$this->arena->setNested('arena.spectator_mode', $data);
+	public function enableSpectator(bool $data){# OK
+		$this->arena->setNested('arena.spectator-mode', $data);
 		$this->arena->save();
 	}
 
 	public function setSpecSpawn(int $x, int $y, int $z){# OK
-		$this->arena->setNested('arena.spec_spawn_x', $x);
-		$this->arena->setNested('arena.spec_spawn_y', $y);
-		$this->arena->setNested('arena.spec_spawn_z', $z);
+		$this->arena->setNested('arena.spec-spawn-x', $x);
+		$this->arena->setNested('arena.spec-spawn-y', $y);
+		$this->arena->setNested('arena.spec-spawn-z', $z);
 		$this->arena->save();
 	}
 
-	public function setMaxPlayers(int $data){# OK
-		$this->arena->setNested('arena.max_players', $data);
-		$this->arena->save();
-	}
-
-	public function setMinPlayers(int $data){# OK
-		$this->arena->setNested('arena.min_players', $data);
+	public function setPlayersCount(int $maxPlayer, int $minPlayer){
+		$this->arena->setNested('arena.max-players', $maxPlayer);
+		$this->arena->setNested('arena.min-players', $minPlayer);
 		$this->arena->save();
 	}
 
 	public function setStartTime(int $data){# OK
-		$this->arena->setNested('arena.starting_time', $data);
-		$this->arena->save();
-	}
-
-	public function setTime(string $data){# OK
-		$this->arena->setNested('arena.time', $data);
+		$this->arena->setNested('arena.starting-time', $data);
 		$this->arena->save();
 	}
 
@@ -127,6 +111,29 @@ class ConfigManager {
 	public function setChestTicks(int $data){
 		$this->arena->setNested('chest.refill_rate', $data);
 		$this->arena->save();
+	}
+
+	public function setGraceTimer(int $graceTimer){
+		$this->arena->setNested('arena.grace-time', $graceTimer);
+		$this->arena->save();
+	}
+
+	public function startOnFull(bool $startWhenFull){
+		$this->arena->setNested('arena.start-when-full', $startWhenFull);
+		$this->arena->save();
+	}
+
+	public function applyFullChanges(){
+		$this->plugin->getArenaManager()->setArenaData($this->arena, $this->arenaName);
+	}
+
+	public function setSpawnPosition(array $pos, int $pedestal){
+		$this->arena->setNested("arena.spawn-positions.pos-$pedestal", implode(":", $pos));
+		$this->arena->save();
+	}
+
+	public function setArenaName(string $arenaName){
+		$this->arena->set("arena-name", $arenaName);
 	}
 
 }

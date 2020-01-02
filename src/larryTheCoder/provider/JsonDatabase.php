@@ -45,7 +45,6 @@ use pocketmine\utils\TextFormat as TF;
 
 class JsonDatabase extends SkyWarsDatabase {
 
-	const PLAYERS_PATH = "players";
 	const LOBBY_DATABASE = "lobby.json";
 
 	/** @var Config */
@@ -73,7 +72,7 @@ class JsonDatabase extends SkyWarsDatabase {
 	 * and the data successfully been created, otherwise <b>FALSE</b> will return.
 	 */
 	public function createNewData(string $p): int{
-		$path = new Config(Settings::$jsonPath . "/" . self::PLAYERS_PATH . "/" . strtolower($p) . ".json", Config::JSON);
+		$path = new Config($this->getPlayerPath($p));
 		if(empty($path->getAll())){
 			$path->setAll([
 				"playerName" => $p,
@@ -85,7 +84,7 @@ class JsonDatabase extends SkyWarsDatabase {
 				"kits"       => [],
 			]);
 
-			return $path->save();
+			return $path->save() ? self::DATA_EXECUTE_SUCCESS : self::DATA_EXECUTE_FAILED;
 		}
 
 		return self::DATA_EXECUTE_SUCCESS;
@@ -103,19 +102,8 @@ class JsonDatabase extends SkyWarsDatabase {
 		}
 
 		$config = new Config($this->getPlayerPath($p));
-		$cfData = $config->getAll();
 
-		$data = new PlayerData();
-		$data->player = $cfData['playerName'];
-		$data->time = $cfData['playerTime'];
-		$data->kill = $cfData['kills'];
-		$data->death = $cfData['deaths'];
-		$data->wins = $cfData['wins'];
-		$data->lost = $cfData['lost'];
-		$data->cages = explode(":", $cfData['cage']);
-		$data->kitId = explode(":", $cfData['kits']);
-
-		return $data;
+		return $this->getFragmentData($config->getAll());
 	}
 
 	/**
@@ -155,22 +143,25 @@ class JsonDatabase extends SkyWarsDatabase {
 
 		foreach(glob(Settings::$jsonPath . "*.json") as $file){
 			$playerData = new Config($file, Config::JSON);
-			$cfData = $playerData->getAll();
 
-			$data = new PlayerData();
-			$data->player = $cfData['playerName'];
-			$data->time = $cfData['playerTime'];
-			$data->kill = $cfData['kills'];
-			$data->death = $cfData['deaths'];
-			$data->wins = $cfData['wins'];
-			$data->lost = $cfData['lost'];
-			$data->cages = explode(":", $cfData['cage']);
-			$data->kitId = explode(":", $cfData['kits']);
-
-			$iterator[] = $data;
+			$iterator[] = $this->getFragmentData($playerData->getAll());
 		}
 
 		return $iterator;
+	}
+
+	private function getFragmentData(array $cfData): PlayerData{
+		$data = new PlayerData();
+		$data->player = $cfData['playerName'];
+		$data->time = $cfData['playerTime'];
+		$data->kill = $cfData['kills'];
+		$data->death = $cfData['deaths'];
+		$data->wins = $cfData['wins'];
+		$data->lost = $cfData['lost'];
+		$data->cages = explode(":", $cfData['cage']);
+		$data->kitId = explode(":", $cfData['kits']);
+
+		return $data;
 	}
 
 	/**
@@ -225,6 +216,6 @@ class JsonDatabase extends SkyWarsDatabase {
 	}
 
 	private function getPlayerPath(string $p){
-		return Settings::$jsonPath . "/" . self::PLAYERS_PATH . "/" . strtolower($p) . ".json";
+		return Settings::$jsonPath . "/players/$p.json";
 	}
 }

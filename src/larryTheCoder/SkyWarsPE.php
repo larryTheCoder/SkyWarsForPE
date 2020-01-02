@@ -34,6 +34,7 @@ use larryTheCoder\features\chestRandom\RandomChest;
 use larryTheCoder\features\kits\Kits;
 use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\formAPI\FormAPI;
+use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\{JsonDatabase, MySqlDatabase, SkyWarsDatabase, SQLite3Database};
 use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\utils\{Settings, Utils};
@@ -89,6 +90,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private $kits = null;
 	/** @var bool */
 	public $disabled;
+	/** @var FormPanel */
+	public $panel;
 
 	public static function getInstance(){
 		return self::$instance;
@@ -156,7 +159,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 				break;
 			case "json":
 				@mkdir(Settings::$jsonPath, 0770);
-				@mkdir(Settings::$jsonPath . "/" . JsonDatabase::PLAYERS_PATH, 0770);
+				@mkdir(Settings::$jsonPath . "/players", 0770);
 
 				$this->database = new JsonDatabase($this);
 				break;
@@ -182,8 +185,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager($this);
 		$this->formAPI = new FormAPI($this);
-		//$this->panel = new FormPanel($this);
-		$this->chest = new RandomChest($this);
+		$this->panel = new FormPanel($this);
+		//$this->chest = new RandomChest($this);
 
 		$this->checkLibraries();
 		$this->getArenaManager()->checkArenas();
@@ -311,9 +314,9 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$result = $this->getDatabase()->createNewData($p->getName());
 		if($result !== SkyWarsDatabase::DATA_ALREADY_AVAILABLE){
 			if($result === SkyWarsDatabase::DATA_EXECUTE_SUCCESS){
-				$this->getServer()->getLogger()->info("§aRegistered §e" . $p->getName() . " §aInto database...");
+				Utils::sendDebug("Registered {$p->getName()} into database...");
 			}else{
-				$this->getServer()->getLogger()->info("§cFailed to register §e" . $p->getName() . " §aInto database...");
+				Utils::send("§cFailed to register §e{$p->getName()}§a into database...");
 			}
 		}
 	}

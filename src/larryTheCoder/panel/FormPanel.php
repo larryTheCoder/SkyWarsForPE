@@ -193,7 +193,7 @@ class FormPanel implements Listener {
 					$data = new SkyWarsData();
 					/** @var FormResponseCustom $responseCustom */
 					$responseCustom = $response;
-					$data->arenaName = str_replace(" ", "-", $responseCustom->getInputResponse(0));
+					$data->arenaName = $responseCustom->getInputResponse(0);
 					$data->arenaLevel = $responseCustom->getDropdownResponse(1)->getElementContent();
 					$data->maxPlayer = $responseCustom->getSliderResponse(2);
 					$data->minPlayer = $responseCustom->getSliderResponse(3);
@@ -210,17 +210,15 @@ class FormPanel implements Listener {
 					}
 
 					file_put_contents($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", $this->plugin->getResource('arenas/default.yml'));
-					$a = new Config($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", Config::YAML);
-					$a->reload();
-					$a->set('arena-name', $responseCustom->getInputResponse(0));
-					$a->setNested('arena.arena_world', $data->arenaLevel);
-					$a->setNested('arena.spectator_mode', $data->spectator);
-					$a->setNested('arena.max_players', $data->maxPlayer > $data->minPlayer ? $data->maxPlayer : $data->minPlayer);
-					$a->setNested('arena.min_players', $data->minPlayer);
-					$a->setNested('arena.start_when_full', $data->startWhenFull);
-					$a->save();
 
-					$this->plugin->getArenaManager()->setArenaData($a, $data->arenaName);
+					$a = new ConfigManager($data->arenaName, $this->plugin);
+					$a->setArenaWorld($data->arenaLevel);
+					$a->setArenaName($responseCustom->getInputResponse(0));
+					$a->enableSpectator($data->spectator);
+					$a->setPlayersCount($data->maxPlayer > $data->minPlayer ? $data->maxPlayer : $data->minPlayer, $data->minPlayer);
+					$a->startOnFull($data->startWhenFull);
+					$a->applyFullChanges();
+
 					$this->setupSpawn($p);
 					break;
 				case FormPanel::PANEL_SPAWN_SETUP:
@@ -302,21 +300,19 @@ class FormPanel implements Listener {
 					$enable = $responseCustom->getToggleResponse(0);
 					$graceTimer = $responseCustom->getSliderResponse(1);
 					$spectatorMode = $responseCustom->getToggleResponse(2);
-					$maxTime = $responseCustom->getSliderResponse(3);
-					$maxPlayer = $responseCustom->getSliderResponse(4);
-					$minPlayer = $responseCustom->getSliderResponse(5);
-					$startWhenFull = $responseCustom->getToggleResponse(6);
+					$maxPlayer = $responseCustom->getSliderResponse(3);
+					$minPlayer = $responseCustom->getSliderResponse(4);
+					$startWhenFull = $responseCustom->getToggleResponse(5);
 					# Get the config
-					$a = new Config($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", Config::YAML);
-					$a->set("enabled", $enable);
-					$a->setNested('arena.grace_time', $graceTimer);
-					$a->setNested('arena.spectator_mode', $spectatorMode);
-					$a->setNested('arena.max_players', $maxPlayer > $minPlayer ? $maxPlayer : $minPlayer);
-					$a->setNested('arena.min_players', $data->minPlayer);
-					$a->setNested('arena.start_when_full', $startWhenFull);
-					$a->setNested('arena.max_game_time', $maxTime);
-					$a->save();
-					$this->plugin->getArenaManager()->setArenaData($a, $data->arenaName);
+
+					$a = new ConfigManager($data->arenaName, $this->plugin);
+					$a->setEnable($enable);
+					$a->setGraceTimer($graceTimer);
+					$a->enableSpectator($spectatorMode);
+					$a->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $data->minPlayer);
+					$a->startOnFull($startWhenFull);
+					$a->applyFullChanges();
+
 					$this->cleanupArray($p);
 					break;
 				case FormPanel::PANEL_SIGN_BEHAVIOUR:
@@ -333,13 +329,13 @@ class FormPanel implements Listener {
 					$text3 = $responseCustom->getInputResponse(4);
 					$text4 = $responseCustom->getInputResponse(5);
 
-					$a = new Config($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", Config::YAML);
-					$a->setNested('signs.status_line_1', $text1);
-					$a->setNested('signs.status_line_2', $text2);
-					$a->setNested('signs.status_line_3', $text3);
-					$a->setNested('signs.status_line_4', $text4);
-					$this->plugin->getArenaManager()->setArenaData($a, $data->arenaName);
-					$a->save();
+					$a = new ConfigManager($data->arenaName, $this->plugin);
+
+					$a->setStatusLine($text1, 1);
+					$a->setStatusLine($text2, 2);
+					$a->setStatusLine($text3, 3);
+					$a->setStatusLine($text4, 4);
+
 					$this->cleanupArray($p);
 					break;
 				case FormPanel::PANEL_DELETE_ARENA:
@@ -451,6 +447,7 @@ class FormPanel implements Listener {
 
 			return;
 		}
+
 		$a = $this->plugin->getArenaManager()->getArena($arena->arenaName);
 		if($a->getStatus() >= State::STATE_ARENA_RUNNING || $a->getPlayersCount() > 0){
 			$player->sendMessage($this->plugin->getMsg($player, 'arena-running'));
@@ -480,15 +477,14 @@ class FormPanel implements Listener {
 		$data->minPlayer = $arena->minimumPlayers;
 		$data->arenaLevel = $arena->arenaWorld;
 		$data->arenaName = $arena->getArenaName();
-		$data->spectator = $arena->data["arena"]["spectator_mode"];
-		$data->startWhenFull = $arena->data["arena"]["start_when_full"];
-		$data->graceTimer = $arena->data["arena"]["grace_time"];
-		$data->time = $arena->data["arena"]["max_game_time"];
+		$data->spectator = $arena->data["arena"]["spectator-mode"];
+		$data->startWhenFull = $arena->data["arena"]["start-when-full"];
+		$data->graceTimer = $arena->data["arena"]["grace-time"];
 		$data->enabled = $arena->data["enabled"];
-		$data->line1 = str_replace("&", "§", $arena->data['signs']['status_line_1']);
-		$data->line2 = str_replace("&", "§", $arena->data['signs']['status_line_2']);
-		$data->line3 = str_replace("&", "§", $arena->data['signs']['status_line_3']);
-		$data->line4 = str_replace("&", "§", $arena->data['signs']['status_line_4']);
+		$data->line1 = str_replace("&", "§", $arena->data['signs']['status-line-1']);
+		$data->line2 = str_replace("&", "§", $arena->data['signs']['status-line-2']);
+		$data->line3 = str_replace("&", "§", $arena->data['signs']['status-line-3']);
+		$data->line4 = str_replace("&", "§", $arena->data['signs']['status-line-4']);
 
 		return $data;
 	}
@@ -520,7 +516,6 @@ class FormPanel implements Listener {
 		$form->addToggle("§eEnable the arena?", $arena->enabled);
 		$form->addSlider("§eSet Grace Timer", 0, 30, -1, $arena->graceTimer);
 		$form->addToggle("§eEnable Spectator Mode?", $arena->spectator);
-		$form->addSlider("§eSet max game time.", 0, 1000, -1, $arena->time);
 		$form->addSlider("§eMaximum players to be in arena", 0, 50, -1, $arena->maxPlayer);
 		$form->addSlider("§eMinimum players to be in arena", 0, 50, -1, $arena->minPlayer);
 		$form->addToggle("§eStart when full", $arena->startWhenFull);
@@ -629,6 +624,7 @@ class FormPanel implements Listener {
 				}
 				if($this->setters[strtolower($p->getName())]['type'] == "setspecspawn"){
 					$arena->setSpecSpawn($b->x, $b->y, $b->z);
+
 					$p->sendMessage($this->plugin->getMsg($p, 'panel-join-spect'));
 					$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 					$p->teleport($spawn, 0, 0);
@@ -639,12 +635,13 @@ class FormPanel implements Listener {
 					return;
 				}
 				if($this->setters[strtolower($p->getName())]['type'] == "spawnpos"){
-					if($this->mode[strtolower($p->getName())] >= 1 && $this->mode[strtolower($p->getName())] <= $arena->arena->getNested('arena.max_players')){
-						$arena->arena->setNested("arena.spawn_positions.spawn{$this->mode[strtolower($p->getName())]}", [$b->getX(), $b->getY() + 1, $b->getZ()]);
+					if($this->mode[strtolower($p->getName())] >= 1 && $this->mode[strtolower($p->getName())] <= $arena->arena->getNested('arena.max-players')){
+						$arena->setSpawnPosition([$b->getX(), $b->getY() + 1, $b->getZ()], $this->mode[strtolower($p->getName())]);
+
 						$p->sendMessage(str_replace("{COUNT}", $this->mode[strtolower($p->getName())], $this->plugin->getMsg($p, 'panel-spawn-pos')));
 						$this->mode[strtolower($p->getName())]++;
 					}
-					if($this->mode[strtolower($p->getName())] === $arena->arena->getNested('arena.max_players') + 1){
+					if($this->mode[strtolower($p->getName())] === $arena->arena->getNested('arena.max-players') + 1){
 						$p->sendMessage($this->plugin->getMsg($p, "panel-spawn-set"));
 						$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 						$p->teleport($spawn, 0, 0);

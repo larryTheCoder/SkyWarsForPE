@@ -38,7 +38,6 @@ class SkyWarsData {
 	public $spectator = false;
 	public $startWhenFull = false;
 	public $graceTimer = 10;
-	public $time = 360;
 	public $enabled = false;
 	public $line1 = "";
 	public $line2 = "";

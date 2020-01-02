@@ -35,7 +35,6 @@ use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\math\Vector3;
 use pocketmine\Player;
-use pocketmine\utils\TextFormat;
 
 final class SkyWarsCommand {
 
@@ -127,6 +126,66 @@ final class SkyWarsCommand {
 					}
 
 					$sender->sendMessage($this->plugin->getMsg($sender, 'about-help', false));
+					break;
+				case "create":
+					if(!$sender->hasPermission('sw.command.create')){
+						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						break;
+					}
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+						break;
+					}
+
+					$this->plugin->panel->setupArena($sender);
+					break;
+				case "settings":
+					if(!$sender->hasPermission('sw.command.set')){
+						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						break;
+					}
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+						break;
+					}
+
+					$this->plugin->panel->showSettingPanel($sender);
+					break;
+				case "stats":
+					if(!$sender->hasPermission("sw.command.stats")){
+						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
+						break;
+					}
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+						break;
+					}
+
+					$this->plugin->panel->showStatsPanel($sender);
+					break;
+				case "cage":
+					if(!$sender->hasPermission("sw.command.cage")){
+						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						break;
+					}
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+						break;
+					}
+
+					$this->plugin->panel->showChooseCage($sender);
+					break;
+				case "npc":
+					if(!$sender->hasPermission("sw.command.npc")){
+						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
+						break;
+					}
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+						break;
+					}
+
+					$this->plugin->panel->showNPCConfiguration($sender);
 					break;
 				case "random":
 					if(!$sender->hasPermission("sw.command.random")){
@@ -253,16 +312,9 @@ final class SkyWarsCommand {
 					$this->plugin->getDatabase()->setLobby($sender->getPosition());
 					$sender->sendMessage($this->plugin->getMsg($sender, 'main-lobby-set'));
 					break;
-				case "stats":
-				case "cage":
-				case "npc":
-				case "create":
-				case "settings":
-					$sender->sendMessage(TextFormat::RED . "Feature is no longer available, please configure it manually");
-					break;
 				case "about":
 					$ver = $this->plugin->getDescription()->getVersion();
-					$sender->sendMessage("§aSkyWarsForPE, §dSliver of Straw.");
+					$sender->sendMessage("§aSkyWarsForPE, §dBig Sister Moon.");
 					$sender->sendMessage("This plugin is running SkyWarsForPE v" . $ver . " by larryTheCoder!");
 					$sender->sendMessage("Source-link: https://github.com/larryTheCoder/SkyWarsForPE");
 					break;

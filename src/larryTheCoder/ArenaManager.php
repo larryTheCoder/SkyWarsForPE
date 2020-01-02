@@ -54,6 +54,9 @@ final class ArenaManager {
 	public function checkArenas(){
 		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6Locating arena files...");
 		foreach(glob($this->pl->getDataFolder() . "arenas/*.yml") as $file){
+			// TODO: Change this style of reading arena names, the arena names could be changed
+			//       And will not-EVER be matched with the config file.
+
 			$arena = new Config($file, Config::YAML);
 			$arenaName = basename($file, ".yml");
 
@@ -76,7 +79,7 @@ final class ArenaManager {
 		$arenaName = $this->getRealArenaName($arenaF);
 		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§aReloading arena§e $arenaName");
 		if(!$this->arenaExist($arenaName)){
-			Utils::sendDebug("[reloadArena] §cArena§e $arenaName doesn't exists.");
+			Utils::sendDebug("[reloadArena] Arena $arenaName doesn't exists.");
 
 			return false;
 		}
@@ -85,7 +88,7 @@ final class ArenaManager {
 		$game = $this->getArena($arenaName);
 		# Arena is null but how?
 		if(is_null($game) || is_null($arenaConfig)){
-			Utils::sendDebug("[reloadArena] §cArena§e $arenaName exists but null.");
+			Utils::sendDebug("[reloadArena] Arena $arenaName exists but null.");
 
 			return false;
 		}
@@ -107,15 +110,35 @@ final class ArenaManager {
 	// Checked and passed
 	public function setArenaData(Config $config, $arenaName){
 		$arena = $this->getArena($arenaName);
+		if($arena === null){
+			$this->arenaRealName[strtolower($arenaName)] = $arenaName;
+			$this->arenaConfig[strtolower($arenaName)] = $config->getAll();
+
+			// Create a new arena if it doesn't exists.
+			$baseArena = new Arena($arenaName, $this->pl);
+			if(!$baseArena->configChecked){
+				unset($this->arenaRealName[strtolower($arenaName)]);
+				unset($this->arenaConfig[strtolower($arenaName)]);
+
+				return null;
+			}
+			$baseArena->resetArena();
+
+			$arena = $this->arenas[strtolower($arenaName)] = $baseArena;
+		}
+
 		$arena->setData($config);
 		$arena->resetArena();
 	}
 
 	// Checked and passed
-	public function getArena($arena){
+	public function getArena($arena): ?Arena{
 		if(!$this->arenaExist($arena)){
+			Utils::sendDebug("getArena($arena): Not found");
+
 			return null;
 		}
+		Utils::sendDebug("getArena($arena): Found data type.");
 
 		return $this->arenas[strtolower($arena)];
 	}
