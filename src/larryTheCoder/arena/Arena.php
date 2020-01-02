@@ -109,6 +109,8 @@ class Arena {
 	 * Stop this arena and set the arena state.
 	 */
 	public function stopGame(){
+		Utils::sendDebug("Stop game called");
+
 		$this->gameAPI->stopArena();
 
 		$this->resetArena();
@@ -369,7 +371,7 @@ class Arena {
 				$player->setGamemode(Player::SPECTATOR);
 				$this->giveGameItems($player, true);
 			}
-		}elseif(empty($this->players) && ($this->getStatus() !== State::STATE_SLOPE_WAITING || $this->getStatus() !== State::STATE_WAITING)){
+		}elseif(empty($this->players) && ($this->getStatus() !== State::STATE_SLOPE_WAITING && $this->getStatus() !== State::STATE_WAITING)){
 			$this->stopGame();
 		}
 	}
@@ -392,6 +394,8 @@ class Arena {
 	 * @since 3.0
 	 */
 	public function setStatus(int $statusCode){
+		Utils::sendDebug("Status update: $statusCode");
+
 		$this->arenaStatus = $statusCode;
 	}
 
@@ -441,7 +445,7 @@ class Arena {
 	private function saveArenaWorld(){
 		$levelName = $this->arenaWorld;
 
-		$fromPath = $this->plugin->getServer()->getDataPath() . "/worlds/" . $levelName;
+		$fromPath = $this->plugin->getServer()->getDataPath() . "/worlds/" . $this->getLevel()->getFolderName();
 		$toPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName;
 
 		// Reverted from diff 65e8fb78
