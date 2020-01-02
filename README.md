@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn.stykers.moe/img/SkyWarsForPE.png"/>
+  <img src="https://cdn.discordapp.com/attachments/514331305111191563/662292362223026216/SkyWarsForPE.png"/>
 </p>
 
 
