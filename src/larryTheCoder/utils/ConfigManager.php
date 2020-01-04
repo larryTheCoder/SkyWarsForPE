@@ -49,7 +49,7 @@ class ConfigManager {
 	public function __construct(string $arenaName, SkyWarsPE $plugin){
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
-		$this->arena = new Config($this->plugin->getDataFolder() . "arenas/$arenaName.yml", Config::YAML);
+		$this->arena = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName);
 	}
 
 	public function setJoinSign(int $x, int $y, int $z, string $level){ # OK
@@ -57,16 +57,6 @@ class ConfigManager {
 		$this->arena->setNested('signs.join-sign-y', $y);
 		$this->arena->setNested('signs.join-sign-z', $z);
 		$this->arena->setNested('signs.join-sign-world', $level);
-		$this->arena->save();
-	}
-
-	public function setChestPriority(bool $type){
-		$this->arena->setNested('chest.refill', $type);
-		$this->arena->save();
-	}
-
-	public function setStatus(bool $type){# OK
-		$this->arena->setNested('signs.enable-status', $type);
 		$this->arena->save();
 	}
 
@@ -108,11 +98,6 @@ class ConfigManager {
 		$this->arena->save();
 	}
 
-	public function setChestTicks(int $data){
-		$this->arena->setNested('chest.refill_rate', $data);
-		$this->arena->save();
-	}
-
 	public function setGraceTimer(int $graceTimer){
 		$this->arena->setNested('arena.grace-time', $graceTimer);
 		$this->arena->save();
@@ -134,6 +119,7 @@ class ConfigManager {
 
 	public function setArenaName(string $arenaName){
 		$this->arena->set("arena-name", $arenaName);
+		$this->arena->save();
 	}
 
 }

@@ -28,7 +28,6 @@
 
 namespace larryTheCoder\panel;
 
-
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\State;
 use larryTheCoder\formAPI\{event\FormRespondedEvent,
@@ -38,7 +37,7 @@ use larryTheCoder\formAPI\{event\FormRespondedEvent,
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\utils\{ConfigManager, Utils};
-use pocketmine\{block\Slab, Player, Server};
+use pocketmine\{block\Slab, Player, Server, utils\TextFormat};
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\item\{BlazeRod, Item};
@@ -56,14 +55,13 @@ class FormPanel implements Listener {
 
 	const PANEL_SETUP = 0;
 	const PANEL_SPAWN_SETUP = 1;
-	const PANEL_SET_SPAWN = 2;
-	const PANEL_SETTINGS_CHOOSE = 3;
-	const PANEL_SETTINGS_ARENA = 4;
-	const PANEL_SETUP_BEHAVIOUR = 5;
-	const PANEL_SIGN_BEHAVIOUR = 6;
-	const PANEL_DELETE_ARENA = 7;
-	const PANEL_SPECTATOR_SET = 8;
-	const PANEL_CHOSE_CAGE = 9;
+	const PANEL_SETTINGS_CHOOSE = 2;
+	const PANEL_SETTINGS_ARENA = 3;
+	const PANEL_SETUP_BEHAVIOUR = 4;
+	const PANEL_SIGN_BEHAVIOUR = 5;
+	const PANEL_DELETE_ARENA = 6;
+	const PANEL_SPECTATOR_SET = 7;
+	const PANEL_CHOSE_CAGE = 8;
 
 	/** @var SkyWarsPE */
 	private $plugin;
@@ -281,7 +279,7 @@ class FormPanel implements Listener {
 							$this->joinSignSetup($p, $data);
 							break;
 						case 5:
-							$this->teleportWorld($p);
+							$this->teleportWorld($p, $data);
 							break;
 						case 6:
 							$this->deleteSure($p, false);
@@ -411,9 +409,9 @@ class FormPanel implements Listener {
 		$p->getInventory()->setItemInHand(new BlazeRod());
 	}
 
-	private function cleanupArray(Player $player){
+	private function cleanupArray(Player $player, bool $resetWorld = false){
 		if(isset($this->data[$player->getName()])){
-			$this->plugin->getArenaManager()->reloadArena($this->data[$player->getName()]->arenaName);
+			$this->plugin->getArenaManager()->reloadArena($this->data[$player->getName()]->arenaName, $resetWorld);
 			unset($this->data[$player->getName()]);
 		}
 		if(isset($this->command[$player->getName()])){
@@ -454,7 +452,7 @@ class FormPanel implements Listener {
 
 			return;
 		}
-		$a->setup = true;
+		$a->inSetup = true;
 
 		$form->setContent("Setup for arena {$a->getArenaName()}");
 		$form->addButton("Setup Arena Spawn"); // Arena Spawn
@@ -464,7 +462,7 @@ class FormPanel implements Listener {
 		$form->addButton("Set Join Sign Behaviour"); // (Text) (Interval) (enable-interval)
 		$form->addButton("Set Join Sign Location");
 		$form->addButton("Edit this world");
-		$form->addButton("Delete this arena");
+		$form->addButton(TextFormat::RED . "Delete this arena");
 
 		$form->sendToPlayer($player);
 		$this->forms[$form->getId()] = FormPanel::PANEL_SETTINGS_ARENA;
@@ -553,7 +551,9 @@ class FormPanel implements Listener {
 
 		$array = [];
 		foreach($this->plugin->getCage()->getCages() as $cage){
-			if(!in_array(strtolower($cage->getCageName()), $pd->cages) && $cage->getPrice() !== 0){
+			var_dump($pd);
+
+			if((is_array($pd->cages) && !in_array(strtolower($cage->getCageName()), $pd->cages)) && $cage->getPrice() !== 0){
 				$form->addButton("§8" . $cage->getCageName() . " §d§l[$" . $cage->getPrice() . "]");
 			}else{
 				$form->addButton("§8" . $cage->getCageName());
@@ -573,10 +573,15 @@ class FormPanel implements Listener {
 		$this->setMagicWand($player);
 	}
 
-	private function teleportWorld(Player $p){
+	private function teleportWorld(Player $p, SkyWarsData $arena){
 		$p->setGamemode(1);
 		$this->setters[strtolower($p->getName())]['WORLD'] = "EDIT-WORLD";
-		$p->sendMessage("You may be able to edit the world now, good luck");
+		$p->sendMessage("You are now be able to edit the world now, good luck");
+		$p->sendMessage("Use blaze rod if you have finished editing the world.");
+
+		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
+		$p->teleport($level->getSpawnLocation());
+
 		$p->getInventory()->setHeldItemIndex(0);
 		$p->getInventory()->clearAll(); // Perhaps
 	}
@@ -684,8 +689,15 @@ class FormPanel implements Listener {
 		if(isset($this->setters[strtolower($p->getName())]['WORLD'])
 			&& !is_null($e->getItem())
 			&& $e->getItem()->getId() === Item::BLAZE_ROD){
+			$e->setCancelled(true);
+
+			$p->sendMessage($this->plugin->getPrefix() . "Teleporting you back to main world.");
+
+			$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
+			$p->teleport($spawn, 0, 0);
 
 			unset($this->setters[strtolower($p->getName())]['WORLD']);
+			$this->cleanupArray($p, true);
 		}
 	}
 

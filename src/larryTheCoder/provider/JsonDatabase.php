@@ -78,6 +78,7 @@ class JsonDatabase extends SkyWarsDatabase {
 				"playerName" => $p,
 				"playerTime" => 0,
 				"kills"      => 0,
+				"deaths"     => 0,
 				"wins"       => 0,
 				"lost"       => 0,
 				"cage"       => [],
@@ -97,7 +98,7 @@ class JsonDatabase extends SkyWarsDatabase {
 	 * @return int|PlayerData
 	 */
 	public function getPlayerData(string $p){
-		if(is_file($this->getPlayerPath($p))){
+		if(!is_file($this->getPlayerPath($p))){
 			return self::DATA_EXECUTE_EMPTY;
 		}
 
@@ -115,7 +116,7 @@ class JsonDatabase extends SkyWarsDatabase {
 	 * and the data successfully been stored, otherwise <b>FALSE</b> will return.
 	 */
 	public function setPlayerData(string $p, PlayerData $pd): int{
-		if(is_file($this->getPlayerPath($p))){
+		if(!is_file($this->getPlayerPath($p))){
 			return self::DATA_EXECUTE_EMPTY;
 		}
 
@@ -124,6 +125,7 @@ class JsonDatabase extends SkyWarsDatabase {
 			"playerName" => $pd->player,
 			"playerTime" => $pd->time,
 			"kills"      => $pd->kill,
+			"deaths"     => $pd->death,
 			"wins"       => $pd->wins,
 			"lost"       => $pd->lost,
 			"cage"       => implode(":", $pd->cages),
@@ -158,8 +160,8 @@ class JsonDatabase extends SkyWarsDatabase {
 		$data->death = $cfData['deaths'];
 		$data->wins = $cfData['wins'];
 		$data->lost = $cfData['lost'];
-		$data->cages = explode(":", $cfData['cage']);
-		$data->kitId = explode(":", $cfData['kits']);
+		$data->cages = empty($cfData['cage']) ? [] : explode(":", $cfData['cage']);
+		$data->kitId = empty($cfData['kits']) ? [] : explode(":", $cfData['kits']);
 
 		return $data;
 	}

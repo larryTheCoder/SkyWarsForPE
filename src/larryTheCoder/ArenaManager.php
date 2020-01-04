@@ -41,7 +41,7 @@ final class ArenaManager {
 	public $arenaRealName = [];
 	/** @var Arena[] */
 	private $arenas = [];
-	/** @var array */
+	/** @var Config[] */
 	private $arenaConfig = [];
 	/** @var SkyWarsPE */
 	private $pl;
@@ -54,18 +54,24 @@ final class ArenaManager {
 	public function checkArenas(){
 		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6Locating arena files...");
 		foreach(glob($this->pl->getDataFolder() . "arenas/*.yml") as $file){
-			// TODO: Change this style of reading arena names, the arena names could be changed
-			//       And will not-EVER be matched with the config file.
-
 			$arena = new Config($file, Config::YAML);
-			$arenaName = basename($file, ".yml");
+			$arenaName = $arena->get("arena-name", null);
+			$baseName = basename($file, ".yml");
+
+			if($arenaName === null){
+				Utils::send("§6" . ucwords($baseName) . " §a§l-§r§c Config file is not valid.");
+
+				continue;
+			}
 
 			$this->arenaRealName[strtolower($arenaName)] = $arenaName;
-			$this->arenaConfig[strtolower($arenaName)] = $arena->getAll();
+			$this->arenaRealName[strtolower($baseName)] = $arenaName;
+			$this->arenaConfig[strtolower($arenaName)] = $arena;
 
 			$baseArena = new Arena($arenaName, $this->pl);
 			if(!$baseArena->configChecked){
 				unset($this->arenaRealName[strtolower($arenaName)]);
+				unset($this->arenaRealName[strtolower($baseName)]);
 				unset($this->arenaConfig[strtolower($arenaName)]);
 				continue;
 			}
@@ -75,7 +81,7 @@ final class ArenaManager {
 		}
 	}
 
-	public function reloadArena($arenaF): bool{
+	public function reloadArena($arenaF, bool $resetLevel = false): bool{
 		$arenaName = $this->getRealArenaName($arenaF);
 		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§aReloading arena§e $arenaName");
 		if(!$this->arenaExist($arenaName)){
@@ -84,7 +90,7 @@ final class ArenaManager {
 			return false;
 		}
 
-		$arenaConfig = new Config($this->pl->getDataFolder() . "arenas/$arenaName.yml");
+		$arenaConfig = $this->getArenaConfig($arenaName);
 		$game = $this->getArena($arenaName);
 		# Arena is null but how?
 		if(is_null($game) || is_null($arenaConfig)){
@@ -94,6 +100,7 @@ final class ArenaManager {
 		}
 		$game->inSetup = false;
 		$game->resetArena();
+		if($resetLevel) $game->resetLevel();
 
 		return true;
 	}
@@ -112,7 +119,7 @@ final class ArenaManager {
 		$arena = $this->getArena($arenaName);
 		if($arena === null){
 			$this->arenaRealName[strtolower($arenaName)] = $arenaName;
-			$this->arenaConfig[strtolower($arenaName)] = $config->getAll();
+			$this->arenaConfig[strtolower($arenaName)] = $config;
 
 			// Create a new arena if it doesn't exists.
 			$baseArena = new Arena($arenaName, $this->pl);
@@ -165,7 +172,7 @@ final class ArenaManager {
 		return null;
 	}
 
-	public function getArenaConfig($arenaName){
+	public function getArenaConfig($arenaName): ?Config{
 		if(!isset($this->arenaConfig[strtolower($arenaName)])){
 			return null;
 		}

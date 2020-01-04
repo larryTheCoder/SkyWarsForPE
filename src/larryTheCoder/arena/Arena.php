@@ -88,7 +88,7 @@ class Arena {
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
 
-		$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName);
+		$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName)->getAll();
 
 		$this->parseData();
 		$this->configTeam($this->getArenaData());
@@ -145,6 +145,27 @@ class Arena {
 		}else{
 			$this->leaveArena($pl);
 		}
+	}
+
+	public function resetLevel(){
+		Utils::sendDebug("Force reset world to original state...");
+
+		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaWorld;
+
+		if(!Settings::$zipArchive){
+			if(file_exists($fromPath)){
+				return;
+			}
+
+			// Delete directory and paste them back to the original world.
+			Utils::deleteDirectory($fromPath);
+		}else{
+			if(!is_file("$fromPath.zip") && !unlink("$fromPath.zip")){
+				return;
+			}
+		}
+
+		$this->saveArenaWorld();
 	}
 
 	/**
@@ -271,6 +292,11 @@ class Arena {
 	 * @since 3.0
 	 */
 	public function joinToArena(Player $pl){
+		if($this->inSetup){
+			$pl->sendMessage($this->plugin->getMsg($pl, 'arena-insetup'));
+
+			return;
+		}
 		// Maximum players reached furthermore player can't join.
 		if(count($this->getPlayers()) >= $this->maximumPlayers){
 			$pl->sendMessage($this->plugin->getMsg($pl, 'arena-full'));

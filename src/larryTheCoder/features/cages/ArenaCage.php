@@ -83,6 +83,7 @@ class ArenaCage {
 				$array2[$j] = Item::get(20);
 			}
 			$this->defaultCage = new Cage("Default Cage", 0, $array2);
+			$this->cage[strtolower("Default Cage")] = $this->defaultCage;
 		}
 
 	}
