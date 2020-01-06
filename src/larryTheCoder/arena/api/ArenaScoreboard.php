@@ -192,4 +192,8 @@ class ArenaScoreboard {
 		}
 		StandardScoreboard::removeScore($pl);
 	}
+
+	public function clearAll(){
+		foreach($this->scoreboards as $pl) $this->removePlayer($pl);
+	}
 }

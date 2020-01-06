@@ -119,6 +119,7 @@ class Arena {
 		Utils::sendDebug("Stop game called");
 
 		$this->gameAPI->stopArena();
+		$this->unsetAllPlayers();
 
 		$this->resetArena();
 		$this->resetArenaWorld();
@@ -409,6 +410,19 @@ class Arena {
 		/** @var Player $p */
 		foreach(array_merge($this->players, $this->spectators) as $p){
 			unset($this->players[strtolower($p->getName())]);
+
+			$p->removeAllEffects();
+			$p->setMaxHealth(20);
+			$p->setMaxHealth($p->getMaxHealth());
+			if($p->getAttributeMap() != null){//just to be really sure
+				$p->setHealth(20);
+				$p->setFood(20);
+			}
+			$p->setXpLevel(0);
+			$p->removeAllEffects();
+			$p->setGamemode(Player::ADVENTURE);
+			$p->getInventory()->clearAll();
+			$p->getArmorInventory()->clearAll();
 
 			$p->teleport($this->plugin->getDatabase()->getLobby());
 		}

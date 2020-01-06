@@ -70,9 +70,6 @@ class SignTickTask extends Task {
 					$tile->getLevel()->setBlock($vec, Utils::getBlockStatus($this->arena));
 				}
 				$tile->setText($a = str_replace($vars, $replace, $this->arena->statusLine1), $b = str_replace($vars, $replace, $this->arena->statusLine2), $c = str_replace($vars, $replace, $this->arena->statusLine3), $d = str_replace($vars, $replace, $this->arena->statusLine4));
-
-				Utils::sendDebug("[$a, $b, $c, $d]");
-				Utils::sendDebug("Writing text information...");
 			}
 			skipUpdate:
 			$this->updateTime = 0;

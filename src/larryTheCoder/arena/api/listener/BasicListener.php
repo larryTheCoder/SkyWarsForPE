@@ -343,6 +343,9 @@ class BasicListener implements Listener {
 		if($this->arena->isInArena($event->getPlayer())){
 			$this->arena->leaveArena($event->getPlayer(), true);
 			$this->arena->checkAlive();
+
+			// Sometimes this thing is useful.
+			$event->getPlayer()->setSpawn(SkyWarsPE::getInstance()->getDatabase()->getLobby());
 		}
 	}
 

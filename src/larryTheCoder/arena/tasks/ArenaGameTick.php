@@ -85,7 +85,9 @@ class ArenaGameTick extends Task {
 				if(empty($this->arena->getPlayersCount()) || $this->arena->getPlayersCount() < $this->arena->minimumPlayers){
 					foreach($this->arena->getPlayers() as $p) $p->sendPopup($this->getMessage($p, "arena-wait-players", false));
 
-					$this->startTime = 60;
+					$this->gameAPI->scoreboard->setCurrentEvent("§6Waiting for players");
+
+					$this->startTime = $this->arena->arenaStartingTime;
 					break;
 				}
 
@@ -97,12 +99,23 @@ class ArenaGameTick extends Task {
 				if(empty($this->arena->getPlayersCount()) || $this->arena->getPlayersCount() < $this->arena->minimumPlayers){
 					foreach($this->arena->getPlayers() as $p){
 						$p->sendPopup($this->getMessage($p, "arena-low-players", false));
+
+						$this->gameAPI->scoreboard->setCurrentEvent("§cNot enough players");
 					}
 
-					$this->startTime = 60;
+					$this->startTime = $this->arena->arenaStartingTime;
+
+					$this->arena->setStatus(State::STATE_WAITING);
 					break;
 				}
 				$this->startTime--;
+				if($this->startTime <= 3 && $this->startTime > 1){
+					$this->gameAPI->scoreboard->setCurrentEvent("Starting in §6" . $this->startTime);
+				}elseif($this->startTime <= 1){
+					$this->gameAPI->scoreboard->setCurrentEvent("Starting in §c" . $this->startTime);
+				}else{
+					$this->gameAPI->scoreboard->setCurrentEvent("Starting in §a" . $this->startTime);
+				}
 
 				foreach($this->arena->getPlayers() as $p){
 					if($p instanceof Player){
@@ -128,13 +141,13 @@ class ArenaGameTick extends Task {
 
 				if($this->startTime == 0){
 					$this->arena->startGame();
-					$this->startTime = 60;
+					$this->startTime = $this->arena->arenaStartingTime;
 					break;
 				}
 
 				if(Settings::$startWhenFull && $this->arena->maximumPlayers <= $this->arena->getPlayersCount()){
 					$this->arena->startGame();
-					$this->startTime = 60;
+					$this->startTime = $this->arena->arenaStartingTime;
 				}
 				break;
 			case State::STATE_ARENA_RUNNING:
@@ -173,7 +186,9 @@ class ArenaGameTick extends Task {
 				foreach($this->arena->getPlayers() as $player){
 					$facing = $player->getDirection();
 					$vec = $player->getSide($facing, -3);
-					Utils::addFireworks($vec);
+					if($this->endTime <= 5){
+						Utils::addFireworks($vec);
+					}
 				}
 
 				if($this->endTime > 10){

@@ -238,6 +238,8 @@ class DefaultGameAPI extends GameAPI {
 	 * reset the arena if possible.
 	 */
 	public function stopArena(): void{
+		$this->scoreboard->clearAll();
+
 		$this->broadcastResult();
 	}
 

@@ -42,7 +42,6 @@ use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
 use pocketmine\event\{Listener, player\PlayerJoinEvent};
-use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\{Plugin, PluginBase};
@@ -64,16 +63,10 @@ class SkyWarsPE extends PluginBase implements Listener {
 	public $msg;
 	/** @var SkyWarsCommand */
 	public $cmd;
-	/** @var Item[] */
-	public $inv = [];
-	/** @var array */
-	public $setters = [];
 	/** @var EconomyAPI|Plugin */
 	public $economy;
 	/** @var FormAPI */
 	public $formAPI;
-	///** @var FormPanel */
-	//public $panel;
 	/** @var RandomChest */
 	public $chest;
 	/** @var FakeHuman[] */
@@ -186,7 +179,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->arenaManager = new ArenaManager($this);
 		$this->formAPI = new FormAPI($this);
 		$this->panel = new FormPanel($this);
-		//$this->chest = new RandomChest($this);
+		$this->chest = new RandomChest($this);
 
 		$this->checkLibraries();
 		$this->getArenaManager()->checkArenas();
