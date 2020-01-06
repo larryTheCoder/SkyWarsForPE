@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\features\cages;
 
+use larryTheCoder\utils\Utils;
 use pocketmine\block\Block;
 use pocketmine\level\Position;
 
@@ -61,6 +62,8 @@ class Cage {
 	 * @return Position[]
 	 */
 	public function build(Position $locate): array{
+		Utils::sendDebug("Building at position: {$locate->__toString()}");
+
 		$loc = clone $locate;
 		$this->clearObstacle(clone $locate);
 		$list = [];

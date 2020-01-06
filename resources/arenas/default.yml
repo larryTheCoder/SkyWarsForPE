@@ -94,7 +94,7 @@ signs:
   status-line-1: "&8[&cSkyWars&8]"
   status-line-2: "&a%name"
   status-line-3: "&7Players: &2%alive&3/&2%max"
-  status-line-4: "&6Click to join!"
+  status-line-4: "%status"
   # Sign will update every 'x" seconds
   # The 'x' is depends on this section.
   # This effects the client connections.

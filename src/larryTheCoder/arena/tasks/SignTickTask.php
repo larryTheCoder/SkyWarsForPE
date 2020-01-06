@@ -57,7 +57,7 @@ class SignTickTask extends Task {
 		$this->updateTime++;
 		if($this->updateTime >= $this->arena->statusLineUpdate){
 			$vars = ['%alive', '%status', '%max', '&', '%world', '%prefix', '%name'];
-			$replace = [count($this->arena->getPlayers()), $this->arena->getStatus(), $this->arena->maximumPlayers, "§", $this->arena->arenaWorld, SkyWarsPE::getInstance()->getPrefix(), $this->arena->arenaName];
+			$replace = [count($this->arena->getPlayers()), $this->arena->getReadableStatus(), $this->arena->maximumPlayers, "§", $this->arena->arenaWorld, SkyWarsPE::getInstance()->getPrefix(), $this->arena->arenaName];
 			$level = Server::getInstance()->getLevelByName($this->arena->joinSignWorld);
 			if($level === null){
 				goto skipUpdate;
@@ -69,7 +69,10 @@ class SignTickTask extends Task {
 					$vec = $block->getSide($block->getDamage() ^ 0x01);
 					$tile->getLevel()->setBlock($vec, Utils::getBlockStatus($this->arena));
 				}
-				$tile->setText(str_replace($vars, $replace, $this->arena->statusLine1), str_replace($vars, $replace, $this->arena->statusLine2), str_replace($vars, $replace, $this->arena->statusLine3), str_replace($vars, $replace, $this->arena->statusLine4));
+				$tile->setText($a = str_replace($vars, $replace, $this->arena->statusLine1), $b = str_replace($vars, $replace, $this->arena->statusLine2), $c = str_replace($vars, $replace, $this->arena->statusLine3), $d = str_replace($vars, $replace, $this->arena->statusLine4));
+
+				Utils::sendDebug("[$a, $b, $c, $d]");
+				Utils::sendDebug("Writing text information...");
 			}
 			skipUpdate:
 			$this->updateTime = 0;

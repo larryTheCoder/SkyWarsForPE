@@ -148,6 +148,9 @@ class ArenaCage {
 	 * @return Cage
 	 */
 	public function getPlayerCage(Player $p){
-		return isset($this->playerCages[$p->getName()]) ? $this->playerCages[$p->getName()] : $this->defaultCage;
+		$cage = isset($this->playerCages[$p->getName()]) ? $this->playerCages[$p->getName()] : $this->defaultCage;
+		Utils::sendDebug("Getting player cage information: " . $cage->getCageName());
+
+		return $cage;
 	}
 }

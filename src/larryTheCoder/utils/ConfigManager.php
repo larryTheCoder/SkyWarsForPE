@@ -49,7 +49,10 @@ class ConfigManager {
 	public function __construct(string $arenaName, SkyWarsPE $plugin){
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
-		$this->arena = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName);
+		$arenaConfig = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName);
+
+		// Use the new one if it doesn't exists.
+		$this->arena = $arenaConfig == null ? new Config($this->plugin->getDataFolder() . "arenas/$arenaName.yml", Config::YAML) : $arenaConfig;
 	}
 
 	public function setJoinSign(int $x, int $y, int $z, string $level){ # OK
@@ -60,7 +63,7 @@ class ConfigManager {
 		$this->arena->save();
 	}
 
-	public function setStatusLine(int $line, string $type){# OK
+	public function setStatusLine(string $type, int $line){# OK
 		$this->arena->setNested("signs.status-line-$line", $type);
 		$this->arena->save();
 	}
@@ -119,6 +122,11 @@ class ConfigManager {
 
 	public function setArenaName(string $arenaName){
 		$this->arena->set("arena-name", $arenaName);
+		$this->arena->save();
+	}
+
+	public function resetSpawnPedestal(){
+		$this->arena->setNested("arena.spawn-positions", []);
 		$this->arena->save();
 	}
 

@@ -395,7 +395,12 @@ class FormPanel implements Listener {
 
 			return;
 		}
+
 		Utils::loadFirst($arena->arenaLevel);
+
+		$arenaConfig = new ConfigManager($arena->arenaName, $this->plugin);
+		$arenaConfig->resetSpawnPedestal();
+
 		$this->setters[strtolower($player->getName())]['type'] = 'spawnpos';
 		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
 		$player->teleport($level->getSpawnLocation());

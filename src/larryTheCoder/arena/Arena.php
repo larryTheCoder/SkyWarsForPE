@@ -88,6 +88,13 @@ class Arena {
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
 
+		$this->reloadData();
+	}
+
+	/**
+	 * Reloads the game information of this arena.
+	 */
+	public function reloadData(){
 		$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName)->getAll();
 
 		$this->parseData();
@@ -195,7 +202,7 @@ class Arena {
 
 		// Then commit re-run.
 		foreach($tasks as $task){
-			$runnable = SkyWarsPE::getInstance()->getScheduler()->scheduleDelayedRepeatingTask($task, 100, 20);
+			$runnable = SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask($task, 20);
 			$this->taskRunning[] = $runnable;
 		}
 	}
@@ -273,6 +280,30 @@ class Arena {
 				$zip->close();
 			}
 		}
+	}
+
+	/**
+	 * Get the current status for the arena
+	 *
+	 * @return string
+	 */
+	public function getReadableStatus(): string{
+		switch(true){
+			case $this->inSetup:
+				return "&eIn setup";
+			case !$this->arenaEnable:
+				return "&cDisabled";
+			case $this->getStatus() <= State::STATE_SLOPE_WAITING:
+				return "&6Click to join!";
+			case $this->getPlayers() >= $this->minimumPlayers:
+				return "&6Starting";
+			case $this->getStatus() === State::STATE_ARENA_RUNNING:
+				return "&cRunning";
+			case $this->getStatus() === State::STATE_ARENA_CELEBRATING:
+				return "&cEnded";
+		}
+
+		return "&eUnknown";
 	}
 
 	/**
@@ -517,26 +548,3 @@ class Arena {
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

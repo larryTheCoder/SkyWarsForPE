@@ -33,7 +33,6 @@ use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
-use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 final class SkyWarsCommand {
@@ -76,7 +75,7 @@ final class SkyWarsCommand {
 						break;
 					}
 
-					Utils::addFireworks($sender->getSide(Vector3::SIDE_NORTH, 4));
+					Utils::sendDebug($sender->getLocation()->__toString());
 					break;
 				case "help":
 					if(!$sender->hasPermission("sw.command.help")){
