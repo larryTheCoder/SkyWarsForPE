@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2019 larryTheCoder and contributors
+ * Copyright (c) 2015-2020 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,7 +26,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\api;
+namespace larryTheCoder\arena\runtime;
 
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\State;
@@ -133,10 +133,10 @@ class ArenaScoreboard {
 		}
 
 		// Arrays really likes to complains if there is the object doesn't exists
-		$kills = isset($this->gameAPI->kills[strtolower($pl->getName())])
-			? $this->gameAPI->kills[strtolower($pl->getName())] : 0;
+		$kills = isset($this->arena->kills[$pl->getName()])
+			? $this->arena->kills[$pl->getName()] : 0;
 		$playerPlacing = $this->arena->isInArena($pl)
-			? Utils::addPrefix($this->gameAPI->winnersFixed[strtolower($pl->getName())]) : "Not ranked";
+			? Utils::addPrefix($this->gameAPI->winnersFixed[$pl->getName()]) : "Not ranked";
 		$topPlayer = (isset($this->gameAPI->winners[0]) && isset($this->gameAPI->winners[0][0]))
 			? $this->gameAPI->winners[0][0] : "No data";
 		$topKill = (isset($this->gameAPI->winners[0]) && isset($this->gameAPI->winners[0][1]))
@@ -156,6 +156,7 @@ class ArenaScoreboard {
 			"{min_players}",
 			"{player_name}",
 			"&",
+			"{team_colour}", // TODO
 		];
 		$replace = [
 			$this->arena->arenaMode === State::MODE_SOLO ? "SOLO" : "TEAM",
@@ -172,10 +173,12 @@ class ArenaScoreboard {
 			TextFormat::ESCAPE,
 		];
 		foreach($this->gameAPI->winners as $i => $data){
-			array_push($search, "{kills_top_" . ($i + 1) . "}");
-			array_push($search, "{player_top_" . ($i + 1) . "}");
-			array_push($replace, $data[1]);
+			$copy = $i + 1;
+
+			array_push($search, "{kills_top_$copy}");
+			array_push($search, "{player_top_$copy}");
 			array_push($replace, $data[0]);
+			array_push($replace, $data[1]);
 		}
 
 		return " " . str_replace($search, $replace, $line) . " ";

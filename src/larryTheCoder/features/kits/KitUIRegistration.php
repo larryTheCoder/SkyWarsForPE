@@ -28,7 +28,6 @@
 
 namespace larryTheCoder\features\kits;
 
-
 use pocketmine\event\Listener;
 
 class KitUIRegistration implements Listener {

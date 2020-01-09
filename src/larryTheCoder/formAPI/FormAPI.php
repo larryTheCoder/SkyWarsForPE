@@ -91,10 +91,8 @@ class FormAPI implements Listener {
 				$modal = $this->forms[$formId]->getResponseModal();
 				$modal->setData(trim($pk->formData));
 				$event = new FormRespondedEvent($player, $this->forms[$formId], $modal);
-				try{
-					$event->call();
-				}catch(\ReflectionException $e){
-				}
+				$event->call();
+
 				$ev->setCancelled();
 			}
 		}

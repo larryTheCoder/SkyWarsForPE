@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2019 larryTheCoder and contributors
+ * Copyright (c) 2015-2020 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,13 +26,14 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\api;
+namespace larryTheCoder\arena\runtime;
 
-use larryTheCoder\arena\api\listener\BasicListener;
+use larryTheCoder\arena\api\GameAPI;
 use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\runtime\listener\BasicListener;
+use larryTheCoder\arena\runtime\tasks\ArenaGameTick;
+use larryTheCoder\arena\runtime\tasks\SignTickTask;
 use larryTheCoder\arena\State;
-use larryTheCoder\arena\tasks\ArenaGameTick;
-use larryTheCoder\arena\tasks\SignTickTask;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
@@ -61,8 +62,6 @@ class DefaultGameAPI extends GameAPI {
 	public $plugin;
 	/** @var int */
 	public $fallTime = 0;
-	/** @var int[] */
-	public $kills = [];
 	/** @var string[] */
 	public $winners = [];
 	/** @var int[] */
@@ -99,16 +98,13 @@ class DefaultGameAPI extends GameAPI {
 
 		$this->scoreboard->addPlayer($p);
 
-		# Then we save the data
-		$this->kills[strtolower($p->getName())] = 0;
-
 		# Okay saved then we get the spawn for the player
 		$spawn = $this->arena->usedPedestals[$p->getName()][0];
 
 		# Get the custom cages
 		$cageLib = $this->plugin->getCage();
 		$cage = $cageLib->getPlayerCage($p);
-		$this->cageToRemove[strtolower($p->getName())] = $cage->build(Position::fromObject($spawn, $this->arena->getLevel()));
+		$this->cageToRemove[$p->getName()] = $cage->build(Position::fromObject($spawn, $this->arena->getLevel()));
 
 		$p->sendMessage(str_replace("{PLAYER}", $p->getName(), $this->plugin->getMsg($p, 'player-join')));
 
@@ -152,13 +148,13 @@ class DefaultGameAPI extends GameAPI {
 	 * @return bool
 	 */
 	public function removeCage(Player $p): bool{
-		if(!isset($this->cageToRemove[strtolower($p->getName())])){
+		if(!isset($this->cageToRemove[$p->getName()])){
 			return false;
 		}
-		foreach($this->cageToRemove[strtolower($p->getName())] as $pos){
+		foreach($this->cageToRemove[$p->getName()] as $pos){
 			$this->arena->getLevel()->setBlock($pos, Block::get(0));
 		}
-		unset($this->cageToRemove[strtolower($p->getName())]);
+		unset($this->cageToRemove[$p->getName()]);
 
 		return true;
 	}
@@ -175,8 +171,8 @@ class DefaultGameAPI extends GameAPI {
 
 	public function statusUpdate(){
 		$i = 0;
-		arsort($this->kills);
-		foreach($this->kills as $player => $kills){
+		arsort($this->arena->kills);
+		foreach($this->arena->kills as $player => $kills){
 			$this->winners[$i] = [$player, $kills];
 			$this->winnersFixed[$player] = $i + 1;
 			$i++;
@@ -196,7 +192,6 @@ class DefaultGameAPI extends GameAPI {
 	 * from the list.
 	 */
 	public function removeAllPlayers(){
-		$this->kills = [];
 		$this->cageToRemove = [];
 	}
 

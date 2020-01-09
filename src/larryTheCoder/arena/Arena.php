@@ -28,9 +28,9 @@
 
 namespace larryTheCoder\arena;
 
-use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\api\GameAPI;
-use larryTheCoder\arena\tasks\PlayerDeathTask;
+use larryTheCoder\arena\runtime\DefaultGameAPI;
+use larryTheCoder\arena\runtime\tasks\PlayerDeathTask;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
@@ -132,7 +132,10 @@ class Arena {
 	public function getLevel(): ?Level{
 		Utils::loadFirst($this->arenaWorld, true);
 
-		return Server::getInstance()->getLevelByName($this->arenaWorld);
+		$level = Server::getInstance()->getLevelByName($this->arenaWorld);
+		$level->setAutoSave(false);
+
+		return $level;
 	}
 
 	/**
@@ -144,10 +147,10 @@ class Arena {
 	 */
 	public function knockedOut(Player $pl){
 		// Remove the player from the list.
-		if(isset($this->players[strtolower($pl->getName())])) unset($this->players[strtolower($pl->getName())]);
+		if(isset($this->players[$pl->getName()])) unset($this->players[$pl->getName()]);
 
 		if($this->enableSpectator){
-			$this->spectators[strtolower($pl->getName())] = $pl;
+			$this->spectators[$pl->getName()] = $pl;
 		}elseif($this->spectateWaiting > 0){
 			$this->plugin->getScheduler()->scheduleDelayedTask(new PlayerDeathTask($this, $pl), 10);
 		}else{
@@ -168,7 +171,7 @@ class Arena {
 			// Delete directory and paste them back to the original world.
 			Utils::deleteDirectory($fromPath);
 		}else{
-			if(!is_file("$fromPath.zip") && !unlink("$fromPath.zip")){
+			if(!unlink("$fromPath.zip")){
 				return;
 			}
 		}
@@ -366,7 +369,7 @@ class Arena {
 
 			return;
 		}
-		$this->kills[strtolower($pl->getName())] = 0;
+		$this->kills[$pl->getName()] = 0;
 
 		$pl->getInventory()->setHeldItemIndex(1, true);
 		$this->addPlayer($pl, $this->getRandomTeam());
@@ -398,7 +401,7 @@ class Arena {
 		$pl->teleport(SkyWarsPE::getInstance()->getDatabase()->getLobby());
 
 		unset($this->usedPedestals[$pl->getName()]);
-		unset($this->kills[strtolower($pl->getName())]);
+		unset($this->kills[$pl->getName()]);
 	}
 
 	/**
@@ -406,10 +409,11 @@ class Arena {
 	 */
 	public function unsetAllPlayers(){
 		$this->gameAPI->removeAllPlayers();
+		$this->executeCommands();
 
 		/** @var Player $p */
 		foreach(array_merge($this->players, $this->spectators) as $p){
-			unset($this->players[strtolower($p->getName())]);
+			unset($this->players[$p->getName()]);
 
 			$p->removeAllEffects();
 			$p->setMaxHealth(20);
@@ -428,6 +432,10 @@ class Arena {
 		}
 
 		$this->resetPlayers();
+	}
+
+	private function executeCommands(){
+		// TODO
 	}
 
 	public function checkAlive(){

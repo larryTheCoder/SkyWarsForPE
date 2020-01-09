@@ -26,10 +26,10 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\tasks;
+namespace larryTheCoder\arena\runtime\tasks;
 
-use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\runtime\DefaultGameAPI;
 use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\ParticleTask;

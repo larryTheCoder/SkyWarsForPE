@@ -698,6 +698,9 @@ class FormPanel implements Listener {
 
 			$p->sendMessage($this->plugin->getPrefix() . "Teleporting you back to main world.");
 
+			$level = $p->getLevel();
+			$level->save(true);
+
 			$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 			$p->teleport($spawn, 0, 0);
 

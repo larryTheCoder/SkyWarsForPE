@@ -26,10 +26,10 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\api\listener;
+namespace larryTheCoder\arena\runtime\listener;
 
-use larryTheCoder\arena\api\DefaultGameAPI;
 use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\runtime\DefaultGameAPI;
 use larryTheCoder\arena\State;
 use larryTheCoder\provider\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
@@ -175,16 +175,16 @@ class BasicListener implements Listener {
 				if($e instanceof EntityDamageByEntityEvent){
 					$damage = $e->getDamager();
 					if($damage instanceof Player){
-						$this->lastHit[strtolower($player->getName())] = $damage->getName();
-						$this->cooldown[strtolower($player->getName())] = $now + 30;
+						$this->lastHit[$player->getName()] = $damage->getName();
+						$this->cooldown[$player->getName()] = $now + 30;
 					}
 				}else{
-					if(isset($this->cooldown[strtolower($player->getName())])){
-						if($this->cooldown[strtolower($player->getName())] - $now >= 0){
+					if(isset($this->cooldown[$player->getName()])){
+						if($this->cooldown[$player->getName()] - $now >= 0){
 							break;
 						}
-						$this->lastHit[strtolower($player->getName())] = -1;// Member of illuminati?
-						unset($this->cooldown[strtolower($player->getName())]);
+						$this->lastHit[$player->getName()] = -1;// Member of illuminati?
+						unset($this->cooldown[$player->getName()]);
 						break;
 					}
 				}
@@ -193,40 +193,40 @@ class BasicListener implements Listener {
 				if($e instanceof EntityDamageByChildEntityEvent){
 					$damage = $e->getDamager();
 					if($damage instanceof Player){
-						$this->lastHit[strtolower($player->getName())] = $damage->getName();
-						$this->cooldown[strtolower($player->getName())] = $now + 30;
+						$this->lastHit[$player->getName()] = $damage->getName();
+						$this->cooldown[$player->getName()] = $now + 30;
 						$volume = 0x10000000 * (min(30, 10) / 5); //No idea why such odd numbers, but this works...
 						$damage->level->broadcastLevelSoundEvent($damage, LevelSoundEventPacket::SOUND_LEVELUP, 1, (int)$volume);
 					}
 				}else{
-					$this->lastHit[strtolower($player->getName())] = $player->getName();
+					$this->lastHit[$player->getName()] = $player->getName();
 				}
 				break;
 			case EntityDamageEvent::CAUSE_MAGIC:
 				if($e instanceof EntityDamageByEntityEvent || $e instanceof EntityDamageByChildEntityEvent){
 					$damage = $e->getDamager();
 					if($damage instanceof Player){
-						$this->lastHit[strtolower($player->getName())] = $damage->getName();
-						$this->cooldown[strtolower($player->getName())] = $now + 30;
+						$this->lastHit[$player->getName()] = $damage->getName();
+						$this->cooldown[$player->getName()] = $now + 30;
 					}
 				}else{
-					if(isset($this->cooldown[strtolower($player->getName())])){
-						if($this->cooldown[strtolower($player->getName())] - $now >= 0){
+					if(isset($this->cooldown[$player->getName()])){
+						if($this->cooldown[$player->getName()] - $now >= 0){
 							break;
 						}
-						$this->lastHit[strtolower($player->getName())] = $player->getNameTag();
-						unset($this->cooldown[strtolower($player->getName())]);
+						$this->lastHit[$player->getName()] = $player->getNameTag();
+						unset($this->cooldown[$player->getName()]);
 						break;
 					}
 				}
 				break;
 			default:
-				if(isset($this->cooldown[strtolower($player->getName())])){
-					if($this->cooldown[strtolower($player->getName())] - $now >= 0){
+				if(isset($this->cooldown[$player->getName()])){
+					if($this->cooldown[$player->getName()] - $now >= 0){
 						break;
 					}
-					$this->lastHit[strtolower($player->getName())] = $e->getCause();
-					unset($this->cooldown[strtolower($player->getName())]);
+					$this->lastHit[$player->getName()] = $e->getCause();
+					unset($this->cooldown[$player->getName()]);
 					break;
 				}
 				break;
@@ -251,19 +251,19 @@ class BasicListener implements Listener {
 				# Set the database data
 				$this->setDeathData($p);
 
-				$player = !isset($this->lastHit[strtolower($p->getName())]) ? $p->getName() : $this->lastHit[strtolower($p->getName())];
+				$player = !isset($this->lastHit[$p->getName()]) ? $p->getName() : $this->lastHit[$p->getName()];
 				if(!is_integer($player)){
-					if(strtolower($player) === strtolower($p->getName())){
+					if($player === $p->getName()){
 						$this->arena->messageArenaPlayers('death-message-suicide', false, ["{PLAYER}"], [$p->getName()]);
 					}else{
 						$this->arena->messageArenaPlayers('death-message', false, ["{PLAYER}", "{KILLER}"], [$p->getName(), $player]);
-						$this->gameAPI->kills[strtolower($player)]++;
+						$this->arena->kills[$player]++;
 					}
 				}else{
 					$msg = Utils::getDeathMessageById($player);
 					$this->arena->messageArenaPlayers($msg, false, ["{PLAYER}"], [$p->getName()]);
 				}
-				unset($this->lastHit[strtolower($p->getName())]);
+				unset($this->lastHit[$p->getName()]);
 
 				$this->arena->knockedOut($p);
 			}
@@ -274,7 +274,7 @@ class BasicListener implements Listener {
 		$pd = $this->gameAPI->plugin->getDatabase()->getPlayerData($player->getName());
 		$pd->death++;
 		$pd->lost++;
-		$pd->kill += $this->gameAPI->kills[strtolower($player->getName())];
+		$pd->kill += $this->arena->kills[$player->getName()];
 		$pd->time += (microtime(true) - $this->arena->startedTime);
 
 		$result = $this->gameAPI->plugin->getDatabase()->setPlayerData($player->getName(), $pd);

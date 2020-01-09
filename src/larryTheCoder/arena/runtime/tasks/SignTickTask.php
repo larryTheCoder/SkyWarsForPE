@@ -26,7 +26,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\tasks;
+namespace larryTheCoder\arena\runtime\tasks;
 
 use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;

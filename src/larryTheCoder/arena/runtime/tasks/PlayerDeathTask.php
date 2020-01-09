@@ -31,7 +31,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace larryTheCoder\arena\tasks;
+namespace larryTheCoder\arena\runtime\tasks;
 
 
 use larryTheCoder\arena\Arena;

@@ -77,8 +77,24 @@ in-game-arena:
   - ""
   - "You're in &6{player_place}&f place"
 
-# This scoreboard is used when
-# the game is ended.
+in-game-arena-team:
+  - "§ewww.hyrulePE.xyz"
+  - ""
+  - "Mode: &6{arena_mode}"
+  - "Map: &6{arena_map}"
+  - ""
+  - "Kills: &6{player_kills}"
+  - ""
+  - "Players left: {players_left}"
+  - ""
+  - "Team: {team_colour}"
+  - ""
+  - "{arena_status}"
+  - "Events:"
+  - ""
+  - "You're in &6{player_place}&f place"
+  - # This scoreboard is used when
+  # the game is ended.
 ending-state-arena:
   - "§ewww.hyrulePE.xyz"
   - ""
