@@ -171,14 +171,15 @@ class ArenaScoreboard {
 			$this->arena->minimumPlayers,
 			$pl->getName(),
 			TextFormat::ESCAPE,
+			null,
 		];
 		foreach($this->gameAPI->winners as $i => $data){
 			$copy = $i + 1;
 
 			array_push($search, "{kills_top_$copy}");
 			array_push($search, "{player_top_$copy}");
-			array_push($replace, $data[0]);
 			array_push($replace, $data[1]);
+			array_push($replace, $data[0]);
 		}
 
 		return " " . str_replace($search, $replace, $line) . " ";

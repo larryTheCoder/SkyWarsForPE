@@ -46,6 +46,10 @@ class SignTickTask extends Task {
 		$this->arena = $arena;
 	}
 
+	public function getName(): string{
+		return "Sign Main Scheduling Task";
+	}
+
 	/**
 	 * Actions to execute when run
 	 *

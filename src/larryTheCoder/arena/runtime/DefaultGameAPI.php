@@ -81,6 +81,10 @@ class DefaultGameAPI extends GameAPI {
 		Server::getInstance()->getPluginManager()->registerEvents(new BasicListener($this), $this->plugin);
 	}
 
+	public function getDebugger(): GameDebugger{
+		return $this->getDebugger();
+	}
+
 	public function joinToArena(Player $p): bool{
 		# Set the player gamemode first
 		$p->setGamemode(0);
@@ -135,8 +139,8 @@ class DefaultGameAPI extends GameAPI {
 		$p->getArmorInventory()->clearAll();
 		$this->scoreboard->removePlayer($p);
 
-		Utils::sendDebug("leaveArena() is being called");
-		Utils::sendDebug("User " . $p->getName() . " is leaving the arena.");
+		$this->getDebugger()->log("leaveArena() is being called");
+		$this->getDebugger()->log("User " . $p->getName() . " is leaving the arena.");
 
 		return true;
 	}
@@ -145,6 +149,7 @@ class DefaultGameAPI extends GameAPI {
 	 * Remove cage of the player
 	 *
 	 * @param Player $p
+	 *
 	 * @return bool
 	 */
 	public function removeCage(Player $p): bool{

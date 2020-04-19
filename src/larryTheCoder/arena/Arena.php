@@ -30,6 +30,7 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\arena\api\GameAPI;
 use larryTheCoder\arena\runtime\DefaultGameAPI;
+use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\arena\runtime\tasks\PlayerDeathTask;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
@@ -38,9 +39,11 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\scheduler\Task;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\Server;
 use pocketmine\utils\Config;
+use pocketmine\utils\Timezone;
 
 /**
  * Presenting a custom implementation of arena-game-code. You can do
@@ -84,9 +87,21 @@ class Arena {
 	/** @var TaskHandler[] */
 	private $taskRunning = [];
 
+	/** @var GameDebugger */
+	public $gameDebugger = null;
+
+	public function getDebugger(): GameDebugger{
+		return $this->gameDebugger;
+	}
+
 	public function __construct(string $arenaName, SkyWarsPE $plugin){
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
+
+		$time = new \DateTime('now', new \DateTimeZone(Timezone::get()));
+
+		$this->gameDebugger = new GameDebugger(SkyWarsPE::$instance->getDataFolder() . "/logs/" . $time->format("Y-m-d") . " {$this->getArenaName()}.txt", $time);
+		SkyWarsPE::registerDebugger($arenaName, $this->gameDebugger);
 
 		$this->reloadData();
 	}
@@ -95,6 +110,7 @@ class Arena {
 	 * Reloads the game information of this arena.
 	 */
 	public function reloadData(){
+		$this->getDebugger()->log("[Arena]: reloadData() function executed");
 		$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName)->getAll();
 
 		$this->parseData();
@@ -105,6 +121,7 @@ class Arena {
 	 * Start this arena and set the arena state.
 	 */
 	public function startGame(){
+		$this->getDebugger()->log("[Arena]: startGame() function executed");
 		$this->gameAPI->startArena();
 
 		$this->startedTime = microtime(true);
@@ -116,7 +133,7 @@ class Arena {
 	 * Stop this arena and set the arena state.
 	 */
 	public function stopGame(){
-		Utils::sendDebug("Stop game called");
+		$this->getDebugger()->log("[Arena]: Stop game called");
 
 		$this->gameAPI->stopArena();
 		$this->unsetAllPlayers();
@@ -146,20 +163,28 @@ class Arena {
 	 * @param Player $pl
 	 */
 	public function knockedOut(Player $pl){
+		$this->getDebugger()->log("[Arena]: {$pl->getName()} is knocked out in the game");
+
 		// Remove the player from the list.
 		if(isset($this->players[$pl->getName()])) unset($this->players[$pl->getName()]);
 
 		if($this->enableSpectator){
 			$this->spectators[$pl->getName()] = $pl;
+
+			$this->getDebugger()->log("[Arena]: Spectator mode is enabled for the user");
 		}elseif($this->spectateWaiting > 0){
 			$this->plugin->getScheduler()->scheduleDelayedTask(new PlayerDeathTask($this, $pl), 10);
+
+			$this->getDebugger()->log("[Arena]: Scheduling death task for the player");
 		}else{
 			$this->leaveArena($pl);
+
+			$this->getDebugger()->log("[Arena]: Player is leaving the arena now");
 		}
 	}
 
 	public function resetLevel(){
-		Utils::sendDebug("Force reset world to original state...");
+		$this->getDebugger()->log("[Arena]: Force reset world to original state...");
 
 		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaWorld;
 
@@ -183,7 +208,7 @@ class Arena {
 	 * Forcefully reset the arena to its original state.
 	 */
 	public function resetArena(){
-		Utils::sendDebug("Force reset to original state...");
+		$this->getDebugger()->log("[Arena]: Force reset to original state...");
 
 		$this->loadCageHandler();
 		$this->saveArenaWorld();
@@ -195,6 +220,7 @@ class Arena {
 		if($this->gameAPI === null) $this->gameAPI = new DefaultGameAPI($this);
 
 		// Remove the task first.
+		/** @var Task[] $tasks */
 		$tasks = $this->gameAPI->getRuntimeTasks();
 		if(!empty($this->taskRunning)){
 			foreach($this->taskRunning as $id => $data){
@@ -206,6 +232,8 @@ class Arena {
 
 		// Then commit re-run.
 		foreach($tasks as $task){
+			$this->getDebugger()->log("Scheduling task {$task->getName()}.");
+
 			$runnable = SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask($task, 20);
 			$this->taskRunning[] = $runnable;
 		}
@@ -233,6 +261,7 @@ class Arena {
 	 * Set the arena data. This doesn't reset the arena settings.
 	 *
 	 * @param Config $config
+	 *
 	 * @since 3.0
 	 */
 	public function setData(Config $config){
@@ -256,7 +285,7 @@ class Arena {
 	 * @since 3.0
 	 */
 	public function resetArenaWorld(){
-		Utils::sendDebug("Final state: Reset Arena...");
+		$this->getDebugger()->log("[Arena]: Final state: Reset Arena...");
 
 		if($this->plugin->getServer()->isLevelLoaded($this->arenaWorld)){
 			$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($this->arenaWorld));
@@ -324,6 +353,7 @@ class Arena {
 	 * Add the player to join into the arena.
 	 *
 	 * @param Player $pl
+	 *
 	 * @since 3.0
 	 */
 	public function joinToArena(Player $pl){
@@ -383,13 +413,18 @@ class Arena {
 	 * Leave a player from an arena.
 	 *
 	 * @param Player $pl
-	 * @param bool $force
+	 * @param bool   $force
+	 *
 	 * @since 3.0
 	 */
 	public function leaveArena(Player $pl, bool $force = false){
+		$this->getDebugger()->log("{$pl->getName()} is leaving in arena" . ($force ? " by force." : "."));
+
 		if(!$this->gameAPI->leaveArena($pl, $force)){
 			return;
 		}
+
+		$this->getDebugger()->log("Leave condition is fulfilled");
 
 		$this->removePlayer($pl);
 
@@ -424,9 +459,9 @@ class Arena {
 			}
 			$p->setXpLevel(0);
 			$p->removeAllEffects();
-			$p->setGamemode(Player::ADVENTURE);
 			$p->getInventory()->clearAll();
 			$p->getArmorInventory()->clearAll();
+			$p->setGamemode(Player::ADVENTURE);
 
 			$p->teleport($this->plugin->getDatabase()->getLobby());
 		}
@@ -470,10 +505,11 @@ class Arena {
 	 * Set the status of the arena.
 	 *
 	 * @param int $statusCode
+	 *
 	 * @since 3.0
 	 */
 	public function setStatus(int $statusCode){
-		Utils::sendDebug("Status update: $statusCode");
+		$this->getDebugger()->log("[GameStatusChange]: $statusCode");
 
 		$this->arenaStatus = $statusCode;
 	}
@@ -496,7 +532,7 @@ class Arena {
 			return $colour;
 		}
 
-		Utils::sendDebug("Configured team is empty?");
+		$this->getDebugger()->log("[Arena]: Configured team is empty?");
 
 		return -1;
 	}
@@ -505,6 +541,7 @@ class Arena {
 		if(!isset($data['arena-mode']) || $data['arena-mode'] == State::MODE_SOLO){
 			return;
 		}
+		$this->getDebugger()->log("Parsing configTeam().");
 
 		// The colours of the wool
 		// [See I use color instead of colours? Blame British English]

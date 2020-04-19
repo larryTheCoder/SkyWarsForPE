@@ -29,6 +29,7 @@
 namespace larryTheCoder\arena;
 
 
+use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\utils\Utils;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
@@ -90,14 +91,19 @@ trait ArenaData {
 	public $arenaMoneyReward = 0;
 	public $arenaStartingTime = 0;
 
+	public function getDebugger(): GameDebugger{
+		return null;
+	}
+
 	/**
 	 * Parses the data for the arena
 	 */
 	public function parseData(){
+		$this->getDebugger()->log("[ArenaConfig]: Verifying arena config");
 		$data = $this->getArenaData();
 
 		try{
-			if($data['version'] !== $this->configVersion){
+			if(!isset($data['version']) || $data['version'] !== $this->configVersion){
 				throw new \InvalidArgumentException("Unsupported config version for {$this->gameAPICodename}");
 			}
 
@@ -157,7 +163,7 @@ trait ArenaData {
 
 			// Team data(s)
 			if($data['arena-mode'] === State::MODE_TEAM){
-				Utils::sendDebug("Overriding {$this->arenaName} default players settings");
+				$this->getDebugger()->log("[ArenaConfig]: Overriding {$this->arenaName} default players settings");
 
 				$this->maximumTeams = $data['team-settings']['world-teams-avail'];     // Maximum teams   in arena
 				$this->maximumMembers = $data['team-settings']['players-per-team'];    // Maximum members in team
@@ -174,6 +180,8 @@ trait ArenaData {
 				Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§e Spawn pedestals is over configured.");
 			}
 		}catch(\Exception $ex){
+			$this->getDebugger()->log("[ArenaConfig]: Failed to verify arena files.");
+
 			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Failed to verify config files.");
 			$this->arenaEnable = false;
 
@@ -182,8 +190,10 @@ trait ArenaData {
 		$this->configChecked = true;
 
 		if($this->arenaEnable){
+			$this->getDebugger()->log("[ArenaConfig]: Arena is enabled and loaded.");
 			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§a Arena loaded and enabled");
 		}else{
+			$this->getDebugger()->log("[ArenaConfig]: Arena is only loaded and not enabled by default.");
 			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Arena disabled");
 		}
 	}

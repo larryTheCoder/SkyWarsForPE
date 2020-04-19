@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\arena;
 
+use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use pocketmine\item\Item;
@@ -70,7 +71,13 @@ trait PlayerHandler {
 	/** @var int */
 	public $minimumMembers = 0;
 
+	public function getDebugger(): GameDebugger{
+		return null;
+	}
+
 	public function addPlayer(Player $pl, int $team = -1){
+		$this->getDebugger()->log("[PlayerHandler]: Adding player {$pl->getName()} into the list");
+
 		# Set the player gamemode first
 		$pl->setGamemode(0);
 		$pl->getInventory()->clearAll();
@@ -94,18 +101,26 @@ trait PlayerHandler {
 	}
 
 	public function removePlayer(Player $pl){
+		$this->getDebugger()->log("[PlayerHandler]: Removing player {$pl->getName()} from the list");
+
 		// Check if the player do exists
 		if(isset($this->players[strtolower($pl->getName())])){
+			$this->getDebugger()->log("[PlayerHandler]: Condition fulfilled, removing the player from set.");
+
 			unset($this->players[strtolower($pl->getName())]);
 
 			// Unset the player from this team.
 			if(isset($this->teams[strtolower($pl->getName())])){
 				unset($this->teams[strtolower($pl->getName())]);
+
+				$this->getDebugger()->log("[PlayerHandler]: Removing player from team data.");
 			}
 		}
 
 		if(isset($this->spectators[strtolower($pl->getName())])){
 			unset($this->spectators[strtolower($pl->getName())]);
+
+			$this->getDebugger()->log("[PlayerHandler]: Removing player {$pl->getName()} from the spectator list");
 		}
 	}
 
@@ -113,7 +128,7 @@ trait PlayerHandler {
 	 * Set the player team for the user.
 	 *
 	 * @param Player $pl
-	 * @param int $team
+	 * @param int    $team
 	 */
 	public function setPlayerTeam(Player $pl, int $team){
 		if(!$this->teamMode){
@@ -124,6 +139,8 @@ trait PlayerHandler {
 	}
 
 	public function messageArenaPlayers(string $msg, $popup = true, $toReplace = [], $replacement = []){
+		$this->getDebugger()->log("[Arena Broadcast]): " . str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg(null, $msg, false)));
+
 		$inGame = array_merge($this->getPlayers(), $this->getSpectators());
 		/** @var Player $p */
 		foreach($inGame as $p){
@@ -142,7 +159,7 @@ trait PlayerHandler {
 	 * For spectator or NON-Spectator
 	 *
 	 * @param Player $p
-	 * @param bool $spectate
+	 * @param bool   $spectate
 	 */
 	public function giveGameItems(Player $p, bool $spectate){
 		if(!Settings::$enableSpecialItem){
@@ -186,6 +203,7 @@ trait PlayerHandler {
 	 * to get the player information within this class.
 	 *
 	 * @param string $name
+	 *
 	 * @return string The original name of this player.
 	 */
 	public function getOriginName(string $name): ?string{
@@ -201,6 +219,7 @@ trait PlayerHandler {
 	 * stores its data inside the arrays.
 	 *
 	 * @param string $name
+	 *
 	 * @return Player The player itself.
 	 */
 	public function getOriginPlayer(string $name): ?Player{
@@ -218,6 +237,7 @@ trait PlayerHandler {
 	 * the arena or not.
 	 *
 	 * @param mixed $pl
+	 *
 	 * @return bool
 	 */
 	public function isInArena($pl): bool{
@@ -276,6 +296,7 @@ trait PlayerHandler {
 
 	/**
 	 * @param $sender
+	 *
 	 * @return int
 	 */
 	public function getPlayerState($sender): int{
@@ -293,6 +314,8 @@ trait PlayerHandler {
 	}
 
 	public function resetPlayers(){
+		$this->getDebugger()->log("[PlayerHandler]: All players data is deleted.");
+
 		$this->spectators = [];
 		$this->players = [];
 		$this->teams = [];

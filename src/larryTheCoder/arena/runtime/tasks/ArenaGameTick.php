@@ -66,6 +66,10 @@ class ArenaGameTick extends Task {
 		$this->refillCountdown = $refillAvg[array_rand($refillAvg)];
 	}
 
+	public function getName(): string{
+		return "Arena Main Scheduling Task";
+	}
+
 	/**
 	 * Actions to execute when run
 	 *
@@ -124,6 +128,8 @@ class ArenaGameTick extends Task {
 
 					if($this->startTime <= 11){
 						$p->getLevel()->addSound((new ClickSound($p)), [$p]);
+						$p->setTitleDuration(1, 25, 1);
+
 						if($this->startTime === 11){
 							$p->addTitle($this->getMessage($p, 'arena-starting', false));
 						}elseif($this->startTime <= 3){

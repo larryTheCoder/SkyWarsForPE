@@ -28,6 +28,7 @@
 
 namespace larryTheCoder;
 
+use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\commands\SkyWarsCommand;
 use larryTheCoder\features\cages\ArenaCage;
 use larryTheCoder\features\chestRandom\RandomChest;
@@ -45,7 +46,7 @@ use pocketmine\event\{Listener, player\PlayerJoinEvent};
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\{Plugin, PluginBase};
-use pocketmine\utils\{Config, TextFormat};
+use pocketmine\utils\{Config, MainLogger, TextFormat};
 
 /**
  * The main class for SkyWars plugin
@@ -88,6 +89,15 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	public static function getInstance(){
 		return self::$instance;
+	}
+
+	/** @var GameDebugger[] */
+	private static $gameDebuggers = [];
+
+	public static function registerDebugger(string $arenaName, GameDebugger $gameDebugger){
+		self::$gameDebuggers[$arenaName] = $gameDebugger;
+
+		$gameDebugger->log("[REG] Attempting to log $arenaName");
 	}
 
 	public function onLoad(){
@@ -256,13 +266,25 @@ class SkyWarsPE extends PluginBase implements Listener {
 	}
 
 	public function onDisable(){
-		Utils::unLoadGame();
+		try{
+			Utils::unLoadGame();
 
-		// Cancel all the damn tasks
-		$this->getScheduler()->cancelAllTasks();
-		$this->database->close();
+			// Cancel all the damn tasks
+			$this->getScheduler()->cancelAllTasks();
+			$this->database->close();
 
-		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
+			foreach(self::$gameDebuggers as $debugger){
+				$debugger->shutdown();
+			}
+
+			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
+		}catch(\Throwable $error){
+			MainLogger::getLogger()->logException($error);
+
+			foreach(self::$gameDebuggers as $debugger) $debugger->shutdown();
+
+			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'Failed to disable plugin accordingly.');
+		}
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool{
@@ -273,8 +295,9 @@ class SkyWarsPE extends PluginBase implements Listener {
 	 * Get the translation for player and console too
 	 *
 	 * @param null|CommandSender $p
-	 * @param $key
-	 * @param bool $prefix
+	 * @param                    $key
+	 * @param bool               $prefix
+	 *
 	 * @return string
 	 */
 	public function getMsg(?CommandSender $p, $key, $prefix = true){
@@ -299,6 +322,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	/**
 	 * @param PlayerJoinEvent $e
+	 *
 	 * @priority MONITOR
 	 */
 	public function onPlayerLogin(PlayerJoinEvent $e){

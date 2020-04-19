@@ -30,6 +30,7 @@ namespace larryTheCoder\arena\runtime\listener;
 
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\runtime\DefaultGameAPI;
+use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\arena\State;
 use larryTheCoder\provider\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
@@ -80,6 +81,10 @@ class BasicListener implements Listener {
 	public function __construct(DefaultGameAPI $api){
 		$this->gameAPI = $api;
 		$this->arena = $api->arena;
+	}
+
+	public function getDebugger(): GameDebugger{
+		return $this->arena->getDebugger();
 	}
 
 	/**
@@ -169,7 +174,15 @@ class BasicListener implements Listener {
 			return;
 		}
 
-		// TODO: Assists killing.
+		$this->getDebugger()->log("An entity {$player->getName()} is being attacked, cause ID: {$e->getCause()}");
+
+		if(isset($this->cooldown[$player->getName()])){
+			$this->getDebugger()->log("Under cooldown counter " . $this->cooldown[$player->getName()] - $now . "s.");
+		}
+		if(isset($this->lastHit[$player->getName()])){
+			$this->getDebugger()->log("Last hit by: {$this->lastHit[$player->getName()]}.");
+		}
+
 		switch($e->getCause()){
 			case EntityDamageEvent::CAUSE_ENTITY_ATTACK:
 				if($e instanceof EntityDamageByEntityEvent){
@@ -177,8 +190,14 @@ class BasicListener implements Listener {
 					if($damage instanceof Player){
 						$this->lastHit[$player->getName()] = $damage->getName();
 						$this->cooldown[$player->getName()] = $now + 30;
+
+						$this->getDebugger()->log("Damage is done by a player {$damage->getName()}");
+					}else{
+						$this->getDebugger()->log("Damage is done by an entity {$damage->getName()}");
 					}
 				}else{
+					$this->getDebugger()->log("Damage is done by an unknown entity.");
+
 					if(isset($this->cooldown[$player->getName()])){
 						if($this->cooldown[$player->getName()] - $now >= 0){
 							break;
@@ -193,12 +212,18 @@ class BasicListener implements Listener {
 				if($e instanceof EntityDamageByChildEntityEvent){
 					$damage = $e->getDamager();
 					if($damage instanceof Player){
+						$this->getDebugger()->log("Projectile damage is done by a player {$damage->getName()}.");
+
 						$this->lastHit[$player->getName()] = $damage->getName();
 						$this->cooldown[$player->getName()] = $now + 30;
 						$volume = 0x10000000 * (min(30, 10) / 5); //No idea why such odd numbers, but this works...
 						$damage->level->broadcastLevelSoundEvent($damage, LevelSoundEventPacket::SOUND_LEVELUP, 1, (int)$volume);
+					}else{
+						$this->getDebugger()->log("Projectile damage is done by an unknown entity.");
 					}
 				}else{
+					$this->getDebugger()->log("Projectile damage is done by an unknown object.");
+
 					$this->lastHit[$player->getName()] = $player->getName();
 				}
 				break;
@@ -206,10 +231,15 @@ class BasicListener implements Listener {
 				if($e instanceof EntityDamageByEntityEvent || $e instanceof EntityDamageByChildEntityEvent){
 					$damage = $e->getDamager();
 					if($damage instanceof Player){
+						$this->getDebugger()->log("Magic damage is done by a player {$damage->getName()}}.");
+
 						$this->lastHit[$player->getName()] = $damage->getName();
 						$this->cooldown[$player->getName()] = $now + 30;
+					}else{
+						$this->getDebugger()->log("Magic damage is done by an unknown entity {$damage->getNameTag()}.");
 					}
 				}else{
+					$this->getDebugger()->log("Magic damage is done by an unknown object.");
 					if(isset($this->cooldown[$player->getName()])){
 						if($this->cooldown[$player->getName()] - $now >= 0){
 							break;
@@ -221,6 +251,8 @@ class BasicListener implements Listener {
 				}
 				break;
 			default:
+				$this->getDebugger()->log("Unknown damage caused by the player.");
+
 				if(isset($this->cooldown[$player->getName()])){
 					if($this->cooldown[$player->getName()] - $now >= 0){
 						break;
@@ -247,12 +279,15 @@ class BasicListener implements Listener {
 			$e->setDeathMessage("");
 
 			if($this->arena->getPlayerState($p) === State::PLAYER_ALIVE){
+				$this->getDebugger()->log("A living player died in the arena.");
+
 				$e->setDrops([]);
 				# Set the database data
 				$this->setDeathData($p);
 
 				$player = !isset($this->lastHit[$p->getName()]) ? $p->getName() : $this->lastHit[$p->getName()];
 				if(!is_integer($player)){
+					$this->getDebugger()->log("This player is getting killed by {$player}.");
 					if($player === $p->getName()){
 						$this->arena->messageArenaPlayers('death-message-suicide', false, ["{PLAYER}"], [$p->getName()]);
 					}else{
@@ -260,12 +295,16 @@ class BasicListener implements Listener {
 						$this->arena->kills[$player]++;
 					}
 				}else{
+					$this->getDebugger()->log("This player is getting killed with ID: {$player}.");
+
 					$msg = Utils::getDeathMessageById($player);
 					$this->arena->messageArenaPlayers($msg, false, ["{PLAYER}"], [$p->getName()]);
 				}
 				unset($this->lastHit[$p->getName()]);
 
 				$this->arena->knockedOut($p);
+			}else{
+				// TODO: Check if the player is spectating?
 			}
 		}
 	}
@@ -365,7 +404,7 @@ class BasicListener implements Listener {
 				$colors = [];
 				$imaged = @imagecreatefrompng($folder . "map.png");
 				if(!$imaged){
-					Utils::sendDebug("Error: Cannot load map");
+					$this->getDebugger()->log("Error: Cannot load map");
 
 					return;
 				}
