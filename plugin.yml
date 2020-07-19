@@ -3,6 +3,7 @@ main: larryTheCoder\SkyWarsPE
 version: "3.0-BETA"
 api: 3.0.0+ALPHA9
 author: larryTheCoder
+
 commands:
   sw:
     description: main skywars command

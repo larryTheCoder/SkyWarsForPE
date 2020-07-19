@@ -91,7 +91,7 @@ trait ArenaData {
 	public $arenaMoneyReward = 0;
 	public $arenaStartingTime = 0;
 
-	public function getDebugger(): GameDebugger{
+	public function getDebugger(): ?GameDebugger{
 		return null;
 	}
 

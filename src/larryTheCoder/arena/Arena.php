@@ -90,7 +90,7 @@ class Arena {
 	/** @var GameDebugger */
 	public $gameDebugger = null;
 
-	public function getDebugger(): GameDebugger{
+	public function getDebugger(): ?GameDebugger{
 		return $this->gameDebugger;
 	}
 
@@ -459,7 +459,7 @@ class Arena {
 			}
 			$p->setXpLevel(0);
 			$p->removeAllEffects();
-			$p->getInventory()->clearAll();
+			$p->getInventory()->clearAll(); // Possible issue here.
 			$p->getArmorInventory()->clearAll();
 			$p->setGamemode(Player::ADVENTURE);
 

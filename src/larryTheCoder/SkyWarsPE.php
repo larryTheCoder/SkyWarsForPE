@@ -58,8 +58,9 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	const CONFIG_VERSION = 2;
 
-	/** @var SkyWarsPE */
+	/** @var SkyWarsPE|null */
 	public static $instance;
+
 	/** @var Config */
 	public $msg;
 	/** @var SkyWarsCommand */
@@ -87,7 +88,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 	/** @var FormPanel */
 	public $panel;
 
-	public static function getInstance(){
+	public static function getInstance(): ?SkyWarsPE{
 		return self::$instance;
 	}
 
@@ -295,12 +296,12 @@ class SkyWarsPE extends PluginBase implements Listener {
 	 * Get the translation for player and console too
 	 *
 	 * @param null|CommandSender $p
-	 * @param                    $key
-	 * @param bool               $prefix
+	 * @param string $key
+	 * @param bool $prefix
 	 *
 	 * @return string
 	 */
-	public function getMsg(?CommandSender $p, $key, $prefix = true){
+	public function getMsg(?CommandSender $p, string $key, $prefix = true){
 		$msg = "Locale could not found";
 
 		if(!is_null($p) && $p instanceof Player){

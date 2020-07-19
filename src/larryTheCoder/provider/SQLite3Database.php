@@ -77,6 +77,7 @@ class SQLite3Database extends SkyWarsDatabase {
 		// Then unset them
 		unset($this->sqlCreateNewData, $this->sqlGetPlayerData, $this->sqlUpdateNewData,
 			$this->sqlGetLobbyPos, $this->sqlGetLobbyInsert, $this->sqlGetLobbyUpdate);
+
 		Server::getInstance()->getLogger()->info(SkyWarsPE::getInstance()->getPrefix() . "§aSuccessfully closed the sqlite database");
 	}
 

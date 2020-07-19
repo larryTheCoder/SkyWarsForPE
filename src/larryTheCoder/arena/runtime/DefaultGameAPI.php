@@ -82,7 +82,7 @@ class DefaultGameAPI extends GameAPI {
 	}
 
 	public function getDebugger(): GameDebugger{
-		return $this->getDebugger();
+		return $this->arena->getDebugger();
 	}
 
 	public function joinToArena(Player $p): bool{

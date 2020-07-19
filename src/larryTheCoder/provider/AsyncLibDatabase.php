@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2019 larryTheCoder and contributors
+ * Copyright (c) 2015-2020 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,18 +26,44 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\features\kits;
+namespace larryTheCoder\provider;
 
-use pocketmine\event\Listener;
+use larryTheCoder\player\PlayerData;
+use pocketmine\level\Position;
 
-class KitUIRegistration implements Listener {
+/**
+ * A better asynchronous database operations for SkyWars objects.
+ * Uses libasyncsql in order to work properly.
+ *
+ * @package larryTheCoder\provider
+ */
+class AsyncLibDatabase {
 
-	/**
-	 * @param KitEquipEvent $ev
-	 */
-	public function onKitEquipEvent(KitEquipEvent $ev){
-		$ev->getKit();
+	public function close(){
+		// TODO: Implement close() method.
 	}
 
+	public function createNewData(string $p): int{
+		// TODO: Implement createNewData() method.
+	}
 
+	public function getPlayerData(string $p, callable $objectReturned){
+		// TODO: Implement getPlayerData() method.
+	}
+
+	public function setPlayerData(string $p, PlayerData $pd): int{
+		// TODO: Implement setPlayerData() method.
+	}
+
+	public function getPlayers(){
+		// TODO: Implement getPlayers() method.
+	}
+
+	public function getLobby(){
+		// TODO: Implement getLobby() method.
+	}
+
+	public function setLobby(Position $pos): int{
+		// TODO: Implement setLobby() method.
+	}
 }

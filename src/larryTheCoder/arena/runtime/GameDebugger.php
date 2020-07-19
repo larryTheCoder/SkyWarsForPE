@@ -28,9 +28,10 @@
 
 namespace larryTheCoder\arena\runtime;
 
+use pocketmine\Thread;
 use pocketmine\utils\TextFormat;
 
-class GameDebugger extends \Thread {
+class GameDebugger extends Thread {
 
 	/** @var bool */
 	protected $shutdown = false;
@@ -66,10 +67,11 @@ class GameDebugger extends \Thread {
 		});
 	}
 
-	public function shutdown(){
+	public function quit(){
 		$this->log("----- SHUTDOWN -----");
 
 		$this->shutdown = true;
+		parent::quit();
 	}
 
 	public function run(){
