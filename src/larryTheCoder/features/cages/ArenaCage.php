@@ -60,9 +60,9 @@ class ArenaCage {
 		}
 
 		foreach(array_keys($cfg->get("cages")) as $value){
-			$name = $cfg->getNested("cages.$value.cage-name");
-			$valued = $cfg->getNested("cages.$value.cage-price");
-			$default = $cfg->getNested("cages.$value.cage-default");
+			$name = $cfg->getNested("cages.$value.cage-name", "default");
+			$valued = $cfg->getNested("cages.$value.cage-price", 0);
+			$default = $cfg->getNested("cages.$value.cage-default", false);
 			$array = ["floor", "lower-middle", "middle", "higher-middle", "roof"];
 			$array2 = [];
 			for($j = 0; $j < 5; ++$j){

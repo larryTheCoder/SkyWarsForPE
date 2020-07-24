@@ -28,7 +28,9 @@
 
 namespace larryTheCoder\arena;
 
+use DateTime;
 use larryTheCoder\arena\api\GameAPI;
+use larryTheCoder\arena\runtime\CageHandler;
 use larryTheCoder\arena\runtime\DefaultGameAPI;
 use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\arena\runtime\tasks\PlayerDeathTask;
@@ -79,10 +81,8 @@ class Arena {
 	/** @var float */
 	public $startedTime = 0;
 
-	/** @var Vector3[] */
-	private $freePedestals;
-	/** @var Vector3[] */
-	public $usedPedestals;
+	/** @var CageHandler */
+	public $cageHandler;
 
 	/** @var TaskHandler[] */
 	private $taskRunning = [];
@@ -98,7 +98,11 @@ class Arena {
 		$this->arenaName = $arenaName;
 		$this->plugin = $plugin;
 
-		$time = new \DateTime('now', new \DateTimeZone(Timezone::get()));
+		try{
+			$time = new DateTime('now', new \DateTimeZone(Timezone::get()));
+		}catch(\Exception $e){
+			throw new \RuntimeException($e);
+		}
 
 		$this->gameDebugger = new GameDebugger(SkyWarsPE::$instance->getDataFolder() . "/logs/" . $time->format("Y-m-d") . " {$this->getArenaName()}.txt", $time);
 		SkyWarsPE::registerDebugger($arenaName, $this->gameDebugger);
@@ -388,14 +392,12 @@ class Arena {
 
 		// Pick one of the cages in the arena.
 		/** @var Vector3 $spawnPos */
-		$spawnLoc = array_rand($this->freePedestals);
-		$spawnPos = $this->freePedestals[$spawnLoc];
-		$this->usedPedestals[$pl->getName()] = [$spawnPos, $spawnLoc];
+		$spawnPos = $this->cageHandler->nextCage($pl);
 
 		// Here you can see, the code passes to the game API to check
 		// If its allowed to enter the arena or not.
-		if(!$this->gameAPI->joinToArena($pl)){
-			unset($this->usedPedestals[$pl->getName()]);
+		if(!$this->gameAPI->joinToArena($pl, $spawnPos)){
+			$this->cageHandler->removeCage($pl);
 
 			return;
 		}
@@ -405,8 +407,6 @@ class Arena {
 		$this->addPlayer($pl, $this->getRandomTeam());
 
 		$pl->teleport(Position::fromObject($spawnPos->add(0.5, 0, 0.5), $this->getLevel()));
-
-		unset($this->freePedestals[$spawnLoc]);
 	}
 
 	/**
@@ -429,15 +429,12 @@ class Arena {
 		$this->removePlayer($pl);
 
 		// Remove the spawn pedestals
-		$valObj = $this->usedPedestals[$pl->getName()][0];
-		$keyObj = $this->usedPedestals[$pl->getName()][1];
-		$this->freePedestals[$keyObj] = $valObj;
+		$this->cageHandler->removeCage($pl);
 
 		SkyWarsPE::getInstance()->getDatabase()->teleportLobby(function(Position $pos) use ($pl){
 			$pl->teleport($pos);
 		});
 
-		unset($this->usedPedestals[$pl->getName()]);
 		unset($this->kills[$pl->getName()]);
 	}
 
@@ -465,7 +462,9 @@ class Arena {
 			$p->getArmorInventory()->clearAll();
 			$p->setGamemode(Player::ADVENTURE);
 
-			$p->teleport($this->plugin->getDatabase()->getLobby());
+			SkyWarsPE::getInstance()->getDatabase()->teleportLobby(function(Position $pos) use ($p){
+				$p->teleport($pos);
+			});
 		}
 
 		$this->resetPlayers();
@@ -517,8 +516,9 @@ class Arena {
 	}
 
 	private function loadCageHandler(){
-		$this->freePedestals = $this->spawnPedestals; // The 'available' spawns
-		$this->usedPedestals = []; // Used spawns that will be added into 'available' if the player left
+		if($this->cageHandler === null) $this->cageHandler = new CageHandler($this->spawnPedestals);
+
+		$this->cageHandler->resetAll();
 	}
 
 	private function getRandomTeam(): int{

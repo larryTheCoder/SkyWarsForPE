@@ -32,6 +32,7 @@ use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\runtime\DefaultGameAPI;
 use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\arena\State;
+use larryTheCoder\player\PlayerData;
 use larryTheCoder\provider\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
@@ -73,7 +74,7 @@ class BasicListener implements Listener {
 	private $gameAPI;
 	/**@var Arena */
 	private $arena;
-	/** @var string[] */
+	/** @var string[]|int[] */
 	private $lastHit = [];
 	/** @var int[] */
 	private $cooldown = [];
@@ -177,7 +178,7 @@ class BasicListener implements Listener {
 		$this->getDebugger()->log("An entity {$player->getName()} is being attacked, cause ID: {$e->getCause()}");
 
 		if(isset($this->cooldown[$player->getName()])){
-			$this->getDebugger()->log("Under cooldown counter " . $this->cooldown[$player->getName()] - $now . "s.");
+			$this->getDebugger()->log("Under cooldown counter " . ($this->cooldown[$player->getName()] - $now) . "s.");
 		}
 		if(isset($this->lastHit[$player->getName()])){
 			$this->getDebugger()->log("Last hit by: {$this->lastHit[$player->getName()]}.");
@@ -193,7 +194,7 @@ class BasicListener implements Listener {
 
 						$this->getDebugger()->log("Damage is done by a player {$damage->getName()}");
 					}else{
-						$this->getDebugger()->log("Damage is done by an entity {$damage->getName()}");
+						$this->getDebugger()->log("Damage is done by an entity {$damage->getSaveId()}");
 					}
 				}else{
 					$this->getDebugger()->log("Damage is done by an unknown entity.");
@@ -310,16 +311,14 @@ class BasicListener implements Listener {
 	}
 
 	private function setDeathData(Player $player){
-		$pd = $this->gameAPI->plugin->getDatabase()->getPlayerData($player->getName());
-		$pd->death++;
-		$pd->lost++;
-		$pd->kill += $this->arena->kills[$player->getName()];
-		$pd->time += (microtime(true) - $this->arena->startedTime);
+		SkyWarsPE::$instance->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player){
+			$pd->death++;
+			$pd->lost++;
+			$pd->kill += $this->arena->kills[$player->getName()];
+			$pd->time += (microtime(true) - $this->arena->startedTime);
 
-		$result = $this->gameAPI->plugin->getDatabase()->setPlayerData($player->getName(), $pd);
-		if($result !== SkyWarsDatabase::DATA_EXECUTE_SUCCESS){
-			Utils::send("§cUnable to save " . $player->getName() . "'s data");
-		}
+			SkyWarsPE::$instance->getDatabase()->setPlayerData($player->getName(), $pd);
+		});
 	}
 
 	/**
@@ -331,7 +330,6 @@ class BasicListener implements Listener {
 	 * @priority MONITOR
 	 */
 	public function onRespawn(PlayerRespawnEvent $e){
-		/** @var Player $d */
 		$p = $e->getPlayer();
 		# Player must be inside of arena otherwise its a fake
 		if(!$this->arena->isInArena($p)){
@@ -347,7 +345,7 @@ class BasicListener implements Listener {
 				$this->gameAPI->giveGameItems($p, true);
 
 				foreach($this->arena->getPlayers() as $p2){
-					/** @var Player $p */
+					/** @var Player $d */
 					if(($d = Server::getInstance()->getPlayer($p2)) instanceof Player){
 						$d->hidePlayer($p);
 					}
@@ -357,7 +355,9 @@ class BasicListener implements Listener {
 			}
 		}
 
-		$e->setRespawnPosition($this->gameAPI->plugin->getDatabase()->getLobby());
+		SkyWarsPE::$instance->getDatabase()->teleportLobby(function(Position $lobby) use ($p){
+			$p->teleport($lobby);
+		});
 	}
 
 	/**

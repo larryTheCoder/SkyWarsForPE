@@ -29,55 +29,45 @@
 namespace larryTheCoder\arena\api;
 
 
-use larryTheCoder\arena\Arena;
-use pocketmine\event\HandlerList;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 /**
- * GameAPI, a class that holds the information  about how the arena behave towards their players.
+ * GameAPI, a class that holds the information about how the arena behave towards their players.
  * This is useful when you want to change some of the settings that been set within this code.
  * Make it more useful and fun instead of a plain core of skywars itself.
  *
  * @package larryTheCoder\arena\api
  */
-abstract class GameAPI {
-
-	/** @var Arena */
-	public $arena;
-
-	public function __construct(Arena $arena){
-		$arena->gameAPICodename = $this->getCodeName();
-		$this->arena = $arena;
-	}
+interface GameAPI {
 
 	/**
 	 * The API codename.
 	 *
 	 * @return string
 	 */
-	public function getCodeName(){
-		return "SkyWars-Classic";
-	}
+	public function getCodeName(): string;
 
 	/**
 	 * Start the arena, begin the match in the
 	 * arena provided.
 	 */
-	public abstract function startArena(): void;
+	public function startArena(): void;
 
 	/**
 	 * Stop the arena, rollback to defaults and
 	 * reset the arena if possible.
 	 */
-	public abstract function stopArena(): void;
+	public function stopArena(): void;
 
 	/**
 	 * Called when a player joins into the arena
 	 *
 	 * @param Player $p
+	 * @param Vector3 $position
 	 * @return bool
 	 */
-	public abstract function joinToArena(Player $p): bool;
+	public function joinToArena(Player $p, Vector3 $position): bool;
 
 	/**
 	 * Called when a player leaves the arena.
@@ -86,7 +76,7 @@ abstract class GameAPI {
 	 * @param bool $force
 	 * @return bool
 	 */
-	public abstract function leaveArena(Player $p, bool $force = false): bool;
+	public function leaveArena(Player $p, bool $force = false): bool;
 
 	/**
 	 * Return the tasks required by the game to run.
@@ -94,19 +84,17 @@ abstract class GameAPI {
 	 *
 	 * @return array
 	 */
-	public abstract function getRuntimeTasks(): array;
+	public function getRuntimeTasks(): array;
 
 	/**
 	 * Do something when the code is trying to remove every players
 	 * from the list.
 	 */
-	public abstract function removeAllPlayers();
+	public function removeAllPlayers();
 
 	/**
 	 * Shutdown this API from using this arena.
 	 * You may found this a very useful function.
 	 */
-	public function shutdown(): void{
-		HandlerList::unregisterAll($this);
-	}
+	public function shutdown(): void;
 }

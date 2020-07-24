@@ -44,6 +44,7 @@ use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\level\sound\GenericSound;
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -56,7 +57,7 @@ use pocketmine\utils\TextFormat;
  *
  * @package larryTheCoder\arena\api
  */
-class DefaultGameAPI extends GameAPI {
+class DefaultGameAPI implements GameAPI {
 
 	/** @var SkyWarsPE */
 	public $plugin;
@@ -72,8 +73,11 @@ class DefaultGameAPI extends GameAPI {
 	/** @var Position[] */
 	private $cageToRemove;
 
+	/** @var Arena */
+	public $arena;
+
 	public function __construct(Arena $arena){
-		parent::__construct($arena);
+		$this->arena = $arena;
 
 		$this->fallTime = $arena->arenaGraceTime;
 		$this->plugin = SkyWarsPE::getInstance();
@@ -85,7 +89,7 @@ class DefaultGameAPI extends GameAPI {
 		return $this->arena->getDebugger();
 	}
 
-	public function joinToArena(Player $p): bool{
+	public function joinToArena(Player $p, Vector3 $spawnPos): bool{
 		# Set the player gamemode first
 		$p->setGamemode(0);
 		$p->getInventory()->clearAll();
@@ -102,13 +106,10 @@ class DefaultGameAPI extends GameAPI {
 
 		$this->scoreboard->addPlayer($p);
 
-		# Okay saved then we get the spawn for the player
-		$spawn = $this->arena->usedPedestals[$p->getName()][0];
-
 		# Get the custom cages
 		$cageLib = $this->plugin->getCage();
 		$cage = $cageLib->getPlayerCage($p);
-		$this->cageToRemove[$p->getName()] = $cage->build(Position::fromObject($spawn, $this->arena->getLevel()));
+		$this->cageToRemove[$p->getName()] = $cage->build(Position::fromObject($spawnPos, $this->arena->getLevel()));
 
 		$p->sendMessage(str_replace("{PLAYER}", $p->getName(), $this->plugin->getMsg($p, 'player-join')));
 
@@ -220,7 +221,7 @@ class DefaultGameAPI extends GameAPI {
 				$this->removeCage($p);
 
 				$p->setXpLevel(0);
-				$p->addTitle($this->plugin->getMsg($p, "arena-game-started", false));
+				$p->sendTitle($this->plugin->getMsg($p, "arena-game-started", false));
 				$p->getLevel()->addSound(new GenericSound($p, LevelEventPacket::EVENT_SOUND_ORB, 3));
 
 				Utils::addParticles($p->getLevel(), $p->getPosition()->add(0, -5, 0), 100);
@@ -309,5 +310,13 @@ class DefaultGameAPI extends GameAPI {
 		}
 
 		// TODO: Broadcast winners to other players?
+	}
+
+	public function getCodeName(): string{
+		return "SkyWars-BETA";
+	}
+
+	public function shutdown(): void{
+		// TODO: Implement shutdown() method.
 	}
 }

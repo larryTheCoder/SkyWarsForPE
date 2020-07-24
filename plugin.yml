@@ -3,7 +3,11 @@ main: larryTheCoder\SkyWarsPE
 version: "3.0-BETA"
 api: 3.0.0+ALPHA9
 author: larryTheCoder
-
+website: https://github.com/larryTheCoder/SkyWarsForPE
+softdepend:
+  - EconomyAPI
+extensions:
+  - sqlite3
 commands:
   sw:
     description: main skywars command

@@ -2,7 +2,7 @@
 /**
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2020 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,38 +26,54 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+namespace larryTheCoder\arena\runtime;
 
-namespace larryTheCoder\events;
-
-use larryTheCoder\arena\Arena;
-use larryTheCoder\SkyWarsPE;
-use pocketmine\event\plugin\PluginEvent;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-/**
- * This event will be called if a player wins an arena
- *
- * @package larryTheCoder\events
- */
-class PlayerWinArenaEvent extends PluginEvent {
+class CageHandler {
 
-	public static $handlerList = null;
-	/** @var Player[] */
-	protected $players = [];
-	protected $arena;
+	/** @var Vector3[] */
+	private $cages;
 
-	public function __construct(SkyWarsPE $plugin, array $player, Arena $arena){
-		parent::__construct($plugin);
-		$this->players = $player;
-		$this->arena = $arena;
+	/** @var Vector3[] */
+	private $claimedCages = [];
+
+	public function __construct(array $cages){
+		$this->cages = $cages;
 	}
 
-	public function getPlayers(){
-		return $this->players;
+	/**
+	 * Retrieves the next available cages that will be used in the game.
+	 * This method is to allocate cages after the player left.
+	 *
+	 * @param Player $player
+	 * @return Vector3|null
+	 */
+	public function nextCage(Player $player): ?Vector3{
+		if(empty($this->cages)) return null; // Cages are full.
+
+		return $this->claimedCages[$player->getName()] = array_pop($this->cages);
 	}
 
-	public function getArena(){
-		return $this->arena;
+	/**
+	 * Remove the owned cage from the given player.
+	 *
+	 * @param Player $player
+	 */
+	public function removeCage(Player $player): void{
+		if(!isset($this->claimedCages[$player->getName()])) return;
+
+		$this->cages[] = $this->claimedCages[$player->getName()];
+
+		unset($this->claimedCages[$player->getName()]);
 	}
 
+	/**
+	 * self-explanatory
+	 */
+	public function resetAll(){
+		foreach($this->claimedCages as $vec) $this->cages[] = $vec;
+		$this->claimedCages = [];
+	}
 }

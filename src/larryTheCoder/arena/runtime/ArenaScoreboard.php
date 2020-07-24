@@ -73,9 +73,8 @@ class ArenaScoreboard {
 	 * @param string $event
 	 */
 	public function setCurrentEvent(string $event){
-		if($event === null || empty($event)){
-			$event = "Nothing";
-		}
+		if(empty($event)) $event = "Nothing";
+
 		$this->events = $event;
 	}
 

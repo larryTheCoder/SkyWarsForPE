@@ -23,8 +23,9 @@ CREATE TABLE IF NOT EXISTS lobby
 -- # }
 -- # { create.player
 -- #   :playerName string
-INSERT OR IGNORE INTO players(playerName)
-VALUES (:playerName);
+INSERT INTO players(playerName)
+VALUES (:playerName)
+ON DUPLICATE KEY UPDATE playerName = :playerName;
 -- #}
 -- #{ select.player
 -- #  :playerName string

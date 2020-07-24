@@ -294,11 +294,6 @@ trait PlayerHandler {
 		return $this->spectators;
 	}
 
-	/**
-	 * @param $sender
-	 *
-	 * @return int
-	 */
 	public function getPlayerState($sender): int{
 		if($sender instanceof Player){
 			if(isset($this->players[strtolower($sender->getName())])){
