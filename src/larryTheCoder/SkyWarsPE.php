@@ -36,7 +36,7 @@ use larryTheCoder\features\kits\Kits;
 use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\formAPI\FormAPI;
 use larryTheCoder\panel\FormPanel;
-use larryTheCoder\provider\{JsonDatabase, MySqlDatabase, SkyWarsDatabase, SQLite3Database};
+use larryTheCoder\provider\AsyncLibDatabase;
 use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\utils\{Settings, Utils};
 use onebone\economyapi\EconomyAPI;
@@ -77,7 +77,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private $translation = [];
 	/** @var ArenaManager */
 	private $arenaManager;
-	/** @var SkyWarsDatabase */
+	/** @var AsyncLibDatabase */
 	private $database;
 	/** @var ArenaCage */
 	private $cage = null;
@@ -154,25 +154,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 	}
 
 	private function initDatabase(){
-		switch(strtolower(Settings::$selectedDatabase)){
-			case "sqlite":
-				$this->database = new SQLite3Database($this);
-				break;
-			case "mysql":
-				$this->database = new MySqlDatabase($this);
-				break;
-			case "json":
-				@mkdir(Settings::$jsonPath, 0770);
-				@mkdir(Settings::$jsonPath . "/players", 0770);
-
-				$this->database = new JsonDatabase($this);
-				break;
-			default:
-				$this->getServer()->getLogger()->warning($this->getPrefix() . "§cUnknown database §e" . Settings::$selectedDatabase);
-				$this->getServer()->getLogger()->warning($this->getPrefix() . "§aUsing default database: sqlite");
-				$this->database = new SQLite3Database($this);
-				break;
-		}
+		$this->database = new AsyncLibDatabase($this, $this->getConfig()->get("database"));
 	}
 
 	public function onEnable(){
@@ -194,8 +176,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->checkLibraries();
 		$this->getArenaManager()->checkArenas();
-		$this->checkLobby();
-		$this->loadHumans();
+		//$this->loadHumans(); // FIXME
 
 		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
 	}
@@ -252,17 +233,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 		return $this->arenaManager;
 	}
 
-	private function checkLobby(){
-		$lobby = $this->getDatabase()->getLobby();
-		if(is_integer($lobby)){
-			$this->getDatabase()->setLobby($this->getServer()->getDefaultLevel()->getSpawnLocation());
-
-			return;
-		}
-		Utils::loadFirst($lobby->getLevel()->getName());
-	}
-
-	public function getDatabase(): SkyWarsDatabase{
+	public function getDatabase(): AsyncLibDatabase{
 		return $this->database;
 	}
 
@@ -275,14 +246,14 @@ class SkyWarsPE extends PluginBase implements Listener {
 			$this->database->close();
 
 			foreach(self::$gameDebuggers as $debugger){
-				$debugger->shutdown();
+				$debugger->quit();
 			}
 
 			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
 		}catch(\Throwable $error){
 			MainLogger::getLogger()->logException($error);
 
-			foreach(self::$gameDebuggers as $debugger) $debugger->shutdown();
+			foreach(self::$gameDebuggers as $debugger) $debugger->quit();
 
 			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'Failed to disable plugin accordingly.');
 		}
@@ -327,16 +298,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 	 * @priority MONITOR
 	 */
 	public function onPlayerLogin(PlayerJoinEvent $e){
-		$p = $e->getPlayer();
-		# Config configuration
-		$result = $this->getDatabase()->createNewData($p->getName());
-		if($result !== SkyWarsDatabase::DATA_ALREADY_AVAILABLE){
-			if($result === SkyWarsDatabase::DATA_EXECUTE_SUCCESS){
-				Utils::sendDebug("Registered {$p->getName()} into database...");
-			}else{
-				Utils::send("§cFailed to register §e{$p->getName()}§a into database...");
-			}
-		}
+		$this->getDatabase()->createNewData($e->getPlayer()->getName());
 	}
 
 	/**

@@ -413,7 +413,7 @@ class Arena {
 	 * Leave a player from an arena.
 	 *
 	 * @param Player $pl
-	 * @param bool   $force
+	 * @param bool $force
 	 *
 	 * @since 3.0
 	 */
@@ -433,7 +433,9 @@ class Arena {
 		$keyObj = $this->usedPedestals[$pl->getName()][1];
 		$this->freePedestals[$keyObj] = $valObj;
 
-		$pl->teleport(SkyWarsPE::getInstance()->getDatabase()->getLobby());
+		SkyWarsPE::getInstance()->getDatabase()->teleportLobby(function(Position $pos) use ($pl){
+			$pl->teleport($pos);
+		});
 
 		unset($this->usedPedestals[$pl->getName()]);
 		unset($this->kills[$pl->getName()]);

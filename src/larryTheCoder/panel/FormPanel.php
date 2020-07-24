@@ -33,7 +33,9 @@ use larryTheCoder\arena\State;
 use larryTheCoder\formAPI\{event\FormRespondedEvent,
 	response\FormResponseCustom,
 	response\FormResponseModal,
-	response\FormResponseSimple};
+	response\FormResponseSimple
+};
+use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\utils\{ConfigManager, Utils};
@@ -109,17 +111,18 @@ class FormPanel implements Listener {
 	}
 
 	public function showStatsPanel(Player $player){
-		$db = $this->plugin->getDatabase()->getPlayerData($player->getName());
-		$formAPI = $this->plugin->formAPI->createCustomForm();
+		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $result) use ($player){
+			$formAPI = SkyWarsPE::$instance->formAPI->createCustomForm();
 
-		$formAPI->setTitle("§5{$db->player}'s stats'");
-		$formAPI->addLabel("§6Name: §f" . $db->player);
-		$formAPI->addLabel("§6Kills: §f" . $db->kill);
-		$formAPI->addLabel("§6Deaths: §f" . $db->death);
-		$formAPI->addLabel("§6Wins: §f" . $db->wins);
-		$formAPI->addLabel("§6Lost: §f" . $db->lost);
+			$formAPI->setTitle("§5{$result->player}'s stats'");
+			$formAPI->addLabel("§6Name: §f" . $result->player);
+			$formAPI->addLabel("§6Kills: §f" . $result->kill);
+			$formAPI->addLabel("§6Deaths: §f" . $result->death);
+			$formAPI->addLabel("§6Wins: §f" . $result->wins);
+			$formAPI->addLabel("§6Lost: §f" . $result->lost);
 
-		$formAPI->sendToPlayer($player);
+			$formAPI->sendToPlayer($player);
+		});
 	}
 
 	/**
@@ -549,26 +552,29 @@ class FormPanel implements Listener {
 	 * @param Player $player
 	 */
 	public function showChooseCage(Player $player){
-		$pd = $this->plugin->getDatabase()->getPlayerData($player->getName());
-		$form = $this->plugin->formAPI->createSimpleForm();
-		$form->setTitle("§cChoose Your Cage");
-		$form->setContent("§aVarieties of cages available!");
+		// TODO
+		// FIXME: Reflection properties mismatched.
+		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $result) use ($player){
+			$form = $this->plugin->formAPI->createSimpleForm();
+			$form->setTitle("§cChoose Your Cage");
+			$form->setContent("§aVarieties of cages available!");
 
-		$array = [];
-		foreach($this->plugin->getCage()->getCages() as $cage){
-			var_dump($pd);
+			$array = [];
+			foreach($this->plugin->getCage()->getCages() as $cage){
+				var_dump($result);
 
-			if((is_array($pd->cages) && !in_array(strtolower($cage->getCageName()), $pd->cages)) && $cage->getPrice() !== 0){
-				$form->addButton("§8" . $cage->getCageName() . " §d§l[$" . $cage->getPrice() . "]");
-			}else{
-				$form->addButton("§8" . $cage->getCageName());
+				if((is_array($result->cages) && !in_array(strtolower($cage->getCageName()), $pd->cages)) && $cage->getPrice() !== 0){
+					$form->addButton("§8" . $cage->getCageName() . " §d§l[$" . $cage->getPrice() . "]");
+				}else{
+					$form->addButton("§8" . $cage->getCageName());
+				}
+				$array[] = $cage->getCageName();
 			}
-			$array[] = $cage->getCageName();
-		}
 
-		$form->sendToPlayer($player);
-		$this->command[$player->getName()] = $array;
-		$this->forms[$form->getId()] = FormPanel::PANEL_CHOSE_CAGE;
+			$form->sendToPlayer($player);
+			$this->command[$player->getName()] = $array;
+			$this->forms[$form->getId()] = FormPanel::PANEL_CHOSE_CAGE;
+		});
 	}
 
 	private function joinSignSetup(Player $player, SkyWarsData $data){

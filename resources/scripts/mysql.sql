@@ -1,4 +1,4 @@
--- #!sqlite
+-- #!mysql
 -- #{ sw
 -- #{ table.players
 CREATE TABLE IF NOT EXISTS players

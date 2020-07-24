@@ -128,43 +128,26 @@ item:
     item-place: 0
     item-cmd: "kit"
 
-# Database for SkyWars
+# Database configuration for SkyWars.
 database:
-  # Choose your database. This is required in order to save player
-  # data. Make sure that you know how to use them and what is its cons
-  # Recommended Database: JSON
-  # Database solutions: MySQL, SQLite, JSON
-  selected-database: "JSON"
-  # Data configuration for selected database
-  # MySQL and sqlite
-  mysql:
-    # Listen carefully to the directed host
-    # IP-Address. 0.0.0.0 is a localhost
-    hostname: "0.0.0.0"
-    # The port of the mysql host
-    # Default: 3306
-    port: 3306
-    # Your username of the database
-    user: "root"
-    # Your username password
-    password: "1234IsNotAGoodPassword"
-    # Your preferred database
-    database: "database"
-    # Your preferred prefix, this can be used to separate
-    # The (available) table in your mysql server.
-    prefix: "Server01"
+  # The database type. "sqlite" and "mysql" are supported.
+  type: sqlite
+
+  # Edit these settings only if you choose "sqlite".
   sqlite:
-    # Simple sqlite connection
-    # The file of the location to save the SkyWars
-    # Database, must include .db otherwise it wont work.
-    # The path must be available and assessable otherwise it will not create a new database.
-    # Variables: %1 => The server absolute path %2 => The plugin absolute path
-    path: "%2/SkyWars.db"
-  json:
-    # The JSON server path.
-    # This must be a directory and must the folder must be exists.
-    # Variables: %1 => The server absolute path %2 => The plugin absolute path
-    path: "%2/database"
+    # The file name of the database in the plugin data folder.
+    # You can also put an absolute path here.
+    file: database.db
+  # Edit these settings only if you choose "mysql".
+  mysql:
+    host: 127.0.0.1
+    # Avoid using the "root" user for security reasons.
+    username: root
+    password: ""
+    schema: your_schema
+  # The maximum number of simultaneous SQL queries
+  # Recommended: 1 for sqlite, 2 for MySQL. You may want to further increase this value if your MySQL connection is very slow.
+  worker-limit: 1
 
 # Trailer for SkyWars (lifeboat)
 # Implementation. Edit the config in trailer.yml

@@ -2,9 +2,6 @@
   <img src="https://cdn.discordapp.com/attachments/514331305111191563/662292362223026216/SkyWarsForPE.png"/>
 </p>
 
-# Development Status: HALTED (May be continued in the future)
-Due to some obnoxious reason, and also the performance issue within this core, I decided to take a stop on developing this plugin. There is a lot of things that I need to take care of, and one of them is the un-asynchronous sqlite and mysql operations.
-
 ## SkyWarsForPE
 [![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE) [![Donate](https://img.shields.io/badge/donate-PayPal-yellow.svg?style=flat-square)](http://www.paypal.me/Permeable)
 
@@ -14,7 +11,7 @@ Due to some obnoxious reason, and also the performance issue within this core, I
 ## Introduction
 **This plugin is unstable and inconsistence, it is not ready to be used, use with caution.**
 
-~~SkyWarsForPE is a plugin built for all of the Minecraft PE Community, this source has been moved to open sourced again due to some inactivity in project, as the result, this plugin will be continued to compete with other SkyWars plugin. I ensure you, this plugin is more powerful than ever before. Its all for free!~~
+SkyWarsForPE is a plugin built for all of the Minecraft PE Community, this source has been moved to open sourced again due to some inactivity in project, as the result, this plugin will be continued to compete with other SkyWars plugin. I ensure you, this plugin is more powerful than ever before. Its all for free!
 
 ## Implemented features:
 - Build in FormAPI inside, hmm... Great

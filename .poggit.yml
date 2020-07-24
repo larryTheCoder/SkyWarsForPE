@@ -4,4 +4,7 @@ branches:
 projects:
   SkyWarsForPE:
     path: ""
+    libs:
+      - src: poggit/libasynql/libasynql
+        version: ^3.0
 ...

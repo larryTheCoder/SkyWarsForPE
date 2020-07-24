@@ -33,9 +33,7 @@ use larryTheCoder\SkyWarsPE;
 use pocketmine\item\Item;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Server;
-use pocketmine\utils\{
-	Config, TextFormat
-};
+use pocketmine\utils\{Config, TextFormat};
 
 class Settings {
 
@@ -81,29 +79,6 @@ class Settings {
 
 	# ============== CHAT CONFIG ==============
 
-	# ============ DATABASE CONFIG ============
-
-	/** @var string */
-	public static $selectedDatabase = "";
-	/** @var string */
-	public static $mysqlHost = "";
-	/** @var string */
-	public static $mysqlPort = "";
-	/** @var string */
-	public static $mysqlUser = "";
-	/** @var string */
-	public static $mysqlPassword = "";
-	/** @var string */
-	public static $mysqlDatabase = "";
-	/** @var string */
-	public static $mysqlPrefix = "";
-	/** @var string */
-	public static $sqlitePath = "";
-	/** @var string */
-	public static $jsonPath = "";
-
-	# ============ DATABASE CONFIG ============
-
 	# ============== ITEM CONFIG ==============
 
 	/** @var bool */
@@ -144,24 +119,6 @@ class Settings {
 		self::$chatSpy = $chat["chat-spy"];
 
 		# ============== CHAT CONFIG ==============
-
-		# ============ DATABASE CONFIG ============
-
-		$database = $config->get("database");
-		self::$selectedDatabase = $database["selected-database"];
-		# Mysql Configuration
-		self::$mysqlHost = $database["mysql"]["hostname"];
-		self::$mysqlPort = $database["mysql"]["port"];
-		self::$mysqlUser = $database["mysql"]["user"];
-		self::$mysqlPrefix = $database["mysql"]["prefix"];
-		self::$mysqlDatabase = $database["mysql"]["database"];
-		self::$mysqlPassword = $database["mysql"]["password"];
-		# Sqlite Configuration
-		self::$sqlitePath = str_replace(["%1", "%2"], [Server::getInstance()->getDataPath(), SkyWarsPE::getInstance()->getDataFolder()], $database["sqlite"]["path"]);
-		# JSON Configuration
-		self::$jsonPath = str_replace(["%1", "%2"], [Server::getInstance()->getDataPath(), SkyWarsPE::getInstance()->getDataFolder()], $database["json"]["path"]);
-
-		# ============ DATABASE CONFIG ============
 
 		# ============== ITEM CONFIG ==============
 
