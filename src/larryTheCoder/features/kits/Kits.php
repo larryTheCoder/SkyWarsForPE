@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\features\kits;
 
+use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\Player;
@@ -91,15 +92,18 @@ class Kits {
 		if($kit === null && isset($this->playerKit[$player->getName()])){
 			unset($this->playerKit[$player->getName()]);
 		}
-		$pd = $this->plugin->getDatabase()->getPlayerData($player->getName());
-		if(!in_array(strtolower($kit->getKitName()), $pd->kitId)){
-			$this->buyKit($player, $kit);
 
-			return;
-		}
+		$reflect = $this;
+		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player, $reflect, $kit){
+			if(!in_array(strtolower($kit->getKitName()), $pd->kitId)){
+				$reflect->buyKit($player, $kit);
 
-		$this->playerKit[$player->getName()] = $kit;
-		$player->sendMessage($this->plugin->getPrefix() . "§aYou have selected §e{$kit->getKitName()} kit.");
+				return;
+			}
+
+			$reflect->playerKit[$player->getName()] = $kit;
+			$player->sendMessage($reflect->plugin->getPrefix() . "§aYou have selected §e{$kit->getKitName()} kit.");
+		});
 	}
 
 	/**
@@ -111,33 +115,33 @@ class Kits {
 	 * @param KitsAPI $kit
 	 */
 	public function buyKit(Player $p, KitsAPI $kit, bool $select = true){
-		$playerData = $this->plugin->getDatabase()->getPlayerData($p->getName());
+		$reflect = $this;
+		$this->plugin->getDatabase()->getPlayerData($p->getName(), function(PlayerData $playerData) use ($p, $kit, $select, $reflect){
+			if(in_array(strtolower($kit->getKitName()), $playerData->kitId)){
+				$p->sendMessage("You already bought this kit");
 
-		if(in_array(strtolower($kit->getKitName()), $playerData->kitId)){
-			$p->sendMessage("You already bought this kit");
+				return;
+			}
 
-			return;
-		}
+			$price = $kit->getKitPrice();
+			if($reflect->plugin->economy->myMoney($p) < $price){
+				$p->sendMessage("You don't have enough money to buy this");
 
-		$price = $kit->getKitPrice();
-		if($this->plugin->economy->myMoney($p) < $price){
-			$p->sendMessage("You don't have enough money to buy this");
+				return;
+			}
 
-			return;
-		}
+			$ret = $reflect->plugin->economy->reduceMoney($p->getName(), $price);
+			if($ret !== EconomyAPI::RET_SUCCESS){
+				$p->sendMessage("Cannot process your payment. Try again later");
 
-		$ret = $this->plugin->economy->reduceMoney($p->getName(), $price);
-		if($ret !== EconomyAPI::RET_SUCCESS){
-			$p->sendMessage("Cannot process your payment. Try again later");
+				return;
+			}
 
-			return;
-		}
+			$playerData->kitId[] = strtolower($kit->getKitName());
+			$reflect->plugin->getDatabase()->setPlayerData($p->getName(), $playerData);
 
-		$playerData->kitId[] = strtolower($kit->getKitName());
-		$this->plugin->getDatabase()->setPlayerData($p->getName(), $playerData);
-		if($select){
-			$this->setPlayerKit($p, $kit);
-		}
+			if($select) $reflect->setPlayerKit($p, $kit);
+		});
 	}
 
 	/**

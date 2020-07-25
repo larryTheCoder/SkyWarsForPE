@@ -26,64 +26,57 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\runtime;
+namespace larryTheCoder\utils\worker;
 
-use pocketmine\math\Vector3;
-use pocketmine\Player;
+use Threaded;
 
-class CageHandler {
+// Of course, libasyncsql.
+class GZIPQueue extends Threaded {
 
-	/** @var Vector3[] */
-	private $cages;
+	/** @var Threaded */
+	private $queries;
+	/** @var bool */
+	private $invalidated = false;
 
-	/** @var Vector3[] */
-	private $claimedCages = [];
+	public function __construct(){
+		$this->queries = new Threaded();
+	}
 
-	public function __construct(array $cages){
-		$this->cages = $cages;
+	public function scheduleCompression(int $queryId, string $fromPath, string $toPath): void{
+		$this->synchronized(function() use ($queryId, $fromPath, $toPath) : void{
+			$this->queries[] = serialize([$queryId, $fromPath, $toPath, true]);
+			$this->notifyOne();
+		});
+	}
+
+	public function scheduleDecompression(int $queryId, string $fromPath, string $toPath): void{
+		$this->synchronized(function() use ($queryId, $fromPath, $toPath) : void{
+			$this->queries[] = serialize([$queryId, $fromPath, $toPath, false]);
+			$this->notifyOne();
+		});
+	}
+
+	public function fetchQuery(): ?string{
+		return $this->synchronized(function(): ?string{
+			while($this->queries->count() === 0 && !$this->isInvalidated()){
+				$this->wait();
+			}
+
+			return $this->queries->shift();
+		});
 	}
 
 	/**
-	 * Retrieves the next available cages that will be used in the game.
-	 * This method is to allocate cages after the player left.
-	 *
-	 * @param Player $player
-	 * @return Vector3|null
+	 * @return bool
 	 */
-	public function nextCage(Player $player): ?Vector3{
-		if(empty($this->cages)) return null; // Cages are full.
-
-		return $this->claimedCages[$player->getName()] = array_pop($this->cages);
+	public function isInvalidated(): bool{
+		return $this->invalidated;
 	}
 
-	/**
-	 * Remove the owned cage from the given player.
-	 *
-	 * @param Player $player
-	 */
-	public function removeCage(Player $player): void{
-		if(!isset($this->claimedCages[$player->getName()])) return;
-
-		$this->cages[] = $this->claimedCages[$player->getName()];
-
-		unset($this->claimedCages[$player->getName()]);
-	}
-
-	/**
-	 * @param Player $player
-	 * @return Vector3|null
-	 */
-	public function getCage(Player $player): ?Vector3{
-		if(!isset($this->claimedCages[$player->getName()])) return null;
-
-		return $this->claimedCages[$player->getName()];
-	}
-
-	/**
-	 * self-explanatory
-	 */
-	public function resetAll(){
-		foreach($this->claimedCages as $vec) $this->cages[] = $vec;
-		$this->claimedCages = [];
+	public function invalidate(): void{
+		$this->synchronized(function(): void{
+			$this->invalidated = true;
+			$this->notify();
+		});
 	}
 }

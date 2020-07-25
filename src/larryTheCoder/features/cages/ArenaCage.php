@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\features\cages;
 
+use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use onebone\economyapi\EconomyAPI;
@@ -95,41 +96,45 @@ class ArenaCage {
 	 * @param Cage $cage
 	 */
 	public function setPlayerCage(Player $player, Cage $cage){
-		$pd = $this->plugin->getDatabase()->getPlayerData($player->getName());
-		if(!in_array(strtolower($cage->getCageName()), $pd->cages)){
-			$this->buyCage($player, $cage);
+		$reflect = $this;
+		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player, $reflect, $cage){
+			if(!in_array(strtolower($cage->getCageName()), $pd->cages)){
+				$reflect->buyCage($player, $cage);
 
-			return;
-		}
-		$this->playerCages[$player->getName()] = $cage;
-		$player->sendMessage($this->plugin->getPrefix() . "§aChosen cage §7" . $cage->getCageName());
+				return;
+			}
+			$reflect->playerCages[$player->getName()] = $cage;
+			$player->sendMessage($reflect->plugin->getPrefix() . "§aChosen cage §7" . $cage->getCageName());
+		});
 	}
 
 	public function buyCage(Player $p, Cage $cage){
-		$playerData = $this->plugin->getDatabase()->getPlayerData($p->getName());
-		if(in_array(strtolower($cage->getCageName()), $playerData->cages)){
-			$p->sendMessage("You already bought this cage");
+		$reflect = $this;
+		$this->plugin->getDatabase()->getPlayerData($p->getName(), function(PlayerData $playerData) use ($p, $cage, $reflect){
+			if(in_array(strtolower($cage->getCageName()), $playerData->cages)){
+				$p->sendMessage("You already bought this cage");
 
-			return;
-		}
+				return;
+			}
 
-		$price = $cage->getPrice();
-		if($this->plugin->economy->myMoney($p) < $price){
-			$p->sendMessage("You don't have enough money to buy this");
+			$price = $cage->getPrice();
+			if($reflect->plugin->economy->myMoney($p) < $price){
+				$p->sendMessage("You don't have enough money to buy this");
 
-			return;
-		}
+				return;
+			}
 
-		$ret = $this->plugin->economy->reduceMoney($p->getName(), $price);
-		if($ret !== EconomyAPI::RET_SUCCESS){
-			$p->sendMessage("Cannot process your payment. Try again later");
+			$ret = $reflect->plugin->economy->reduceMoney($p->getName(), $price);
+			if($ret !== EconomyAPI::RET_SUCCESS){
+				$p->sendMessage("Cannot process your payment. Try again later");
 
-			return;
-		}
+				return;
+			}
 
-		$playerData->cages[] = strtolower($cage->getCageName());
-		$this->plugin->getDatabase()->setPlayerData($p->getName(), $playerData);
-		$this->setPlayerCage($p, $cage);
+			$playerData->cages[] = strtolower($cage->getCageName());
+			$reflect->plugin->getDatabase()->setPlayerData($p->getName(), $playerData);
+			$reflect->setPlayerCage($p, $cage);
+		});
 	}
 
 	/**

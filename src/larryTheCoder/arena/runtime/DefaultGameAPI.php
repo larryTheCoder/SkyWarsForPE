@@ -63,14 +63,14 @@ class DefaultGameAPI implements GameAPI {
 	public $plugin;
 	/** @var int */
 	public $fallTime = 0;
-	/** @var string[] */
+	/** @var array<int, <int,string>> */
 	public $winners = [];
 	/** @var int[] */
 	public $winnersFixed = [];
 	/** @var ArenaScoreboard */
 	public $scoreboard;
 
-	/** @var Position[] */
+	/** @var Position[][] */
 	private $cageToRemove;
 
 	/** @var Arena */

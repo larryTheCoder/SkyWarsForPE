@@ -40,6 +40,7 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\MoveActorAbsolutePacket;
 use pocketmine\Player;
 
+// FIXME
 class FakeHuman extends Human {
 
 	// Override methods

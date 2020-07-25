@@ -26,64 +26,44 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\runtime;
+namespace larryTheCoder\utils\worker;
 
-use pocketmine\math\Vector3;
-use pocketmine\Player;
+use pocketmine\Server;
+use pocketmine\snooze\SleeperNotifier;
 
-class CageHandler {
+class GZIPFileManager {
+	// Well, if you take a look of libasyncsql virion and
+	// this class, you may see some familiarity within these codes.
 
-	/** @var Vector3[] */
-	private $cages;
+	/** @var GZIPFilesThread */
+	public $taskWorker;
+	/** @var callable[] */
+	private $handlers;
 
-	/** @var Vector3[] */
-	private $claimedCages = [];
+	/** @var SleeperNotifier */
+	private $notifier;
+	/**@var GZIPQueue */
+	private $revQueue;
+	/**@var GZIPQueueCompletion */
+	private $resQueue;
 
-	public function __construct(array $cages){
-		$this->cages = $cages;
+	public function __construct(){
+		$notifier = new SleeperNotifier();
+		Server::getInstance()->getTickSleeper()->addNotifier($notifier, function(): void{
+			$this->handleNotifications();
+		});
+
+		$this->revQueue = new GZIPQueue();
+		$this->resQueue = new GZIPQueueCompletion();
+
+		$this->taskWorker = new GZIPFilesThread($notifier, $this->revQueue, $this->resQueue);
+		$this->taskWorker->start(PTHREADS_INHERIT_INI | PTHREADS_INHERIT_CONSTANTS);
+
+		$this->revQueue->scheduleDecompression(0, "E:\ACD-HyruleServer\PostNotif\OpCache.zip", "E:\ACD-HyruleServer\PostNotif\players");
 	}
 
-	/**
-	 * Retrieves the next available cages that will be used in the game.
-	 * This method is to allocate cages after the player left.
-	 *
-	 * @param Player $player
-	 * @return Vector3|null
-	 */
-	public function nextCage(Player $player): ?Vector3{
-		if(empty($this->cages)) return null; // Cages are full.
-
-		return $this->claimedCages[$player->getName()] = array_pop($this->cages);
-	}
-
-	/**
-	 * Remove the owned cage from the given player.
-	 *
-	 * @param Player $player
-	 */
-	public function removeCage(Player $player): void{
-		if(!isset($this->claimedCages[$player->getName()])) return;
-
-		$this->cages[] = $this->claimedCages[$player->getName()];
-
-		unset($this->claimedCages[$player->getName()]);
-	}
-
-	/**
-	 * @param Player $player
-	 * @return Vector3|null
-	 */
-	public function getCage(Player $player): ?Vector3{
-		if(!isset($this->claimedCages[$player->getName()])) return null;
-
-		return $this->claimedCages[$player->getName()];
-	}
-
-	/**
-	 * self-explanatory
-	 */
-	public function resetAll(){
-		foreach($this->claimedCages as $vec) $this->cages[] = $vec;
-		$this->claimedCages = [];
+	private function handleNotifications(){
+		$this->resQueue->fetchResult($resId);
+		var_dump($resId);
 	}
 }

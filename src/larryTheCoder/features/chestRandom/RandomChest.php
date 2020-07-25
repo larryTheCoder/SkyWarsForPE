@@ -181,7 +181,7 @@ class RandomChest {
 	}
 
 	public function errorLog(string $errLog){
-		return $this->getLogger()->info(">> §c" . $errLog);
+		$this->getLogger()->info(">> §c" . $errLog);
 	}
 
 	/**

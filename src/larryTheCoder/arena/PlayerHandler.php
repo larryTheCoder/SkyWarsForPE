@@ -178,7 +178,7 @@ trait PlayerHandler {
 				$tag = new CompoundTag();
 				$tag->setTag(new CompoundTag("", []));
 				$tag->setString("map_uuid", 18293883);
-				$toGive->setCompoundTag($tag);
+				$toGive->setNamedTag($tag);
 			}
 			if(empty($itemPermission) || $p->hasPermission($itemPermission)){
 				if($giveAtWin && $this->getStatus() === State::STATE_ARENA_CELEBRATING){

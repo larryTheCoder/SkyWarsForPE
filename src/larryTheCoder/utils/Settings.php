@@ -142,7 +142,7 @@ class Settings {
 				$itemDoubleMessage = !isset($item[$key]['double-tap-message']) ? "&aTap again to confirm" : $item[$key]['double-tap-message'];
 				$nbt = $toItem->getNamedTag() === null ? new CompoundTag() : $toItem->getNamedTag();
 				$nbt->setString("command", $itemCmd);
-				$toItem->setCompoundTag($nbt);
+				$toItem->setNamedTag($nbt);
 
 				self::$items[TextFormat::clean($toItem->getCustomName())] = [$toItem, $placeAt, $itemPermission, $itemSpectate, $itemBypass, $itemDoubleMessage, $showItemAt];
 			}

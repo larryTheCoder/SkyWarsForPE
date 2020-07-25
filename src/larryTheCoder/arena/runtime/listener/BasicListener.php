@@ -33,7 +33,6 @@ use larryTheCoder\arena\runtime\DefaultGameAPI;
 use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\arena\State;
 use larryTheCoder\player\PlayerData;
-use larryTheCoder\provider\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
@@ -104,7 +103,7 @@ class BasicListener implements Listener {
 			}
 
 			/** @var Vector3 $loc */
-			$loc = $this->arena->usedPedestals[$p->getName()][0];
+			$loc = $this->arena->cageHandler->getCage($p);
 
 			if(($loc->getY() - $e->getTo()->getY()) >= 1.55){
 				$e->setTo(new Location($loc->getX(), $loc->getY(), $loc->getZ(), $p->yaw, $p->pitch, $p->getLevel()));
@@ -379,12 +378,15 @@ class BasicListener implements Listener {
 	}
 
 	public function playerQuitEvent(PlayerQuitEvent $event){
+		$pl = $event->getPlayer();
 		if($this->arena->isInArena($event->getPlayer())){
 			$this->arena->leaveArena($event->getPlayer(), true);
 			$this->arena->checkAlive();
 
 			// Sometimes this thing is useful.
-			$event->getPlayer()->setSpawn(SkyWarsPE::getInstance()->getDatabase()->getLobby());
+			SkyWarsPE::getInstance()->getDatabase()->teleportLobby(function(Position $pos) use ($pl){
+				$pl->setSpawn($pos);
+			});
 		}
 	}
 

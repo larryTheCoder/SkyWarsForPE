@@ -365,7 +365,7 @@ class FormPanel implements Listener {
 					$player = $this->command[$p->getName()];
 					$responseSi = $response;
 					$buttonId = $responseSi->getClickedButtonId();
-					$p->teleport($player[$buttonId]);
+					//$p->teleport($player[$buttonId]); // what
 					$this->cleanupArray($p);
 					break;
 				case FormPanel::PANEL_CHOSE_CAGE:
@@ -554,16 +554,16 @@ class FormPanel implements Listener {
 	public function showChooseCage(Player $player){
 		// TODO
 		// FIXME: Reflection properties mismatched.
-		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $result) use ($player){
+		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player){
 			$form = $this->plugin->formAPI->createSimpleForm();
 			$form->setTitle("§cChoose Your Cage");
 			$form->setContent("§aVarieties of cages available!");
 
 			$array = [];
 			foreach($this->plugin->getCage()->getCages() as $cage){
-				var_dump($result);
+				var_dump($pd);
 
-				if((is_array($result->cages) && !in_array(strtolower($cage->getCageName()), $pd->cages)) && $cage->getPrice() !== 0){
+				if((is_array($pd->cages) && !in_array(strtolower($cage->getCageName()), $pd->cages)) && $cage->getPrice() !== 0){
 					$form->addButton("§8" . $cage->getCageName() . " §d§l[$" . $cage->getPrice() . "]");
 				}else{
 					$form->addButton("§8" . $cage->getCageName());

@@ -131,16 +131,16 @@ class ArenaGameTick extends Task {
 						$p->setTitleDuration(1, 25, 1);
 
 						if($this->startTime === 11){
-							$p->addTitle($this->getMessage($p, 'arena-starting', false));
+							$p->sendTitle($this->getMessage($p, 'arena-starting', false));
 						}elseif($this->startTime <= 3){
-							$p->addSubTitle($this->getMessage($p, 'arena-subtitle', false));
+							$p->sendSubTitle($this->getMessage($p, 'arena-subtitle', false));
 							if($this->startTime > 1){
-								$p->addTitle("§6" . $this->startTime);
+								$p->sendTitle("§6" . $this->startTime);
 							}else{
-								$p->addTitle("§c" . $this->startTime);
+								$p->sendTitle("§c" . $this->startTime);
 							}
 						}else{
-							$p->addTitle("§a" . $this->startTime);
+							$p->sendTitle("§a" . $this->startTime);
 						}
 					}
 				}
