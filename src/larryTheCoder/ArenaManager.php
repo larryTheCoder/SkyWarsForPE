@@ -100,7 +100,7 @@ final class ArenaManager {
 		}
 		$game->inSetup = false;
 		$game->reloadData();
-		if($resetLevel) $game->resetLevel();
+		if($resetLevel) $game->saveArenaWorld();
 
 		$game->resetArena();
 

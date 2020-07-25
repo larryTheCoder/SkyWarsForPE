@@ -68,16 +68,18 @@ class GZIPFilesThread extends Thread {
 			}
 
 			[$queryId, $fromPath, $toPath, $compress] = unserialize($row);
-			if($compress){
-				// "folder" "target.zip"
-				$this->compressFile($fromPath, $toPath); // Overwrites the whole zip file.
-			}else{
-				// "target.zip" "folder"
-				$this->decompressFile($fromPath, $toPath); // Overwrite the whole folder path.
+			try{
+				if($compress){
+					// "folder" "target.zip"
+					$this->compressFile($fromPath, $toPath); // Overwrites the whole zip file.
+				}else{
+					// "target.zip" "folder"
+					$this->decompressFile($fromPath, $toPath); // Overwrite the whole folder path.
+				}
+			}finally{
+				$this->completion->publishResult($queryId);
+				$this->notifier->wakeupSleeper();
 			}
-
-			$this->completion->publishResult($queryId);
-			$this->notifier->wakeupSleeper();
 		}
 	}
 
@@ -122,7 +124,6 @@ class GZIPFilesThread extends Thread {
 
 		$zip->extractTo($toPath);
 		$zip->close();
-
 	}
 
 	public function quit(){

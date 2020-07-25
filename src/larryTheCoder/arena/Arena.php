@@ -35,7 +35,6 @@ use larryTheCoder\arena\runtime\DefaultGameAPI;
 use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\arena\runtime\tasks\PlayerDeathTask;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
@@ -104,7 +103,7 @@ class Arena {
 			throw new \RuntimeException($e);
 		}
 
-		$this->gameDebugger = new GameDebugger(SkyWarsPE::$instance->getDataFolder() . "/logs/" . $time->format("Y-m-d") . " {$this->getArenaName()}.txt", $time);
+		$this->gameDebugger = new GameDebugger(SkyWarsPE::$instance->getDataFolder() . "logs/" . $time->format("Y-m-d") . " {$this->getArenaName()}.txt", $time);
 		SkyWarsPE::registerDebugger($arenaName, $this->gameDebugger);
 
 		$this->reloadData();
@@ -187,27 +186,6 @@ class Arena {
 		}
 	}
 
-	public function resetLevel(){
-		$this->getDebugger()->log("[Arena]: Force reset world to original state...");
-
-		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaWorld;
-
-		if(!Settings::$zipArchive){
-			if(file_exists($fromPath)){
-				return;
-			}
-
-			// Delete directory and paste them back to the original world.
-			Utils::deleteDirectory($fromPath);
-		}else{
-			if(!unlink("$fromPath.zip")){
-				return;
-			}
-		}
-
-		$this->saveArenaWorld();
-	}
-
 	/**
 	 * Forcefully reset the arena to its original state.
 	 */
@@ -218,7 +196,6 @@ class Arena {
 		$this->saveArenaWorld();
 		$this->resetPlayers();
 
-		$this->arenaLevel = $this->getLevel();
 		$this->startedTime = 0;
 
 		if($this->gameAPI === null) $this->gameAPI = new DefaultGameAPI($this);
@@ -282,6 +259,8 @@ class Arena {
 		return $this->arenaName;
 	}
 
+	private $isDecompressing = false;
+
 	/**
 	 * Reset the arena to its last state. In this function, the arena world will be reset and
 	 * the variables will be set to its original values.
@@ -289,34 +268,31 @@ class Arena {
 	 * @since 3.0
 	 */
 	public function resetArenaWorld(){
+		if($this->isDecompressing) return;
+
 		$this->getDebugger()->log("[Arena]: Final state: Reset Arena...");
 
 		if($this->plugin->getServer()->isLevelLoaded($this->arenaWorld)){
 			$this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($this->arenaWorld));
 		}
 
-		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaWorld;
-		$toPath = $this->plugin->getServer()->getDataPath() . "/worlds/" . $this->arenaWorld;
+		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaWorld . ".zip";
+		$toPath = $this->plugin->getServer()->getDataPath() . "worlds/" . $this->arenaWorld;
 
+		// Reverted from diff 65e8fb78
 		Utils::deleteDirectory($toPath);
-		if(!Settings::$zipArchive){
-			if(file_exists($toPath)){
-				return;
-			}
 
-			Utils::copyResourceTo($fromPath, $toPath);
-		}else{
-			if(!is_file("$fromPath.zip")){
-				return;
-			}
-
-			$zip = new \ZipArchive;
-			if($zip->open("$fromPath.zip")){
-				// Extract it to this path
-				$zip->extractTo($toPath);
-				$zip->close();
-			}
+		if(is_file($this->plugin->getDataFolder() . 'arenas/worlds/')){
+			return;
 		}
+		if(!file_exists($toPath)) @mkdir($toPath, 0755);
+
+		$this->isDecompressing = true;
+
+		SkyWarsPE::$instance->compressor->scheduleForFile($fromPath, $toPath, false, function(){
+			$this->arenaLevel = $this->getLevel();
+			$this->isDecompressing = false;
+		});
 	}
 
 	/**
@@ -560,52 +536,25 @@ class Arena {
 		}
 	}
 
-	private function saveArenaWorld(){
+	public function saveArenaWorld(){
 		$levelName = $this->arenaWorld;
 
-		$fromPath = $this->plugin->getServer()->getDataPath() . "/worlds/" . $this->getLevel()->getFolderName();
-		$toPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName;
+		$fromPath = $this->plugin->getServer()->getDataPath() . "worlds/" . $levelName;
+		$toPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . ".zip";
 
 		// Reverted from diff 65e8fb78
-		Utils::ensureDirectory($toPath);
-		if(!Settings::$zipArchive){
-			if(file_exists($toPath)){
-				return;
-			}
+		Utils::ensureDirectory($this->plugin->getDataFolder() . 'arenas/worlds/');
 
-			// Just copy it.
-			Utils::copyResourceTo($fromPath, $toPath);
-		}else{
-			if(is_file("$toPath.zip")){
-				return;
-			}
+		// If the fie exists, then reset the world.
+		if(is_file("$toPath")){
+			$this->resetArenaWorld();
 
-			// Get real path for our folder
-			$rootPath = realpath($fromPath);
-
-			// Initialize archive object
-			$zip = new \ZipArchive();
-			$zip->open("$toPath.zip", \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-
-			// Create recursive directory iterator
-			/** @var \SplFileInfo[] $files */
-			$files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($rootPath), \RecursiveIteratorIterator::LEAVES_ONLY);
-
-			foreach($files as $name => $file){
-				// Skip directories (they would be added automatically)
-				if(!$file->isDir()){
-					// Get real and relative path for current file
-					$filePath = $file->getRealPath();
-					$relativePath = substr($filePath, strlen($rootPath) + 1);
-
-					// Add current file to archive
-					$zip->addFile($filePath, $relativePath);
-				}
-			}
-
-			// Zip archive will be created only after closing object
-			$zip->close();
+			return;
 		}
+
+		SkyWarsPE::$instance->compressor->scheduleForFile($fromPath, $toPath, true, function(){
+			$this->arenaLevel = $this->getLevel();
+		});
 	}
 
 }

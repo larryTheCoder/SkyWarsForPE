@@ -38,7 +38,7 @@ use larryTheCoder\formAPI\FormAPI;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\AsyncLibDatabase;
 use larryTheCoder\task\NPCValidationTask;
-use larryTheCoder\utils\{Settings, Utils};
+use larryTheCoder\utils\{Settings, Utils, worker\GZIPFileManager};
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
@@ -63,16 +63,20 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	/** @var Config */
 	public $msg;
+
 	/** @var SkyWarsCommand */
 	public $cmd;
 	/** @var EconomyAPI|Plugin */
 	public $economy;
+	/** @var GZIPFileManager */
+	public $compressor;
 	/** @var FormAPI */
 	public $formAPI;
 	/** @var RandomChest */
 	public $chest;
 	/** @var FakeHuman[] */
 	public $entities;
+
 	/** @var array */
 	private $translation = [];
 	/** @var ArenaManager */
@@ -83,6 +87,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private $cage = null;
 	/** @var Kits */
 	private $kits = null;
+
 	/** @var bool */
 	public $disabled;
 	/** @var FormPanel */
@@ -110,6 +115,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	public function initConfig(){
 		Utils::ensureDirectory();
+		Utils::ensureDirectory("logs/");
 		Utils::ensureDirectory("image/");
 		Utils::ensureDirectory("language/");
 		Utils::ensureDirectory("arenas/");
@@ -168,6 +174,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 
+		$this->compressor = new GZIPFileManager();
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager($this);
 		$this->formAPI = new FormAPI($this);

@@ -43,17 +43,14 @@ class GameDebugger extends Thread {
 	private $dateTime;
 
 	public function __construct(string $logFile, \DateTime $time){
-		try{
-			$this->dateTime = $time;
+		$this->dateTime = $time;
 
-			touch($logFile);
-			$this->logFile = $logFile;
+		touch($logFile);
+		$this->logFile = $logFile;
 
-			$this->logStream = new \Threaded;
+		$this->logStream = new \Threaded;
 
-			$this->start(PTHREADS_INHERIT_NONE);
-		}catch(\Exception $e){
-		}
+		$this->start(PTHREADS_INHERIT_NONE);
 
 		$this->log("----- INITIALIZATION -----");
 	}
@@ -68,7 +65,7 @@ class GameDebugger extends Thread {
 	}
 
 	public function quit(){
-		$this->log("----- SHUTDOWN -----");
+		$this->log("----- SHUTDOWN -----\n");
 
 		$this->shutdown = true;
 		parent::quit();

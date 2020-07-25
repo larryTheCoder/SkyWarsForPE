@@ -35,13 +35,13 @@ class GZIPFileManager {
 	// Well, if you take a look of libasyncsql virion and
 	// this class, you may see some familiarity within these codes.
 
+	private $slaveId = 0;
+
 	/** @var GZIPFilesThread */
 	public $taskWorker;
 	/** @var callable[] */
 	private $handlers;
 
-	/** @var SleeperNotifier */
-	private $notifier;
 	/**@var GZIPQueue */
 	private $revQueue;
 	/**@var GZIPQueueCompletion */
@@ -53,17 +53,31 @@ class GZIPFileManager {
 			$this->handleNotifications();
 		});
 
+		$this->handlers = [];
 		$this->revQueue = new GZIPQueue();
 		$this->resQueue = new GZIPQueueCompletion();
 
 		$this->taskWorker = new GZIPFilesThread($notifier, $this->revQueue, $this->resQueue);
 		$this->taskWorker->start(PTHREADS_INHERIT_INI | PTHREADS_INHERIT_CONSTANTS);
+	}
 
-		$this->revQueue->scheduleDecompression(0, "E:\ACD-HyruleServer\PostNotif\OpCache.zip", "E:\ACD-HyruleServer\PostNotif\players");
+	public function scheduleForFile(string $from, string $destination, bool $compression, ?callable $result = null){
+		++$this->slaveId;
+		$this->handlers[$this->slaveId] = $result;
+
+		if($compression){
+			$this->revQueue->scheduleCompression($this->slaveId, $from, $destination);
+		}else{
+			$this->revQueue->scheduleDecompression($this->slaveId, $from, $destination);
+		}
 	}
 
 	private function handleNotifications(){
 		$this->resQueue->fetchResult($resId);
-		var_dump($resId);
+
+		if(!isset($this->handlers[$resId])) return;
+		if(!empty($this->handlers[$resId])) $this->handlers[$resId]();
+
+		unset($this->handlers[$resId]);
 	}
 }
