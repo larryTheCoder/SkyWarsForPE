@@ -408,6 +408,12 @@ class Arena {
 		$this->cageHandler->removeCage($pl);
 
 		SkyWarsPE::getInstance()->getDatabase()->teleportLobby(function(Position $pos) use ($pl){
+			if($pos->getLevel() === null){
+				$pl->teleport(Server::getInstance()->getDefaultLevel()->getSpawnLocation());
+
+				return;
+			}
+
 			$pl->teleport($pos);
 		});
 

@@ -203,9 +203,8 @@ class AsyncLibDatabase {
 		$data->wins = $rows['wins'];
 		$data->lost = $rows['lost'];
 
-		$objOffset = $rows["data"];
-		if($objOffset != null){
-			$erData = explode(":", $objOffset);
+		if(isset($rows["data"])){
+			$erData = explode(":", $rows["data"]);
 			$cages = explode("%", base64_decode($erData[0]));
 			$kits = explode("%", base64_decode($erData[1]));
 
