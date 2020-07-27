@@ -37,7 +37,7 @@ command-banned: "&cPor favor não use esse comando aqui."
 
 # Command help message
 help-main: "&cUse /sw help para obter a lista de comandos"
-lobby-help: "&2/lobby §l§5»§r§f Voltar ao lobby."
+lobby-help: "&2/sw leave §l§5»§r§f Voltar ao lobby."
 kit-help: "&2/kshop §l§5»§r§f Mostrar a lista de kits."
 random-help: "&2/sw random §l§5»§r§f Entrar em uma arena aleatória."
 stats-help: "&2/sw stats §l§5»§r§f Mostrar seu status."

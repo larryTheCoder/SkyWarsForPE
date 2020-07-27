@@ -58,7 +58,7 @@ death-message: "§7- §e{PLAYER}were killed by §e{KILLER}"
 
 # Command help message
 help-main: "&cPlease use /sw help for a list of commands"
-lobby-help: "&2/lobby §l§5»§r§f Teleport to lobby."
+lobby-help: "&2/sw leave §l§5»§r§f Teleport to lobby."
 random-help: "&2/sw random §l§5»§r§f Randomly teleport to an arena."
 stats-help: "&2/sw stats §l§5»§r§f Show your game status."
 reload-help: "&2/sw reload §l§5»§r§f Reload the plugin, make new start."

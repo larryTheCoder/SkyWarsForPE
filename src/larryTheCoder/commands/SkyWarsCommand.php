@@ -44,31 +44,30 @@ final class SkyWarsCommand {
 	}
 
 	public function onCommand(CommandSender $sender, Command $cmd, array $args): bool{
-		switch($cmd->getName()){
-			case "lobby":
-			case "leave":
-				if(!$sender->hasPermission('sw.command.lobby')){
-					$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-
-					return true;
-				}
-				if(!$sender instanceof Player){
-					$this->consoleSender($sender);
-
-					return true;
-				}
-				$pManager = $this->plugin->getArenaManager();
-				if($pManager->getPlayerArena($sender) === null || !$pManager->isInLevel($sender)){
-					$sender->sendMessage('Please use this command in-arena');
-
-					return true;
-				}
-				$pManager->getPlayerArena($sender)->leaveArena($sender);
-
-				return true;
-		}
 		if(strtolower($cmd->getName()) === "sw" && isset($args[0])){
 			switch(strtolower($args[0])){
+				case "lobby":
+				case "leave":
+					if(!$sender->hasPermission('sw.command.lobby')){
+						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+
+						return true;
+					}
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+
+						return true;
+					}
+					$pManager = $this->plugin->getArenaManager();
+					$arena = $pManager->getPlayerArena($sender);
+					if($arena === null || !$pManager->isInLevel($sender)){
+						$sender->sendMessage('Please use this command in-arena');
+
+						return true;
+					}
+					$arena->leaveArena($sender);
+
+					return true;
 				case "test":
 					if(!$sender instanceof Player){
 						$this->consoleSender($sender);

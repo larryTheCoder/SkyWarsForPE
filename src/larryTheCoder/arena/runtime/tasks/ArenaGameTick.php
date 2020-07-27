@@ -226,7 +226,10 @@ class ArenaGameTick extends Task {
 			return;
 		}
 
-		$this->arena->getLevel()->setTime($tickTime);
-		$this->arena->getLevel()->stopTime();
+		$level = $this->arena->getLevel();
+		if($level === null) return;
+
+		$level->setTime($tickTime);
+		$level->stopTime();
 	}
 }

@@ -150,6 +150,8 @@ class Arena {
 	 * @return Level|null
 	 */
 	public function getLevel(): ?Level{
+		if($this->levelBusy) return null; // Avoid some unwanted world generation.
+
 		Utils::loadFirst($this->arenaWorld, true);
 
 		$level = Server::getInstance()->getLevelByName($this->arenaWorld);
@@ -259,7 +261,7 @@ class Arena {
 		return $this->arenaName;
 	}
 
-	private $isDecompressing = false;
+	private $levelBusy = false;
 
 	/**
 	 * Reset the arena to its last state. In this function, the arena world will be reset and
@@ -268,7 +270,7 @@ class Arena {
 	 * @since 3.0
 	 */
 	public function resetArenaWorld(){
-		if($this->isDecompressing) return;
+		if($this->levelBusy) return;
 
 		$this->getDebugger()->log("[Arena]: Final state: Reset Arena...");
 
@@ -287,11 +289,12 @@ class Arena {
 		}
 		if(!file_exists($toPath)) @mkdir($toPath, 0755);
 
-		$this->isDecompressing = true;
+		$this->levelBusy = true;
 
 		SkyWarsPE::$instance->compressor->scheduleForFile($fromPath, $toPath, false, function(){
+			$this->levelBusy = false;
+
 			$this->arenaLevel = $this->getLevel();
-			$this->isDecompressing = false;
 		});
 	}
 
@@ -558,9 +561,21 @@ class Arena {
 			return;
 		}
 
+		$this->levelBusy = true;
+
 		SkyWarsPE::$instance->compressor->scheduleForFile($fromPath, $toPath, true, function(){
+			$this->levelBusy = false;
+
 			$this->arenaLevel = $this->getLevel();
 		});
+	}
+
+	public function performEdit(int $state){
+		if($state === State::STARTING){
+			Utils::deleteDirectory($this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaWorld . ".zip");
+		}else{
+			$this->saveArenaWorld();
+		}
 	}
 
 }

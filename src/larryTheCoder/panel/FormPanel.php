@@ -479,6 +479,7 @@ class FormPanel implements Listener {
 
 	private function toData(Arena $arena): SkyWarsData{
 		$data = new SkyWarsData();
+		$data->arena = $arena;
 		$data->maxPlayer = $arena->maximumPlayers;
 		$data->minPlayer = $arena->minimumPlayers;
 		$data->arenaLevel = $arena->arenaWorld;
@@ -587,8 +588,10 @@ class FormPanel implements Listener {
 	private function teleportWorld(Player $p, SkyWarsData $arena){
 		$p->setGamemode(1);
 		$this->setters[strtolower($p->getName())]['WORLD'] = "EDIT-WORLD";
-		$p->sendMessage("You are now be able to edit the world now, good luck");
+		$p->sendMessage("You are now be able to edit the world now, best of luck");
 		$p->sendMessage("Use blaze rod if you have finished editing the world.");
+
+		$arena->arena->performEdit(State::STARTING);
 
 		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
 		$p->teleport($level->getSpawnLocation());
@@ -709,6 +712,8 @@ class FormPanel implements Listener {
 
 			$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 			$p->teleport($spawn, 0, 0);
+
+			$this->data[$p->getName()]->arena->performEdit(State::FINISHED);
 
 			unset($this->setters[strtolower($p->getName())]['WORLD']);
 			$this->cleanupArray($p, true);

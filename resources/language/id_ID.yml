@@ -62,7 +62,7 @@ death-message: "§7- §e{PLAYER}Dibunuh oleh §e{KILLER}"
 
 # Command help message
 help-main: "&cmohon gunakan /sw help untuk bantuan"
-lobby-help: "&2/lobby §l§5»§r§f Untuk Teleportasi ke Ruang Tunggu."
+lobby-help: "&2/sw leave §l§5»§r§f Untuk Teleportasi ke Ruang Tunggu."
 random-help: "&2/sw random §l§5»§r§f Teleportasi ke Arena Acak."
 stats-help: "&2/sw stats §l§5»§r§f Menampilkan kemajuan Permainan Anda"
 reload-help: "&2/sw reload §l§5»§r§f memuat ulang plugin, Dan Menghentikan Permainan."

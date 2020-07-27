@@ -47,4 +47,8 @@ interface State {
 	const PLAYER_ALIVE = 1;
 	const PLAYER_SPECTATE = 2;
 	const PLAYER_SPECIAL = 3;
+
+	// World edit states.
+	const STARTING = 0;
+	const FINISHED = 1;
 }
