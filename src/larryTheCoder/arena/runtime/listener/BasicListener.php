@@ -336,6 +336,8 @@ class BasicListener implements Listener {
 		}
 
 		if($this->arena->getPlayerState($p) === State::PLAYER_SPECTATE){
+			var_dump("Player respawned event...");
+
 			$p->setXpLevel(0);
 			if($this->arena->enableSpectator){
 				$e->setRespawnPosition(Position::fromObject($this->arena->arenaSpecPos, $this->arena->getLevel()));
@@ -382,11 +384,6 @@ class BasicListener implements Listener {
 		if($this->arena->isInArena($event->getPlayer())){
 			$this->arena->leaveArena($event->getPlayer(), true);
 			$this->arena->checkAlive();
-
-			// Sometimes this thing is useful.
-			SkyWarsPE::getInstance()->getDatabase()->teleportLobby(function(Position $pos) use ($pl){
-				$pl->setSpawn($pos);
-			});
 		}
 	}
 
@@ -463,6 +460,5 @@ class BasicListener implements Listener {
 
 		unset($cmd);
 	}
-
 
 }

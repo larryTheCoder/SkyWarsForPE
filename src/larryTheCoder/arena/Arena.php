@@ -171,7 +171,7 @@ class Arena {
 		$this->getDebugger()->log("[Arena]: {$pl->getName()} is knocked out in the game");
 
 		// Remove the player from the list.
-		if(isset($this->players[$pl->getName()])) unset($this->players[$pl->getName()]);
+		$this->removePlayer($pl);
 
 		if($this->enableSpectator){
 			$this->spectators[$pl->getName()] = $pl;
