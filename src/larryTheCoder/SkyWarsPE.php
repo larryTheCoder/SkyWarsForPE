@@ -110,7 +110,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 		self::$instance = $this;
 
 		$this->initConfig();
-		$this->initDatabase();
 	}
 
 	public function initConfig(){
@@ -159,21 +158,31 @@ class SkyWarsPE extends PluginBase implements Listener {
 		return Settings::$prefix;
 	}
 
-	private function initDatabase(){
-		$this->database = new AsyncLibDatabase($this, $this->getConfig()->get("database"));
-	}
+	/** @var bool */
+	private $fail = false;
 
 	public function onEnable(){
-		// Should not even run if the plugin is disabled
-		if($this->disabled){
-			return;
+		if(\Phar::running(true) === ""){
+			if(!class_exists("poggit\libasynql\libasynql")){
+				$this->getLogger()->error("libasynql library not found! Please refer to https://github.com/poggit/libasynql and install this first!");
+
+				$this->fail = true;
+				$this->getServer()->getPluginManager()->disablePlugin($this);
+
+				return;
+			}
+
+			$this->getServer()->getLogger()->warning("You are using an experimental version of SkyWarsForPE. This build may seem to work but it will crash eventually your server soon.");
 		}
+		if($this->disabled) return;
+
 		$this->getServer()->getLogger()->info($this->getPrefix() . "§eStarting SkyWarsForPE modules...");
 
 		$this->checkPlugins();
 
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 
+		$this->database = new AsyncLibDatabase($this, $this->getConfig()->get("database"));
 		$this->compressor = new GZIPFileManager();
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager($this);
@@ -246,6 +255,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	public function onDisable(){
 		try{
+			if($this->fail) return;
+
 			Utils::unLoadGame();
 
 			// Cancel all the damn tasks

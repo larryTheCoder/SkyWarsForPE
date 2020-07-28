@@ -75,7 +75,7 @@ class AsyncLibDatabase {
 
 		self::$instance = $this;
 
-		Utils::send(TextFormat::RED . "Successfully enabled database operations.");
+		Utils::send(TextFormat::YELLOW . "Successfully enabled database operations.");
 	}
 
 	public function close(){
