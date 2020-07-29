@@ -34,6 +34,7 @@ use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 
 final class SkyWarsCommand {
 
@@ -53,21 +54,21 @@ final class SkyWarsCommand {
 
 						return true;
 					}
-					if(!$sender instanceof Player){
-						$this->consoleSender($sender);
-
-						return true;
-					}
-					$pManager = $this->plugin->getArenaManager();
-					$arena = $pManager->getPlayerArena($sender);
-					if($arena === null || !$pManager->isInLevel($sender)){
-						$sender->sendMessage('Please use this command in-arena');
-
-						return true;
-					}
-					$arena->leaveArena($sender);
+				if(!$sender instanceof Player){
+					$this->consoleSender($sender);
 
 					return true;
+				}
+				$pManager = $this->plugin->getArenaManager();
+				$arena = $pManager->getPlayerArena($sender);
+				if($arena === null || !$pManager->insideArenaLevel($sender)){
+					$sender->sendMessage('Please use this command in-arena');
+
+					return true;
+				}
+				$arena->leaveArena($sender);
+
+				return true;
 				case "test":
 					if(!$sender instanceof Player){
 						$this->consoleSender($sender);
@@ -306,15 +307,19 @@ final class SkyWarsCommand {
 						$this->consoleSender($sender);
 						break;
 					}
+					if($this->plugin->getArenaManager()->insideArenaLevel($sender)){
+						$sender->sendMessage(TextFormat::RED . "You cannot run this command in an arena!");
+						break;
+					}
 
 					$this->plugin->getDatabase()->setLobby($sender->getPosition());
 					$sender->sendMessage($this->plugin->getMsg($sender, 'main-lobby-set'));
 					break;
 				case "about":
 					$ver = $this->plugin->getDescription()->getVersion();
-					$sender->sendMessage("§aSkyWarsForPE, §dBig Sister Moon.");
-					$sender->sendMessage("This plugin is running SkyWarsForPE v" . $ver . " by larryTheCoder!");
-					$sender->sendMessage("Source-link: https://github.com/larryTheCoder/SkyWarsForPE");
+					$sender->sendMessage("§aSkyWarsForPE, §cSeven Red Suns.");
+					$sender->sendMessage("§7This plugin is running SkyWarsForPE §6v" . $ver . "§7 by§b larryTheCoder!");
+					$sender->sendMessage("§7Source-link: https://github.com/larryTheCoder/SkyWarsForPE");
 					break;
 				default:
 					$sender->sendMessage($this->plugin->getMsg($sender, 'help-main'));

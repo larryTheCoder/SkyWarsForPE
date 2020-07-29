@@ -100,7 +100,7 @@ trait PlayerHandler {
 		}
 	}
 
-	public function removePlayer(Player $pl){
+	public function removePlayer(Player $pl): void{
 		$this->getDebugger()->log("[PlayerHandler]: Removing player {$pl->getName()} from the list");
 
 		// Check if the player do exists
@@ -124,11 +124,18 @@ trait PlayerHandler {
 		}
 	}
 
+	public function setSpectator(Player $pl): void{
+		$this->getDebugger()->log("[PlayerHandler]: Adding player {$pl->getName()} into spectator list");
+
+		$this->removePlayer($pl);
+		$this->spectators[strtolower($pl->getName())] = $pl;
+	}
+
 	/**
 	 * Set the player team for the user.
 	 *
 	 * @param Player $pl
-	 * @param int    $team
+	 * @param int $team
 	 */
 	public function setPlayerTeam(Player $pl, int $team){
 		if(!$this->teamMode){
@@ -159,7 +166,7 @@ trait PlayerHandler {
 	 * For spectator or NON-Spectator
 	 *
 	 * @param Player $p
-	 * @param bool   $spectate
+	 * @param bool $spectate
 	 */
 	public function giveGameItems(Player $p, bool $spectate){
 		if(!Settings::$enableSpecialItem){
@@ -262,6 +269,13 @@ trait PlayerHandler {
 	}
 
 	/**
+	 * @return Player[]
+	 */
+	public function getAllPlayers(): array{
+		return array_merge($this->players, $this->spectators);
+	}
+
+	/**
 	 * This will return the number of spectators
 	 * that is inside the arena.
 	 *
@@ -310,6 +324,24 @@ trait PlayerHandler {
 
 	public function resetPlayers(){
 		$this->getDebugger()->log("[PlayerHandler]: All players data is deleted.");
+
+		/** @var Player $p */
+		foreach(array_merge($this->players, $this->spectators) as $p){
+			$p->removeAllEffects();
+			$p->setMaxHealth(20);
+			$p->setMaxHealth($p->getMaxHealth());
+			if($p->getAttributeMap() != null){//just to be really sure
+				$p->setHealth(20);
+				$p->setFood(20);
+			}
+			$p->setXpLevel(0);
+			$p->removeAllEffects();
+			$p->getInventory()->clearAll(); // Possible issue here.
+			$p->getArmorInventory()->clearAll();
+			$p->setGamemode(Player::ADVENTURE);
+
+			SkyWarsPE::getInstance()->getDatabase()->teleportLobby($p);
+		}
 
 		$this->spectators = [];
 		$this->players = [];

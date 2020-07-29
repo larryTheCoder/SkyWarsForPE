@@ -120,7 +120,7 @@ class DefaultGameAPI implements GameAPI {
 		if($this->arena->getPlayerState($p) === State::PLAYER_ALIVE){
 			if($this->arena->getStatus() !== State::STATE_ARENA_RUNNING || $force){
 				if($force){
-					$this->arena->messageArenaPlayers('leave-others', true, ["%1", "%2"], [$p->getName(), $this->arena->getPlayersCount()]);
+					$this->arena->messageArenaPlayers('leave-others', false, ["%1", "%2"], [$p->getName(), $this->arena->getPlayersCount()]);
 				}
 				$this->arena->checkAlive();
 				$this->removeCage($p);

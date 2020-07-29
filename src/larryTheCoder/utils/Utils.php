@@ -63,7 +63,7 @@ class Utils {
 	/** @var Config */
 	private static $scoreboard;
 
-	public static function sendDebug(String $log){
+	public static function sendDebug(string $log){
 		MainLogger::getLogger()->debug("SW-DEBUG: " . $log);
 	}
 
@@ -241,14 +241,10 @@ class Utils {
 	}
 
 	public static function loadFirst(string $levelName, bool $load = true){
-		if(empty($levelName)){
-			return;
-		}
+		if(empty($levelName)) return;
 
 		Server::getInstance()->generateLevel($levelName);
-		if($load){
-			Server::getInstance()->loadLevel($levelName);
-		}
+		if($load) Server::getInstance()->loadLevel($levelName);
 	}
 
 	public static function ensureDirectory(string $directory = ""){
@@ -345,7 +341,7 @@ class Utils {
 		if(!isset($b[1])){
 			$meta = 0;
 		}elseif(is_numeric($b[1])){
-			$meta = $b[1] & 0xFFFF;
+			$meta = intval($b[1]) & 0xFFFF;
 		}else{
 			throw new \InvalidArgumentException("Unable to parse \"" . $b[1] . "\" from \"" . $str . "\" as a valid meta value");
 		}
@@ -373,7 +369,7 @@ class Utils {
 		if(!isset($b[1])){
 			$meta = 0;
 		}elseif(is_numeric($b[1])){
-			$meta = $b[1] & 0xFFFF;
+			$meta = intval($b[1]) & 0xFFFF;
 		}else{
 			throw new \InvalidArgumentException("Unable to parse \"" . $b[1] . "\" from \"" . $str . "\" as a valid meta value");
 		}
@@ -394,7 +390,7 @@ class Utils {
 	/**
 	 * Get the chest contents
 	 *
-	 * @return String[] $templates
+	 * @return array<int, array<int, null>> $templates
 	 */
 	public static function getChestContents(){
 		$items = ['armor'     => [[Item::LEATHER_CAP, Item::LEATHER_TUNIC, Item::LEATHER_PANTS, Item::LEATHER_BOOTS], [Item::GOLD_HELMET, Item::GOLD_CHESTPLATE, Item::GOLD_LEGGINGS, Item::GOLD_BOOTS], [Item::CHAIN_HELMET, Item::CHAIN_CHESTPLATE, Item::CHAIN_LEGGINGS, Item::CHAIN_BOOTS], [Item::IRON_HELMET, Item::IRON_CHESTPLATE, Item::IRON_LEGGINGS, Item::IRON_BOOTS], [Item::DIAMOND_HELMET, Item::DIAMOND_CHESTPLATE, Item::DIAMOND_LEGGINGS, Item::DIAMOND_BOOTS]], //WEAPONS
@@ -479,11 +475,20 @@ class Utils {
 	}
 
 	public static function loadDefaultConfig(){
-		if(isset(self::$scoreboard)){
-			return self::$scoreboard;
+		if(isset(self::$scoreboard)) return self::$scoreboard;
+
+		$scoreboard = new Config(SkyWarsPE::getInstance()->getDataFolder() . "scoreboard.yml");
+		if($scoreboard->get("version", 2) < 2){
+			$plug = SkyWarsPE::getInstance();
+
+			rename($plug->getDataFolder() . "scoreboard.yml", $plug->getDataFolder() . "scoreboard.yml.old");
+			$plug->saveResource("scoreboard.yml", true);
+			$scoreboard->reload();
+
+			Utils::send(TextFormat::YELLOW . "Updated scoreboard version to 2");
 		}
 
-		return self::$scoreboard = new Config(SkyWarsPE::getInstance()->getDataFolder() . "scoreboard.yml");
+		return self::$scoreboard = $scoreboard;
 	}
 
 	/**

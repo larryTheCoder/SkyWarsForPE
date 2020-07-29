@@ -32,6 +32,10 @@ use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\level\Position;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\StringTag;
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\DataConnector;
@@ -151,17 +155,37 @@ class AsyncLibDatabase {
 			});
 	}
 
-	public function teleportLobby(callable $position){
+	public function teleportLobby(Player $pl){
 		$this->database->executeSelect(self::TABLE_SELECT_LOBBY, [],
-			function(array $rows) use ($position){
+			function(array $rows) use ($pl){
 				if(empty($rows)){
-					$position(Server::getInstance()->getDefaultLevel()->getSpawnLocation());
-				}else{
-					$exec = $rows[0];
+					$lobby = Server::getInstance()->getDefaultLevel()->getSpawnLocation();
 
-					Utils::loadFirst($exec["worldName"]);
-					$level = Server::getInstance()->getLevelByName($exec['worldName']);
-					$position(new Position($exec["lobbyX"], $exec["lobbyY"], $exec["lobbyZ"], $level));
+					$this->setLobby($lobby);
+					$position = $lobby;
+				}else{
+					Utils::loadFirst($rows[0]["worldName"], true);
+
+					$level = Server::getInstance()->getLevelByName($rows[0]['worldName']);
+					$position = new Position(intval($rows[0]["lobbyX"]) + .5, intval($rows[0]["lobbyY"]) + .5, intval($rows[0]["lobbyZ"]) + .5, $level);
+				}
+
+				// Check either that the player is already been connected or no.
+				// Otherwise we had to force ourselves to save player's data...
+				if($pl->isConnected()){
+					$pl->teleport($position);
+				}else{
+					$server = Server::getInstance();
+
+					$data = $server->getOfflinePlayerData($pl->getName());
+					$data->setTag(new ListTag("Pos", [
+						new DoubleTag("", $position->x),
+						new DoubleTag("", $position->y),
+						new DoubleTag("", $position->z),
+					]), true);
+					$data->setTag(new StringTag("Level", $position->getLevel()->getFolderName()), true);
+
+					$server->saveOfflinePlayerData($pl->getName(), $data);
 				}
 			});
 	}
@@ -176,9 +200,7 @@ class AsyncLibDatabase {
 						"lobbyY"    => $pos->getFloorY(),
 						"lobbyZ"    => $pos->getFloorZ(),
 						"worldName" => $pos->getLevel()->getName(),
-					], function(int $changedRow){
-						var_dump($changedRow);
-					});
+					]);
 				}else{
 					$lastLevel = $rows[0]["worldName"];
 					$db->executeInsert(AsyncLibDatabase::TABLE_UPDATE_LOBBY, [
@@ -187,9 +209,7 @@ class AsyncLibDatabase {
 						"lobbyZ"        => $pos->getFloorZ(),
 						"worldName"     => $pos->getLevel()->getName(),
 						"worldNameData" => $lastLevel,
-					], function(int $changedRow){
-						var_dump($changedRow);
-					});
+					]);
 				}
 			});
 	}

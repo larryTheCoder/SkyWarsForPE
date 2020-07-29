@@ -39,7 +39,7 @@ class ParticleFlowTask extends Task {
 	private $location;
 	/** @var int */
 	private $time = 0;
-	/** @var int */
+	/** @var float */
 	private $aroundHelix = 0;
 	/** @var int */
 	private $particleID;

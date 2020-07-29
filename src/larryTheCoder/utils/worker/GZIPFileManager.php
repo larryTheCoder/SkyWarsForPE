@@ -73,6 +73,7 @@ class GZIPFileManager {
 	}
 
 	private function handleNotifications(){
+		$resId = 0;
 		$this->resQueue->fetchResult($resId);
 
 		if(!isset($this->handlers[$resId])) return;

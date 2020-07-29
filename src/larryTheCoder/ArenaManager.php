@@ -222,7 +222,7 @@ final class ArenaManager {
 		return $arenas[$id];
 	}
 
-	public function isInLevel(Entity $sender): bool{
+	public function insideArenaLevel(Entity $sender): bool{
 		foreach($this->arenas as $arena){
 			// Lower cased, no wEIrD aESs tEsxTs
 			if(strtolower($arena->arenaWorld) === strtolower($sender->getLevel()->getName())){

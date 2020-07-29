@@ -207,10 +207,12 @@ class ArenaGameTick extends Task {
 		}
 
 		$this->arena->checkAlive();
-		foreach($this->arena->getPlayers() as $pl){
+		foreach($this->arena->getAllPlayers() as $pl){
 			$this->gameAPI->scoreboard->updateScoreboard($pl);
 		}
 	}
+
+	private $updateFrequency = 0;
 
 	public function getMessage(?CommandSender $p, $key, $prefix = true){
 		return SkyWarsPE::getInstance()->getMsg($p, $key, $prefix);

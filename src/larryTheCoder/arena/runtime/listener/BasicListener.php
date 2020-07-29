@@ -302,7 +302,7 @@ class BasicListener implements Listener {
 				}
 				unset($this->lastHit[$p->getName()]);
 
-				$this->arena->knockedOut($p);
+				$this->arena->knockedOut($e);
 			}else{
 				// TODO: Check if the player is spectating?
 			}
@@ -313,7 +313,7 @@ class BasicListener implements Listener {
 		SkyWarsPE::$instance->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player){
 			$pd->death++;
 			$pd->lost++;
-			$pd->kill += $this->arena->kills[$player->getName()];
+			$pd->kill += $this->arena->kills[$player->getName()] ?? 0;
 			$pd->time += (microtime(true) - $this->arena->startedTime);
 
 			SkyWarsPE::$instance->getDatabase()->setPlayerData($player->getName(), $pd);
@@ -332,6 +332,8 @@ class BasicListener implements Listener {
 		$p = $e->getPlayer();
 		# Player must be inside of arena otherwise its a fake
 		if(!$this->arena->isInArena($p)){
+			var_dump("Not in arena..");
+
 			return;
 		}
 
@@ -356,9 +358,8 @@ class BasicListener implements Listener {
 			}
 		}
 
-		SkyWarsPE::$instance->getDatabase()->teleportLobby(function(Position $lobby) use ($p){
-			$p->teleport($lobby);
-		});
+		var_dump("Teleporting to lobby instead");
+		SkyWarsPE::$instance->getDatabase()->teleportLobby($p);
 	}
 
 	/**

@@ -54,7 +54,7 @@ death-message-nature: "§7- §e{PLAYER} §cwere killed by nature"
 death-message-explode: "§7- §e{PLAYER} §cexploded to pieces"
 death-message-magic: "§7- §e{PLAYER} §cwere killed by some kind of magic"
 death-message-unknown: "§7- §e{PLAYER} is a member of the illuminati"
-death-message: "§7- §e{PLAYER}were killed by §e{KILLER}"
+death-message: "§7- §e{PLAYER} §cwere killed by §e{KILLER}"
 
 # Command help message
 help-main: "&cPlease use /sw help for a list of commands"

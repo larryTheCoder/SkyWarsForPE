@@ -36,6 +36,7 @@ use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\arena\runtime\tasks\PlayerDeathTask;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
+use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
@@ -165,16 +166,18 @@ class Arena {
 	 * It is to make sure that this player will be removed from the game correctly
 	 * according to what is configured in the config file.
 	 *
-	 * @param Player $pl
+	 * @param PlayerDeathEvent $ev
 	 */
-	public function knockedOut(Player $pl){
+	public function knockedOut(PlayerDeathEvent $ev){
+		$pl = $ev->getPlayer();
+
 		$this->getDebugger()->log("[Arena]: {$pl->getName()} is knocked out in the game");
 
 		// Remove the player from the list.
 		$this->removePlayer($pl);
 
 		if($this->enableSpectator){
-			$this->spectators[$pl->getName()] = $pl;
+			$this->setSpectator($pl);
 
 			$this->getDebugger()->log("[Arena]: Spectator mode is enabled for the user");
 		}elseif($this->spectateWaiting > 0){
@@ -410,15 +413,7 @@ class Arena {
 		// Remove the spawn pedestals
 		$this->cageHandler->removeCage($pl);
 
-		SkyWarsPE::getInstance()->getDatabase()->teleportLobby(function(Position $pos) use ($pl){
-			if($pos->getLevel() === null){
-				$pl->teleport(Server::getInstance()->getDefaultLevel()->getSpawnLocation());
-
-				return;
-			}
-
-			$pl->teleport($pos);
-		});
+		SkyWarsPE::getInstance()->getDatabase()->teleportLobby($pl);
 
 		unset($this->kills[$pl->getName()]);
 	}
@@ -430,28 +425,6 @@ class Arena {
 		$this->gameAPI->removeAllPlayers();
 		$this->executeCommands();
 
-		/** @var Player $p */
-		foreach(array_merge($this->players, $this->spectators) as $p){
-			unset($this->players[$p->getName()]);
-
-			$p->removeAllEffects();
-			$p->setMaxHealth(20);
-			$p->setMaxHealth($p->getMaxHealth());
-			if($p->getAttributeMap() != null){//just to be really sure
-				$p->setHealth(20);
-				$p->setFood(20);
-			}
-			$p->setXpLevel(0);
-			$p->removeAllEffects();
-			$p->getInventory()->clearAll(); // Possible issue here.
-			$p->getArmorInventory()->clearAll();
-			$p->setGamemode(Player::ADVENTURE);
-
-			SkyWarsPE::getInstance()->getDatabase()->teleportLobby(function(Position $pos) use ($p){
-				$p->teleport($pos);
-			});
-		}
-
 		$this->resetPlayers();
 	}
 
@@ -462,7 +435,7 @@ class Arena {
 	public function checkAlive(){
 		if(count($this->getPlayers()) === 1 and $this->getStatus() === State::STATE_ARENA_RUNNING){
 			$this->setStatus(State::STATE_ARENA_CELEBRATING);
-			foreach($this->players as $player){
+			foreach($this->getPlayers() as $player){
 				$player->setXpLevel(0);
 				$player->removeAllEffects();
 				$player->setGamemode(0);
@@ -471,7 +444,7 @@ class Arena {
 				$player->setGamemode(Player::SPECTATOR);
 				$this->giveGameItems($player, true);
 			}
-		}elseif(empty($this->players) && ($this->getStatus() !== State::STATE_SLOPE_WAITING && $this->getStatus() !== State::STATE_WAITING)){
+		}elseif(empty($this->getPlayers()) && ($this->getStatus() !== State::STATE_SLOPE_WAITING && $this->getStatus() !== State::STATE_WAITING)){
 			$this->stopGame();
 		}
 	}

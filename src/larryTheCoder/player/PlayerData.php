@@ -45,7 +45,7 @@ class PlayerData {
 	public $time = 0;
 	/** @var string[] */
 	public $cages = [];
-	/** @var int[] */
+	/** @var string[] */
 	public $kitId = [];
 
 	public function __toString(){

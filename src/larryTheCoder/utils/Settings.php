@@ -31,7 +31,6 @@ namespace larryTheCoder\utils;
 
 use larryTheCoder\SkyWarsPE;
 use pocketmine\item\Item;
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Server;
 use pocketmine\utils\{Config, TextFormat};
 
@@ -140,7 +139,7 @@ class Settings {
 				$itemSpectate = !isset($item[$key]['item-spectate']) ? false : $itemSpectate = $item[$key]['item-spectate'];
 				$itemBypass = !isset($item[$key]['bypass-double-tap']) ? false : $item[$key]['bypass-double-tap'];
 				$itemDoubleMessage = !isset($item[$key]['double-tap-message']) ? "&aTap again to confirm" : $item[$key]['double-tap-message'];
-				$nbt = $toItem->getNamedTag() === null ? new CompoundTag() : $toItem->getNamedTag();
+				$nbt = $toItem->getNamedTag();
 				$nbt->setString("command", $itemCmd);
 				$toItem->setNamedTag($nbt);
 

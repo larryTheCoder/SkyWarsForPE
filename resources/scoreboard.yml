@@ -6,7 +6,7 @@
 
 # This version should not get changed
 # Otherwise something bad will happen.
-version: 1
+version: 2
 
 # Scoreboards:
 # - As you might know, scoreboards is bla bla bla...
@@ -93,8 +93,8 @@ in-game-arena-team:
   - "Events:"
   - ""
   - "You're in &6{player_place}&f place"
-  - # This scoreboard is used when
-  # the game is ended.
+
+# This scoreboard is used when the game is ended.
 ending-state-arena:
   - "§ewww.hyrulePE.xyz"
   - ""
@@ -105,3 +105,13 @@ ending-state-arena:
   - "2. &e{player_top_2} &c{kills_top_2}"
   - "1. &a{player_top_1} &c{kills_top_1}"
   - "Top players:"
+
+spectate-scoreboard:
+  - "§ewww.hyrulePE.xyz"
+  - ""
+  - "Kills: &6{player_kills}"
+  - ""
+  - "Players left: {players_left}"
+  - ""
+  - "&cYou died! &7Spectating game..."
+  - "You're in &6{player_place}&f place"
