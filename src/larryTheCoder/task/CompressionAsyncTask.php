@@ -26,60 +26,40 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\utils\worker;
+namespace larryTheCoder\task;
 
-use pocketmine\snooze\SleeperNotifier;
-use pocketmine\Thread;
+use pocketmine\scheduler\AsyncTask;
+use pocketmine\Server;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use ZipArchive;
 
 /**
- * Provide an asynchronous compression/decompression for worlds.
- * It is used to cut down the amount of time needed to compress these files
- * on main thread.
+ * Using a thread to compress files is dumb, they do not often being used
+ * for heavy tasks and it will be a waste of resources.
  *
- * @package larryTheCoder\utils\worker
+ * @package larryTheCoder\task
  */
-class GZIPFilesThread extends Thread {
+class CompressionAsyncTask extends AsyncTask {
 
-	/** @var SleeperNotifier */
-	private $notifier;
+	/** @var string */
+	private $data;
 
-	/** @var GZIPQueue */
-	private $queue;
-	/** @var GZIPQueueCompletion */
-	private $completion;
+	public function __construct(array $data, callable $result){
+		$this->data = serialize($data);
 
-	public function __construct(SleeperNotifier $notifier, GZIPQueue $queue, GZIPQueueCompletion $completion){
-		$this->notifier = $notifier;
-
-		$this->queue = $queue;
-		$this->completion = $completion;
+		$this->storeLocal($result);
 	}
 
-	// Ground breaking discovery...
-	public function run(){
-		while(true){
-			$row = $this->queue->fetchQuery();
-			if(!is_string($row)){
-				break;
-			}
-
-			[$queryId, $fromPath, $toPath, $compress] = unserialize($row);
-			try{
-				if($compress){
-					// "folder" "target.zip"
-					$this->compressFile($fromPath, $toPath); // Overwrites the whole zip file.
-				}else{
-					// "target.zip" "folder"
-					$this->decompressFile($fromPath, $toPath); // Overwrite the whole folder path.
-				}
-			}finally{
-				$this->completion->publishResult($queryId);
-				$this->notifier->wakeupSleeper();
-			}
+	public function onRun(){
+		[$fromPath, $toPath, $compress] = unserialize($this->data);
+		if($compress){
+			// "folder" "target.zip"
+			$this->compressFile($fromPath, $toPath); // Overwrites the whole zip file.
+		}else{
+			// "target.zip" "folder"
+			$this->decompressFile($fromPath, $toPath); // Overwrite the whole folder path.
 		}
 	}
 
@@ -126,11 +106,8 @@ class GZIPFilesThread extends Thread {
 		$zip->close();
 	}
 
-	public function quit(){
-		$this->stopRunning();
-	}
-
-	public function stopRunning(): void{
-		$this->queue->invalidate();
+	public function onCompletion(Server $server){
+		$call = $this->fetchLocal();
+		$call();
 	}
 }

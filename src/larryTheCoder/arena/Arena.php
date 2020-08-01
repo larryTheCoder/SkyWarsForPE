@@ -33,10 +33,9 @@ use larryTheCoder\arena\api\GameAPI;
 use larryTheCoder\arena\runtime\CageHandler;
 use larryTheCoder\arena\runtime\DefaultGameAPI;
 use larryTheCoder\arena\runtime\GameDebugger;
-use larryTheCoder\arena\runtime\tasks\PlayerDeathTask;
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\task\CompressionAsyncTask;
 use larryTheCoder\utils\Utils;
-use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
@@ -101,7 +100,7 @@ class Arena {
 		try{
 			$time = new DateTime('now', new \DateTimeZone(Timezone::get()));
 		}catch(\Exception $e){
-			throw new \RuntimeException($e);
+			throw new \RuntimeException("Unable to set timezone properly for arena $arenaName", 0, $e);
 		}
 
 		$this->gameDebugger = new GameDebugger(SkyWarsPE::$instance->getDataFolder() . "logs/" . $time->format("Y-m-d") . " {$this->getArenaName()}.txt", $time);
@@ -166,29 +165,18 @@ class Arena {
 	 * It is to make sure that this player will be removed from the game correctly
 	 * according to what is configured in the config file.
 	 *
-	 * @param PlayerDeathEvent $ev
+	 * @param Player $pl
 	 */
-	public function knockedOut(PlayerDeathEvent $ev){
-		$pl = $ev->getPlayer();
-
+	public function knockedOut(Player $pl){
 		$this->getDebugger()->log("[Arena]: {$pl->getName()} is knocked out in the game");
-
-		// Remove the player from the list.
-		$this->removePlayer($pl);
 
 		if($this->enableSpectator){
 			$this->setSpectator($pl);
 
-			$this->getDebugger()->log("[Arena]: Spectator mode is enabled for the user");
-		}elseif($this->spectateWaiting > 0){
-			$this->plugin->getScheduler()->scheduleDelayedTask(new PlayerDeathTask($this, $pl), 10);
-
-			$this->getDebugger()->log("[Arena]: Scheduling death task for the player");
-		}else{
-			$this->leaveArena($pl);
-
-			$this->getDebugger()->log("[Arena]: Player is leaving the arena now");
+			return;
 		}
+
+		$this->leaveArena($pl);
 	}
 
 	/**
@@ -294,11 +282,13 @@ class Arena {
 
 		$this->levelBusy = true;
 
-		SkyWarsPE::$instance->compressor->scheduleForFile($fromPath, $toPath, false, function(){
+		$task = new CompressionAsyncTask([$fromPath, $toPath, false], function(){
 			$this->levelBusy = false;
 
 			$this->arenaLevel = $this->getLevel();
 		});
+
+		Server::getInstance()->getAsyncPool()->submitTask($task);
 	}
 
 	/**
@@ -536,11 +526,13 @@ class Arena {
 
 		$this->levelBusy = true;
 
-		SkyWarsPE::$instance->compressor->scheduleForFile($fromPath, $toPath, true, function(){
+		$task = new CompressionAsyncTask([$fromPath, $toPath, true], function(){
 			$this->levelBusy = false;
 
 			$this->arenaLevel = $this->getLevel();
 		});
+
+		Server::getInstance()->getAsyncPool()->submitTask($task);
 	}
 
 	public function performEdit(int $state){

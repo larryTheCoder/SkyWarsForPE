@@ -34,11 +34,10 @@ use larryTheCoder\features\cages\ArenaCage;
 use larryTheCoder\features\chestRandom\RandomChest;
 use larryTheCoder\features\kits\Kits;
 use larryTheCoder\features\npc\FakeHuman;
-use larryTheCoder\formAPI\FormAPI;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\AsyncLibDatabase;
 use larryTheCoder\task\NPCValidationTask;
-use larryTheCoder\utils\{Settings, Utils, worker\GZIPFileManager};
+use larryTheCoder\utils\{Settings, Utils};
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
@@ -68,10 +67,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 	public $cmd;
 	/** @var EconomyAPI|Plugin */
 	public $economy;
-	/** @var GZIPFileManager */
-	public $compressor;
-	/** @var FormAPI */
-	public $formAPI;
 	/** @var RandomChest */
 	public $chest;
 	/** @var FakeHuman[] */
@@ -172,7 +167,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 				return;
 			}
 
-			$this->getServer()->getLogger()->warning("You are using an experimental version of SkyWarsForPE. This build may seem to work but it will crash eventually your server soon.");
+			$this->getServer()->getLogger()->warning("You are using an experimental version of SkyWarsForPE. This build may seem to work but it will eventually crash your server soon.");
 		}
 		if($this->disabled) return;
 
@@ -183,10 +178,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 
 		$this->database = new AsyncLibDatabase($this, $this->getConfig()->get("database"));
-		$this->compressor = new GZIPFileManager();
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager($this);
-		$this->formAPI = new FormAPI($this);
 		$this->panel = new FormPanel($this);
 		$this->chest = new RandomChest($this);
 

@@ -154,10 +154,10 @@ trait PlayerHandler {
 			if($popup){
 				$p->sendPopup(str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg($p, $msg, false)));
 			}else{
-				$p->sendPopup(str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg($p, $msg, false)));
-			}
+				$p->sendMessage(str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg($p, $msg, false)));
 
-			$p->getLevel()->addSound(new ClickSound($p));
+				$p->getLevel()->addSound(new ClickSound($p));
+			}
 		}
 	}
 

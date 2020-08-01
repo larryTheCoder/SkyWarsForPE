@@ -30,11 +30,11 @@ namespace larryTheCoder\panel;
 
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\State;
-use larryTheCoder\formAPI\{event\FormRespondedEvent,
-	response\FormResponseCustom,
-	response\FormResponseModal,
-	response\FormResponseSimple
-};
+use larryTheCoder\forms\CustomForm;
+use larryTheCoder\forms\CustomFormResponse;
+use larryTheCoder\forms\elements\{Button, Dropdown, Input, Label, Slider, Toggle};
+use larryTheCoder\forms\MenuForm;
+use larryTheCoder\forms\ModalForm;
 use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\NPCValidationTask;
@@ -44,41 +44,27 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\item\{BlazeRod, Item};
 use pocketmine\utils\Config;
+use RuntimeException;
 
 /**
- * Panel class that calls the Form to spawn into player,
- * This class has been used to make an ease contact from server
- * to player, This is the future of SW-Setup-Solution
+ * Implementation of a callable-based skywars interface, no more events-styled
+ * burden in case there is a new feature that is going to be implemented in the future.
  *
  * Class FormPanel
  * @package larryTheCoder\panel
  */
 class FormPanel implements Listener {
 
-	const PANEL_SETUP = 0;
-	const PANEL_SPAWN_SETUP = 1;
-	const PANEL_SETTINGS_CHOOSE = 2;
-	const PANEL_SETTINGS_ARENA = 3;
-	const PANEL_SETUP_BEHAVIOUR = 4;
-	const PANEL_SIGN_BEHAVIOUR = 5;
-	const PANEL_DELETE_ARENA = 6;
-	const PANEL_SPECTATOR_SET = 7;
-	const PANEL_CHOSE_CAGE = 8;
-
 	/** @var SkyWarsPE */
 	private $plugin;
-	/** @var array */
-	private $forms = [];
 	/** @var SkyWarsData[] */
-	private $data = [];
+	private $temporaryData = [];
 	/** @var array */
-	private $setters = [];
+	private $actions = [];
 	/** @var int[] */
 	private $mode = [];
-	/** @var Player[]|string[] */
-	private $command = [];
 	/** @var array */
-	private $lastHoldIndex;
+	private $lastHoldIndex = [];
 
 	public function __construct(SkyWarsPE $plugin){
 		$this->plugin = $plugin;
@@ -86,6 +72,7 @@ class FormPanel implements Listener {
 		try{
 			$plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
 		}catch(\Throwable $e){
+			throw new RuntimeException("Unable to register events correctly", 0, $e);
 		}
 	}
 
@@ -94,44 +81,75 @@ class FormPanel implements Listener {
 	 * @param Arena $arena
 	 */
 	public function showSpectatorPanel(Player $player, Arena $arena){
-		$form = $this->plugin->formAPI->createSimpleForm();
+		$form = new MenuForm(TextFormat::BLUE . "Select Player Name");
 
 		$players = [];
 		foreach($arena->getPlayers() as $inGame){
-			$path = $this->plugin->getDataFolder() . 'image/' . strtolower($inGame->getName()) . ".png";
-			$form->addButton($inGame->getName(), 0, $path);
+			$form->append(new Button($inGame->getName()));
 			$players[] = $inGame->getName();
 		}
-		$path = $this->plugin->getDataFolder() . 'image/' . strtolower($player->getName()) . ".png";
-		$form->addButton($player->getName(), 0, $path);
 
-		$form->sendToPlayer($player);
-		$this->forms[$form->getId()] = self::PANEL_SPECTATOR_SET;
-		$this->command[$player->getName()] = $players;
+		$form->setText("Select a player to spectate");
+		$form->setOnSubmit(function(Player $player, Button $selected) use ($arena): void{
+			// Do not attempt to do anything if the arena is no longer running.
+			// Or the player is no longer in arena
+			if($arena->getStatus() !== State::STATE_ARENA_RUNNING || !$arena->isInArena($player)){
+				$player->sendMessage(TextFormat::RED . "You are no longer in the arena.");
+
+				return;
+			}
+
+			$target = $arena->getOriginPlayer($selected->getValue());
+			if($target === null){
+				$player->sendMessage(TextFormat::RED . "That player is no longer in the arena.");
+
+				return;
+			}
+			$player->teleport($target);
+		});
+		$form->setOnClose(function(Player $player): void{
+			$player->sendMessage($this->plugin->getMsg($player, "panel-cancelled"));
+		});
+
+		$player->sendForm($form);
 	}
 
+	/**
+	 * Shows the current player stats in this game, this function is a callable
+	 * based FormAPI and you know what it is written here...
+	 *
+	 * @param Player $player
+	 */
 	public function showStatsPanel(Player $player){
+		// Checked and worked.
 		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $result) use ($player){
-			$formAPI = SkyWarsPE::$instance->formAPI->createCustomForm();
+			$form = new CustomForm("§a{$result->player}'s stats",
+				function(Player $player, CustomFormResponse $response): void{
+				},
+				function(Player $player): void{
+				});
 
-			$formAPI->setTitle("§5{$result->player}'s stats'");
-			$formAPI->addLabel("§6Name: §f" . $result->player);
-			$formAPI->addLabel("§6Kills: §f" . $result->kill);
-			$formAPI->addLabel("§6Deaths: §f" . $result->death);
-			$formAPI->addLabel("§6Wins: §f" . $result->wins);
-			$formAPI->addLabel("§6Lost: §f" . $result->lost);
+			$form->append(new Label("§6Name: §f" . $result->player),
+				new Label("§6Kills: §f" . $result->kill),
+				new Label("§6Deaths: §f" . $result->death),
+				new Label("§6Wins: §f" . $result->wins),
+				new Label("§6Lost: §f" . $result->lost)
+			);
 
-			$formAPI->sendToPlayer($player);
+			$player->sendForm($form);
 		});
 	}
 
 	/**
-	 * Create arena and setup spawn position.
+	 * The function that handles player arena creation, notifies player after he/she
+	 * has successfully created the arenas.
 	 *
 	 * @param Player $player
 	 */
 	public function setupArena(Player $player){
-		$form = $this->plugin->formAPI->createCustomForm();
+		// Checked and worked.
+		$form = new CustomForm("§5SkyWars Setup.");
+
 		$files = [];
 		# Check if there is ANOTHER ARENA is using this world
 		$worldPath = Server::getInstance()->getDataPath() . 'worlds/';
@@ -158,253 +176,69 @@ class FormPanel implements Listener {
 			return;
 		}
 
-		$form->setTitle("§5SkyWars Setup.");
-		# What the player want to name the arena
-		$form->addInput("§6The name of your Arena.", "Donkey Island");
-		# What is the level for input 'Arena Name'
-		$form->addDropdown("§6Select your Arena level.", $files);
-		# How much player do that this arena need
-		$form->addSlider("§eMaximum players", 4, 40);
-		$form->addSlider("§eMinimum players", 2, 40);
-		# Ask if they want these enabled
-		$form->addToggle("§7Spectator mode", true);
-		$form->addToggle("§7Start on full", true);
+		$form->append(new Input("§6The name of your Arena.", "Donkey Island"),
+			new Dropdown("§6Select your Arena level.", $files),
+			new Slider("§eMaximum players", 4, 40),
+			new Slider("§eMinimum players", 2, 40),
+			new Toggle("§7Spectator mode", true),
+			new Toggle("§7Start on full", true)
+		);
 
-		$form->sendToPlayer($player);
-		$this->forms[$form->getId()] = FormPanel::PANEL_SETUP;
-	}
+		$form->setOnSubmit(function(Player $player, CustomFormResponse $response): void{
+			$data = new SkyWarsData();
 
-	/**
-	 * @param FormRespondedEvent $event
-	 * @priority MONITOR
-	 */
-	public function onResponse(FormRespondedEvent $event){
-		$id = $event->getId();
-		$p = $event->getPlayer();
-		$response = $event->getResponse();
-		if(isset($this->forms[$id])){
-			$command = $this->forms[$id];
-			unset($this->forms[$id]);
-			switch($command){
-				case FormPanel::PANEL_SETUP:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, 'panel-cancelled'));
-						break;
-					}
-					$data = new SkyWarsData();
-					/** @var FormResponseCustom $responseCustom */
-					$responseCustom = $response;
-					$data->arenaName = $responseCustom->getInputResponse(0);
-					$data->arenaLevel = $responseCustom->getDropdownResponse(1)->getElementContent();
-					$data->maxPlayer = $responseCustom->getSliderResponse(2);
-					$data->minPlayer = $responseCustom->getSliderResponse(3);
-					$data->spectator = $responseCustom->getToggleResponse(4);
-					$data->startWhenFull = $responseCustom->getToggleResponse(5);
-					$this->data[$p->getName()] = $data;
-					if($this->plugin->getArenaManager()->arenaExist($data->arenaName)){
-						$p->sendMessage($this->plugin->getMsg($p, 'arena-exists'));
-						break;
-					}
-					if(empty($data->arenaLevel)){
-						$p->sendMessage($this->plugin->getMsg($p, 'panel-low-arguments'));
-						break;
-					}
+			$responseCustom = $response;
+			$data->arenaName = $responseCustom->getInput()->getValue();
+			$data->arenaLevel = $responseCustom->getDropdown()->getSelectedOption();
+			$data->maxPlayer = $responseCustom->getSlider()->getValue();
+			$data->minPlayer = $responseCustom->getSlider()->getValue();
+			$data->spectator = $responseCustom->getToggle()->getValue();
+			$data->startWhenFull = $responseCustom->getToggle()->getValue();
+			if($this->plugin->getArenaManager()->arenaExist($data->arenaName)){
+				$player->sendMessage($this->plugin->getMsg($player, 'arena-exists'));
 
-					file_put_contents($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", $this->plugin->getResource('arenas/default.yml'));
-
-					$a = new ConfigManager($data->arenaName, $this->plugin);
-					$a->setArenaWorld($data->arenaLevel);
-					$a->setArenaName($responseCustom->getInputResponse(0));
-					$a->enableSpectator($data->spectator);
-					$a->setPlayersCount($data->maxPlayer > $data->minPlayer ? $data->maxPlayer : $data->minPlayer, $data->minPlayer);
-					$a->startOnFull($data->startWhenFull);
-					$a->applyFullChanges();
-
-					$this->setupSpawn($p);
-					break;
-				case FormPanel::PANEL_SPAWN_SETUP:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-						break;
-					}
-					/** @var FormResponseModal $responseMo */
-					$responseMo = $response;
-					$buttonId = $responseMo->getClickedButtonId();
-					if($buttonId === 0){
-						$this->setupSpawn($p, $this->data[$p->getName()]);
-					}else{
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-					}
-					break;
-				case FormPanel::PANEL_SETTINGS_CHOOSE:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-						break;
-					}
-					/** @var FormResponseSimple $responseMo */
-					$responseMo = $response;
-					$buttonText = $responseMo->getClickedButtonId();
-					$arena = $this->plugin->getArenaManager()->getArenaByInt($buttonText);
-					if($arena === null){
-						$p->sendMessage($this->plugin->getMsg($p, "arena-not-exist"));
-						$this->cleanupArray($p);
-						break;
-					}
-					$this->showSettingPanel($p, $this->toData($arena));
-					break;
-				case FormPanel::PANEL_SETTINGS_ARENA:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-						break;
-					}
-					/** @var FormResponseSimple $responseSi */
-					$responseSi = $response;
-					$buttonId = $responseSi->getClickedButtonId();
-					$data = $this->data[$p->getName()];
-					switch($buttonId){
-						case 0:
-							$this->setupSpawn($p, $data);
-							break;
-						case 1:
-							$this->setupSpecS($p, $data);
-							break;
-						case 2:
-							$this->arenaBehaviour($p, $data);
-							break;
-						case 3:
-							$this->joinSignBehaviour($p, $data);
-							break;
-						case 4:
-							$this->joinSignSetup($p, $data);
-							break;
-						case 5:
-							$this->teleportWorld($p, $data);
-							break;
-						case 6:
-							$this->deleteSure($p, false);
-							break;
-					}
-					break;
-				case FormPanel::PANEL_SETUP_BEHAVIOUR:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-						break;
-					}
-					/** @var FormResponseCustom $responseCustom */
-					$responseCustom = $response;
-					$data = $this->data[$p->getName()];
-					$enable = $responseCustom->getToggleResponse(0);
-					$graceTimer = $responseCustom->getSliderResponse(1);
-					$spectatorMode = $responseCustom->getToggleResponse(2);
-					$maxPlayer = $responseCustom->getSliderResponse(3);
-					$minPlayer = $responseCustom->getSliderResponse(4);
-					$startWhenFull = $responseCustom->getToggleResponse(5);
-					# Get the config
-
-					$a = new ConfigManager($data->arenaName, $this->plugin);
-					$a->setEnable($enable);
-					$a->setGraceTimer($graceTimer);
-					$a->enableSpectator($spectatorMode);
-					$a->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $data->minPlayer);
-					$a->startOnFull($startWhenFull);
-					$a->applyFullChanges();
-
-					$this->cleanupArray($p);
-					break;
-				case FormPanel::PANEL_SIGN_BEHAVIOUR:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-						break;
-					}
-					/** @var FormResponseCustom $responseCustom */
-					$responseCustom = $response;
-					$data = $this->data[$p->getName()];
-					$text1 = $responseCustom->getInputResponse(2);
-					$text2 = $responseCustom->getInputResponse(3);
-					$text3 = $responseCustom->getInputResponse(4);
-					$text4 = $responseCustom->getInputResponse(5);
-
-					$a = new ConfigManager($data->arenaName, $this->plugin);
-
-					$a->setStatusLine($text1, 1);
-					$a->setStatusLine($text2, 2);
-					$a->setStatusLine($text3, 3);
-					$a->setStatusLine($text4, 4);
-
-					$this->cleanupArray($p);
-					break;
-				case FormPanel::PANEL_DELETE_ARENA:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-						break;
-					}
-					/** @var FormResponseModal $responseMo */
-					$responseMo = $response;
-					$buttonId = $responseMo->getClickedButtonId();
-					if($buttonId === 0){
-						$this->deleteSure($p, true);
-					}else{
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-					}
-					break;
-				case FormPanel::PANEL_SPECTATOR_SET:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-						break;
-					}
-					/** @var FormResponseSimple $responseSi */
-					$player = $this->command[$p->getName()];
-					$responseSi = $response;
-					$buttonId = $responseSi->getClickedButtonId();
-					//$p->teleport($player[$buttonId]); // what
-					$this->cleanupArray($p);
-					break;
-				case FormPanel::PANEL_CHOSE_CAGE:
-					if($response->closed){
-						$p->sendMessage($this->plugin->getMsg($p, "panel-cancelled"));
-						$this->cleanupArray($p);
-						break;
-					}
-					/** @var FormResponseSimple $responseSi */
-					$responseSi = $response;
-					$cage = $this->command[$p->getName()][$responseSi->getClickedButtonId()];
-					$button = $this->plugin->getCage()->getCages()[strtolower($cage)];
-					$this->plugin->getCage()->setPlayerCage($p, $button);
-					$this->cleanupArray($p);
-					break;
-				default:
-					break;
+				return;
 			}
-		}
+
+			if(empty($data->arenaLevel)){
+				$player->sendMessage($this->plugin->getMsg($player, 'panel-low-arguments'));
+
+				return;
+			}
+
+			file_put_contents($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml", $this->plugin->getResource('arenas/default.yml'));
+
+			$a = new ConfigManager($data->arenaName, $this->plugin);
+			$a->setArenaWorld($data->arenaLevel);
+			$a->setArenaName($data->arenaName);
+			$a->enableSpectator($data->spectator);
+			$a->setPlayersCount($data->maxPlayer > $data->minPlayer ? $data->maxPlayer : $data->minPlayer, $data->minPlayer);
+			$a->startOnFull($data->startWhenFull);
+			$a->applyFullChanges();
+
+			$form = new ModalForm("", "§aYou may need to setup the spawn position so system could enable the arena mode faster.",
+				function(Player $player, bool $response) use ($data): void{
+					if($response) $this->setupSpawn($player, $data);
+				}, "Setup arena spawn.", "§cSetup later.");
+
+			$player->sendForm($form);
+		});
+		$form->setOnClose(function(Player $pl): void{
+			$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
+		});
+
+		$player->sendForm($form);
 	}
 
 	private function setupSpawn(Player $player, SkyWarsData $arena = null){
-		if($arena === null){
-			$form = $this->plugin->formAPI->createModalForm();
-			$form->setContent("§aYou may need to setup the spawn position so system could enable the arena mode faster.");
-			$form->setButton1("Setup arena spawn.");
-			$form->setButton2("§cSetup later.");
-			$form->sendToPlayer($player);
-			$this->forms[$form->getId()] = FormPanel::PANEL_SPAWN_SETUP;
-
-			return;
-		}
-
 		Utils::loadFirst($arena->arenaLevel);
 
 		$arenaConfig = new ConfigManager($arena->arenaName, $this->plugin);
 		$arenaConfig->resetSpawnPedestal();
 
-		$this->setters[strtolower($player->getName())]['type'] = 'spawnpos';
+		$this->temporaryData[$player->getName()] = $arena;
+		$this->actions[strtolower($player->getName())]['type'] = 'spawnpos';
+
 		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
 		$player->teleport($level->getSpawnLocation());
 		$player->sendMessage($this->plugin->getMsg($player, 'panel-spawn-wand'));
@@ -413,18 +247,18 @@ class FormPanel implements Listener {
 
 	private function setMagicWand(Player $p){
 		$this->lastHoldIndex[$p->getName()] = [$p->getInventory()->getHeldItemIndex(), $p->getInventory()->getHotbarSlotItem(0)];
+
+		$p->setGamemode(1);
 		$p->getInventory()->setHeldItemIndex(0);
 		$p->getInventory()->setItemInHand(new BlazeRod());
 	}
 
 	private function cleanupArray(Player $player, bool $resetWorld = false){
-		if(isset($this->data[$player->getName()])){
-			$this->plugin->getArenaManager()->reloadArena($this->data[$player->getName()]->arenaName, $resetWorld);
-			unset($this->data[$player->getName()]);
+		if(isset($this->temporaryData[$player->getName()])){
+			$this->plugin->getArenaManager()->reloadArena($this->temporaryData[$player->getName()]->arenaName, $resetWorld);
+			unset($this->temporaryData[$player->getName()]);
 		}
-		if(isset($this->command[$player->getName()])){
-			unset($this->command[$player->getName()]);
-		}
+
 		// Now, its more reliable.
 		if(isset($this->lastHoldIndex[$player->getName()])){
 			$holdIndex = $this->lastHoldIndex[$player->getName()][0];
@@ -439,42 +273,61 @@ class FormPanel implements Listener {
 	 * This function handle the settings for arena(s)
 	 *
 	 * @param Player $player
-	 * @param SkyWarsData|null $arena
 	 */
-	public function showSettingPanel(Player $player, SkyWarsData $arena = null){
-		$form = $this->plugin->formAPI->createSimpleForm();
-		if($arena === null){
-			$form->setContent("§aChoose your arena first.");
-			foreach($this->plugin->getArenaManager()->getArenas() as $arena){
-				$form->addButton(ucwords($arena->getArenaName()));
-			}
-			$form->sendToPlayer($player);
-			$this->forms[$form->getId()] = FormPanel::PANEL_SETTINGS_CHOOSE;
-
-			return;
+	public function showSettingPanel(Player $player){
+		$form = new MenuForm("§aChoose your arena first.");
+		foreach($this->plugin->getArenaManager()->getArenas() as $arena){
+			$form->append(ucwords($arena->getArenaName()));
 		}
 
-		$a = $this->plugin->getArenaManager()->getArena($arena->arenaName);
-		if($a->getStatus() >= State::STATE_ARENA_RUNNING || $a->getPlayersCount() > 0){
-			$player->sendMessage($this->plugin->getMsg($player, 'arena-running'));
+		$form->setOnSubmit(function(Player $player, Button $selected): void{
+			$arena = $this->plugin->getArenaManager()->getArenaByInt($selected->getValue());
+			$data = $this->toData($arena);
 
-			return;
-		}
-		$a->inSetup = true;
+			$form = new MenuForm("Setup for arena {$arena->getArenaName()}");
+			$form->append(
+				"Setup Arena Spawn",            // Arena Spawn
+				"Setup Spectator Spawn",        // Spectator spawn
+				"Setup Arena Behaviour",        // (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
+				"Set Join Sign Behaviour",      // (Text) (Interval) (enable-interval)
+				"Set Join Sign Location",       // Sign location teleportation.
+				"Edit this world",              // Editing the world.
+				TextFormat::RED . "Delete this arena"
+			);
 
-		$form->setContent("Setup for arena {$a->getArenaName()}");
-		$form->addButton("Setup Arena Spawn"); // Arena Spawn
-		$form->addButton("Setup Spectator Spawn"); // Spectator spawn
-		// (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
-		$form->addButton("Setup Arena Behaviour");
-		$form->addButton("Set Join Sign Behaviour"); // (Text) (Interval) (enable-interval)
-		$form->addButton("Set Join Sign Location");
-		$form->addButton("Edit this world");
-		$form->addButton(TextFormat::RED . "Delete this arena");
+			$form->setOnSubmit(function(Player $player, Button $selected) use ($data): void{
+				switch($selected->getValue()){
+					case 0:
+						$this->setupSpawn($player, $data);
+						break;
+					case 1:
+						$this->setupSpectate($player, $data);
+						break;
+					case 2:
+						$this->arenaBehaviour($player, $data);
+						break;
+					case 3:
+						$this->joinSignBehaviour($player, $data);
+						break;
+					case 4:
+						$this->joinSignSetup($player, $data);
+						break;
+					case 5:
+						$this->teleportWorld($player, $data);
+						break;
+					case 6:
+						$this->deleteSure($player, $data);
+						break;
+				}
+			});
 
-		$form->sendToPlayer($player);
-		$this->forms[$form->getId()] = FormPanel::PANEL_SETTINGS_ARENA;
-		$this->data[$player->getName()] = $arena;
+			$player->sendForm($form);
+		});
+		$form->setOnClose(function(Player $pl): void{
+			$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
+		});
+
+		$player->sendForm($form);
 	}
 
 	private function toData(Arena $arena): SkyWarsData{
@@ -496,20 +349,15 @@ class FormPanel implements Listener {
 		return $data;
 	}
 
-	private function setupSpecS(Player $player, SkyWarsData $arena = null){
-		if($arena === null){
-			$form = $this->plugin->formAPI->createSimpleForm();
-			$form->setContent("§aChoose your arena first.");
-			foreach($this->plugin->getArenaManager()->getArenas() as $arena){
-				$form->addButton($arena->getArenaName());
-			}
-			$form->sendToPlayer($player);
-			$this->forms[$form->getId()] = FormPanel::PANEL_SETTINGS_CHOOSE;
-
-			return;
-		}
+	private function setupSpectate(Player $player, SkyWarsData $arena){
 		Utils::loadFirst($arena->arenaLevel);
-		$this->setters[strtolower($player->getName())]['type'] = 'setspecspawn';
+
+		$arenaConfig = new ConfigManager($arena->arenaName, $this->plugin);
+		$arenaConfig->resetSpawnPedestal();
+
+		$this->temporaryData[$player->getName()] = $arena;
+		$this->actions[strtolower($player->getName())]['type'] = 'setspecspawn';
+
 		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
 		$player->teleport($level->getSpawnLocation());
 		$player->sendMessage($this->plugin->getMsg($player, 'panel-spawn-wand'));
@@ -518,32 +366,69 @@ class FormPanel implements Listener {
 
 	private function arenaBehaviour(Player $player, SkyWarsData $arena){
 		// (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
-		$form = $this->plugin->formAPI->createCustomForm();
+		$form = new CustomForm("Arena settings.",
+			function(Player $player, CustomFormResponse $response) use ($arena): void{
+				$enable = $response->getToggle()->getValue();
+				$graceTimer = $response->getSlider()->getValue();
+				$spectatorMode = $response->getToggle()->getValue();
+				$maxPlayer = $response->getSlider()->getValue();
+				$minPlayer = $response->getSlider()->getValue();
+				$startWhenFull = $response->getToggle()->getValue();
+				# Get the config
 
-		$form->addToggle("§eEnable the arena?", $arena->enabled);
-		$form->addSlider("§eSet Grace Timer", 0, 30, -1, $arena->graceTimer);
-		$form->addToggle("§eEnable Spectator Mode?", $arena->spectator);
-		$form->addSlider("§eMaximum players to be in arena", 0, 50, -1, $arena->maxPlayer);
-		$form->addSlider("§eMinimum players to be in arena", 0, 50, -1, $arena->minPlayer);
-		$form->addToggle("§eStart when full", $arena->startWhenFull);
+				$a = new ConfigManager($arena->arenaName, $this->plugin);
+				$a->setEnable($enable);
+				$a->setGraceTimer($graceTimer);
+				$a->enableSpectator($spectatorMode);
+				$a->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $arena->minPlayer);
+				$a->startOnFull($startWhenFull);
+				$a->applyFullChanges();
 
-		$form->sendToPlayer($player);
-		$this->forms[$form->getId()] = FormPanel::PANEL_SETUP_BEHAVIOUR;
+				$player->sendMessage("Done!");
+			},
+			function(Player $pl): void{
+				$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
+			});
+
+		$form->append(
+			new Toggle("§eEnable the arena?", $arena->enabled),
+			new Slider("§eSet Grace Timer", 0, 30, 1, $arena->graceTimer),
+			new Toggle("§eEnable Spectator Mode?", $arena->spectator),
+			new Slider("§eMaximum players to be in arena", 0, 50, 1, $arena->maxPlayer),
+			new Slider("§eMinimum players to be in arena", 0, 50, 1, $arena->minPlayer),
+			new Toggle("§eStart when full", $arena->startWhenFull));
+
+		$player->sendForm($form);
 	}
 
 	private function joinSignBehaviour(Player $p, SkyWarsData $data){
-		$form = $this->plugin->formAPI->createCustomForm();
+		$form = new CustomForm("§eForm Behaviour Setup");
 
 		$form->setTitle("§eForm Behaviour Setup");
-		$form->addLabel("§aWelcome to sign Behaviour Setup. First before you doing anything, you may need to know these");
-		$form->addLabel("§eStatus lines\n&a &b &c = you can use color with &\n%alive = amount of in-game players\n%dead = amount of dead players\n%status = game status\n%world = world name of arena\n%max = max players per arena");
-		$form->addInput("§aSign Placeholder 1", "Sign Text", $data->line1);
-		$form->addInput("§aSign Placeholder 2", "Sign Text", $data->line2);
-		$form->addInput("§aSign Placeholder 3", "Sign Text", $data->line3);
-		$form->addInput("§aSign Placeholder 4", "Sign Text", $data->line4);
+		$form->append(
+			new Label("§aWelcome to sign Behaviour Setup. First before you doing anything, you may need to know these"),
+			new Label("§eStatus lines\n&a &b &c = you can use color with &\n%alive = amount of in-game players\n%dead = amount of dead players\n%status = game status\n%world = world name of arena\n%max = max players per arena"),
+			new Input("§aSign Placeholder 1", "Sign Text", $data->line1),
+			new Input("§aSign Placeholder 2", "Sign Text", $data->line2),
+			new Input("§aSign Placeholder 3", "Sign Text", $data->line3),
+			new Input("§aSign Placeholder 4", "Sign Text", $data->line4)
+		);
 
-		$form->sendToPlayer($p);
-		$this->forms[$form->getId()] = FormPanel::PANEL_SIGN_BEHAVIOUR;
+		$form->setOnSubmit(function(Player $player, CustomFormResponse $response) use ($data): void{
+			$a = new ConfigManager($data->arenaName, $this->plugin);
+
+			$a->setStatusLine($response->getInput()->getValue(), 1);
+			$a->setStatusLine($response->getInput()->getValue(), 2);
+			$a->setStatusLine($response->getInput()->getValue(), 3);
+			$a->setStatusLine($response->getInput()->getValue(), 4);
+
+			$player->sendMessage("Done!");
+		});
+		$form->setOnClose(function(Player $pl): void{
+			$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
+		});
+
+		$p->sendForm($form);
 	}
 
 	/**
@@ -556,38 +441,42 @@ class FormPanel implements Listener {
 		// TODO
 		// FIXME: Reflection properties mismatched.
 		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player){
-			$form = $this->plugin->formAPI->createSimpleForm();
-			$form->setTitle("§cChoose Your Cage");
-			$form->setContent("§aVarieties of cages available!");
+			$form = new MenuForm("§cChoose Your Cage");
+			$form->setText("§aVarieties of cages available!");
 
-			$array = [];
 			foreach($this->plugin->getCage()->getCages() as $cage){
-				var_dump($pd);
-
 				if((is_array($pd->cages) && !in_array(strtolower($cage->getCageName()), $pd->cages)) && $cage->getPrice() !== 0){
-					$form->addButton("§8" . $cage->getCageName() . " §d§l[$" . $cage->getPrice() . "]");
+					$form->append("§8" . $cage->getCageName() . "\n§d§l[$" . $cage->getPrice() . "]");
 				}else{
-					$form->addButton("§8" . $cage->getCageName());
+					$form->append("§8" . $cage->getCageName() . "\n§aBought");
 				}
 				$array[] = $cage->getCageName();
 			}
 
-			$form->sendToPlayer($player);
-			$this->command[$player->getName()] = $array;
-			$this->forms[$form->getId()] = FormPanel::PANEL_CHOSE_CAGE;
+			$form->setOnSubmit(function(Player $player, Button $selected): void{
+				$player->sendMessage("This function is on done.");
+
+				// TODO: Implement this method.
+			});
+
+			$player->sendForm($form);
 		});
 	}
 
 	private function joinSignSetup(Player $player, SkyWarsData $data){
 		Utils::loadFirst($data->arenaLevel);
-		$this->setters[strtolower($player->getName())]['type'] = 'setjoinsign';
+
+		$this->temporaryData[$player->getName()] = $data;
+		$this->actions[strtolower($player->getName())]['type'] = 'setjoinsign';
 		$player->sendMessage($this->plugin->getMsg($player, 'panel-spawn-wand'));
 		$this->setMagicWand($player);
 	}
 
 	private function teleportWorld(Player $p, SkyWarsData $arena){
 		$p->setGamemode(1);
-		$this->setters[strtolower($p->getName())]['WORLD'] = "EDIT-WORLD";
+
+		$this->temporaryData[$p->getName()] = $arena;
+		$this->actions[strtolower($p->getName())]['WORLD'] = "EDIT-WORLD";
 		$p->sendMessage("You are now be able to edit the world now, best of luck");
 		$p->sendMessage("Use blaze rod if you have finished editing the world.");
 
@@ -600,22 +489,18 @@ class FormPanel implements Listener {
 		$p->getInventory()->clearAll(); // Perhaps
 	}
 
-	private function deleteSure(Player $p, bool $executed = false){
-		if(!$executed){
-			$form = $this->plugin->formAPI->createModalForm();
-			$form->setContent("§cAre you sure that you want to delete this arena? While you deleting this arena, your world wont be effected.");
-			$form->setButton1("§cDelete");
-			$form->setButton2("Cancel");
-			$form->sendToPlayer($p);
-			$this->forms[$form->getId()] = self::PANEL_DELETE_ARENA;
+	private function deleteSure(Player $p, SkyWarsData $data){
+		$form = new ModalForm("", "§cAre you sure that you want to delete this arena? While you deleting this arena, your world wont be effected.",
+			function(Player $player, bool $response) use ($data): void{
+				if(!$response) return;
 
-			return;
-		}
-		$data = $this->data[$p->getName()];
-		unlink($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml");
-		$this->plugin->getArenaManager()->deleteArena($data->arenaName);
-		$p->sendMessage(str_replace("{ARENA}", $data->arenaName, $this->plugin->getMsg($p, 'arena-delete')));
-		$this->cleanupArray($p);
+				unlink($this->plugin->getDataFolder() . "arenas/$data->arenaName.yml");
+				$this->plugin->getArenaManager()->deleteArena($data->arenaName);
+				$player->sendMessage(str_replace("{ARENA}", $data->arenaName, $this->plugin->getMsg($player, 'arena-delete')));
+			},
+			"§cDelete", "Cancel");
+
+		$p->sendForm($form);
 	}
 
 	/**
@@ -624,36 +509,38 @@ class FormPanel implements Listener {
 	 */
 	public function onBlockBreak(BlockBreakEvent $e){
 		$p = $e->getPlayer();
-		if(isset($this->data[$p->getName()]) && isset($this->setters[strtolower($p->getName())]['type'])){
+		if(isset($this->temporaryData[$p->getName()]) && isset($this->actions[strtolower($p->getName())]['type'])){
 			if(!is_null($e->getItem()) && $e->getItem()->getId() === Item::BLAZE_ROD){
-				if(!isset($this->mode[strtolower($p->getName())])){
-					$this->mode[strtolower($p->getName())] = 1;
-				}
+				if(!isset($this->mode[strtolower($p->getName())])) $this->mode[strtolower($p->getName())] = 1;
+
 				$e->setCancelled(true);
 				$b = $e->getBlock();
-				$arena = new ConfigManager($this->data[$p->getName()]->arenaName, $this->plugin);
-				if($this->setters[strtolower($p->getName())]['type'] == "setjoinsign"){
+				$arena = new ConfigManager($this->temporaryData[$p->getName()]->arenaName, $this->plugin);
+
+				if($this->actions[strtolower($p->getName())]['type'] == "setjoinsign"){
 					$arena->setJoinSign($b->x, $b->y, $b->z, $b->level->getName());
 					$p->sendMessage($this->plugin->getMsg($p, 'panel-join-sign'));
-					unset($this->setters[strtolower($p->getName())]['type']);
+					unset($this->actions[strtolower($p->getName())]['type']);
 
 					$this->cleanupArray($p);
 
 					return;
 				}
-				if($this->setters[strtolower($p->getName())]['type'] == "setspecspawn"){
+
+				if($this->actions[strtolower($p->getName())]['type'] == "setspecspawn"){
 					$arena->setSpecSpawn($b->x, $b->y, $b->z);
 
 					$p->sendMessage($this->plugin->getMsg($p, 'panel-join-spect'));
 					$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 					$p->teleport($spawn, 0, 0);
-					unset($this->setters[strtolower($p->getName())]['type']);
+					unset($this->actions[strtolower($p->getName())]['type']);
 
 					$this->cleanupArray($p);
 
 					return;
 				}
-				if($this->setters[strtolower($p->getName())]['type'] == "spawnpos"){
+
+				if($this->actions[strtolower($p->getName())]['type'] == "spawnpos"){
 					if($this->mode[strtolower($p->getName())] >= 1 && $this->mode[strtolower($p->getName())] <= $arena->arena->getNested('arena.max-players')){
 						$arena->setSpawnPosition([$b->getX(), $b->getY() + 1, $b->getZ()], $this->mode[strtolower($p->getName())]);
 
@@ -665,7 +552,7 @@ class FormPanel implements Listener {
 						$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 						$p->teleport($spawn, 0, 0);
 						unset($this->mode[strtolower($p->getName())]);
-						unset($this->setters[strtolower($p->getName())]['type']);
+						unset($this->actions[strtolower($p->getName())]['type']);
 
 						$this->cleanupArray($p);
 					}
@@ -676,7 +563,7 @@ class FormPanel implements Listener {
 			}
 		}
 
-		if(isset($this->setters[strtolower($p->getName())]['NPC'])
+		if(isset($this->actions[strtolower($p->getName())]['NPC'])
 			&& !is_null($e->getItem())
 			&& $e->getItem()->getId() === Item::BLAZE_ROD){
 			$e->setCancelled(true);
@@ -693,14 +580,14 @@ class FormPanel implements Listener {
 			}
 			if($this->mode[strtolower($p->getName())] === 4){
 				unset($this->mode[strtolower($p->getName())]);
-				unset($this->setters[strtolower($p->getName())]['NPC']);
+				unset($this->actions[strtolower($p->getName())]['NPC']);
 				$this->cleanupArray($p);
 				NPCValidationTask::setChanged();
 			}
 			$cfg->save();
 		}
 
-		if(isset($this->setters[strtolower($p->getName())]['WORLD'])
+		if(isset($this->actions[strtolower($p->getName())]['WORLD'])
 			&& !is_null($e->getItem())
 			&& $e->getItem()->getId() === Item::BLAZE_ROD){
 			$e->setCancelled(true);
@@ -713,16 +600,17 @@ class FormPanel implements Listener {
 			$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 			$p->teleport($spawn, 0, 0);
 
-			$this->data[$p->getName()]->arena->performEdit(State::FINISHED);
+			$this->temporaryData[$p->getName()]->arena->performEdit(State::FINISHED);
 
-			unset($this->setters[strtolower($p->getName())]['WORLD']);
+			unset($this->actions[strtolower($p->getName())]['WORLD']);
 			$this->cleanupArray($p, true);
 		}
 	}
 
 	public function showNPCConfiguration(Player $p){
 		$p->setGamemode(1);
-		$this->setters[strtolower($p->getName())]['NPC'] = "SETUP-NPC";
+
+		$this->actions[strtolower($p->getName())]['NPC'] = "SETUP-NPC";
 		$this->mode[strtolower($p->getName())] = 1;
 		$p->sendMessage($this->plugin->getMsg($p, 'panel-spawn-wand'));
 		$this->setMagicWand($p);

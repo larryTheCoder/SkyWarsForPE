@@ -84,7 +84,6 @@ trait ArenaData {
 	public $maximumPlayers = 0;
 	public $minimumPlayers = 0;
 	public $arenaGraceTime = 0;
-	public $spectateWaiting = 0;
 	public $enableSpectator = false;
 	public $arenaStartOnFull = false;
 	public $arenaBroadcastTM = [];

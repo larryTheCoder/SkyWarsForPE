@@ -87,7 +87,7 @@ class ArenaGameTick extends Task {
 				// Nothing interesting in this state yet...
 				// Just a few things to check if the player is starting or not...
 				if(empty($this->arena->getPlayersCount()) || $this->arena->getPlayersCount() < $this->arena->minimumPlayers){
-					foreach($this->arena->getPlayers() as $p) $p->sendPopup($this->getMessage($p, "arena-wait-players", false));
+					$this->arena->messageArenaPlayers("arena-wait-players", true);
 
 					$this->gameAPI->scoreboard->setCurrentEvent("§6Waiting for players");
 
@@ -101,11 +101,8 @@ class ArenaGameTick extends Task {
 				// Check if there is any sufficient plays in the arena, otherwise reverse back
 				// to STATE_WAITING status.
 				if(empty($this->arena->getPlayersCount()) || $this->arena->getPlayersCount() < $this->arena->minimumPlayers){
-					foreach($this->arena->getPlayers() as $p){
-						$p->sendPopup($this->getMessage($p, "arena-low-players", false));
-
-						$this->gameAPI->scoreboard->setCurrentEvent("§cNot enough players");
-					}
+					$this->arena->messageArenaPlayers("arena-low-players", true);
+					$this->gameAPI->scoreboard->setCurrentEvent("§cNot enough players");
 
 					$this->startTime = $this->arena->arenaStartingTime;
 
