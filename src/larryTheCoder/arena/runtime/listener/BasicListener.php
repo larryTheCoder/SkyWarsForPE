@@ -43,12 +43,10 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
-use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\level\Location;
 use pocketmine\level\Position;
@@ -95,7 +93,7 @@ class BasicListener implements Listener {
 	 * @param PlayerMoveEvent $e
 	 * @priority MONITOR
 	 */
-	public function onMove(PlayerMoveEvent $e){
+	public function onMove(PlayerMoveEvent $e): void{
 		$p = $e->getPlayer();
 		if($this->arena->isInArena($p) && $this->arena->getStatus() <= State::STATE_SLOPE_WAITING && $p->isSurvival()){
 			if(!isset($this->arena->usedPedestals[$p->getName()])){
@@ -120,7 +118,7 @@ class BasicListener implements Listener {
 	 * @param BlockPlaceEvent $e
 	 * @priority MONITOR
 	 */
-	public function onPlaceEvent(BlockPlaceEvent $e){
+	public function onPlaceEvent(BlockPlaceEvent $e): void{
 		$p = $e->getPlayer();
 		if($this->arena->isInArena($p) && $p->isSurvival() && $this->arena->getStatus() !== State::STATE_ARENA_RUNNING){
 			$e->setCancelled(true);
@@ -134,7 +132,7 @@ class BasicListener implements Listener {
 	 * @param BlockBreakEvent $e
 	 * @priority MONITOR
 	 */
-	public function onBreakEvent(BlockBreakEvent $e){
+	public function onBreakEvent(BlockBreakEvent $e): void{
 		$p = $e->getPlayer();
 		if($this->arena->isInArena($p) && $p->isSurvival() && $this->arena->getStatus() !== State::STATE_ARENA_RUNNING){
 			$e->setCancelled(true);
@@ -148,7 +146,7 @@ class BasicListener implements Listener {
 	 * @param EntityDamageEvent $e
 	 * @priority HIGHEST
 	 */
-	public function onHit(EntityDamageEvent $e){
+	public function onHit(EntityDamageEvent $e): void{
 		$now = time();
 		$entity = $e->getEntity();
 
@@ -263,53 +261,39 @@ class BasicListener implements Listener {
 				}
 				break;
 		}
-	}
 
-	/**
-	 * Handles player deaths. During this event, a piece of data that contains the last
-	 * time player gets damaged from {@see BasicListener::onHit()} is analyzed and the message
-	 * will get broadcasted to all of the players in the arena.
-	 *
-	 * @param PlayerDeathEvent $e
-	 * @priority HIGH
-	 */
-	public function onPlayerDeath(PlayerDeathEvent $e){
-		$p = $e->getPlayer();
-		if($p instanceof Player && $this->arena->isInArena($p)){
-			$e->setDeathMessage("");
+		// In order to remove "death" loading screen. Immediate respawn.
+		$health = $player->getHealth() - $e->getFinalDamage();
+		if($health <= 0){
+			$e->setCancelled();
 
-			if($this->arena->getPlayerState($p) === State::PLAYER_ALIVE){
-				$this->getDebugger()->log("A living player died in the arena.");
+			$this->getDebugger()->log("A living player died in the arena.");
 
-				$e->setDrops([]);
-				# Set the database data
-				$this->setDeathData($p);
+			# Set the database data
+			$this->setDeathData($player);
 
-				$player = !isset($this->lastHit[$p->getName()]) ? $p->getName() : $this->lastHit[$p->getName()];
-				if(!is_integer($player)){
-					$this->getDebugger()->log("This player is getting killed by {$player}.");
-					if($player === $p->getName()){
-						$this->arena->messageArenaPlayers('death-message-suicide', false, ["{PLAYER}"], [$p->getName()]);
-					}else{
-						$this->arena->messageArenaPlayers('death-message', false, ["{PLAYER}", "{KILLER}"], [$p->getName(), $player]);
-						$this->arena->kills[$player]++;
-					}
+			$playerName = !isset($this->lastHit[$player->getName()]) ? $player->getName() : $this->lastHit[$player->getName()];
+			if(!is_integer($playerName)){
+				$this->getDebugger()->log("This player is getting killed by {$playerName}.");
+				if($playerName === $player->getName()){
+					$this->arena->messageArenaPlayers('death-message-suicide', false, ["{PLAYER}"], [$player->getName()]);
 				}else{
-					$this->getDebugger()->log("This player is getting killed with ID: {$player}.");
-
-					$msg = Utils::getDeathMessageById($player);
-					$this->arena->messageArenaPlayers($msg, false, ["{PLAYER}"], [$p->getName()]);
+					$this->arena->messageArenaPlayers('death-message', false, ["{PLAYER}", "{KILLER}"], [$player->getName(), $playerName]);
+					$this->arena->kills[$playerName]++;
 				}
-				unset($this->lastHit[$p->getName()]);
-
-				$this->arena->knockedOut($e);
 			}else{
-				// TODO: Check if the player is spectating?
+				$this->getDebugger()->log("This player is getting killed with ID: {$playerName}.");
+
+				$msg = Utils::getDeathMessageById($playerName);
+				$this->arena->messageArenaPlayers($msg, false, ["{PLAYER}"], [$player->getName()]);
 			}
+			unset($this->lastHit[$player->getName()]);
+
+			$this->arena->knockedOut($player);
 		}
 	}
 
-	private function setDeathData(Player $player){
+	private function setDeathData(Player $player): void{
 		SkyWarsPE::$instance->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player){
 			$pd->death++;
 			$pd->lost++;
@@ -321,54 +305,12 @@ class BasicListener implements Listener {
 	}
 
 	/**
-	 * Handles player's respawn after player's death. During this event, they will check
-	 * if the player is in spectator mode, as shown in {@see Arena::knockedOut()}, otherwise
-	 * we set the player respawn point to the lobby.
-	 *
-	 * @param PlayerRespawnEvent $e
-	 * @priority MONITOR
-	 */
-	public function onRespawn(PlayerRespawnEvent $e){
-		$p = $e->getPlayer();
-		# Player must be inside of arena otherwise its a fake
-		if(!$this->arena->isInArena($p)){
-			var_dump("Not in arena..");
-
-			return;
-		}
-
-		if($this->arena->getPlayerState($p) === State::PLAYER_SPECTATE){
-			var_dump("Player respawned event...");
-
-			$p->setXpLevel(0);
-			if($this->arena->enableSpectator){
-				$e->setRespawnPosition(Position::fromObject($this->arena->arenaSpecPos, $this->arena->getLevel()));
-				$p->setGamemode(Player::SPECTATOR);
-				$p->sendMessage($this->gameAPI->plugin->getMsg($p, 'player-spectate'));
-				$this->gameAPI->giveGameItems($p, true);
-
-				foreach($this->arena->getPlayers() as $p2){
-					/** @var Player $d */
-					if(($d = Server::getInstance()->getPlayer($p2)) instanceof Player){
-						$d->hidePlayer($p);
-					}
-				}
-
-				return;
-			}
-		}
-
-		var_dump("Teleporting to lobby instead");
-		SkyWarsPE::$instance->getDatabase()->teleportLobby($p);
-	}
-
-	/**
 	 * Handles player interaction with the arena signs.
 	 *
 	 * @param PlayerInteractEvent $e
 	 * @priority NORMAL
 	 */
-	public function onBlockTouch(PlayerInteractEvent $e){
+	public function onBlockTouch(PlayerInteractEvent $e): void{
 		Utils::loadFirst($this->arena->joinSignWorld, true);
 
 		$p = $e->getPlayer();
@@ -380,22 +322,33 @@ class BasicListener implements Listener {
 		}
 	}
 
-	public function playerQuitEvent(PlayerQuitEvent $event){
-		$pl = $event->getPlayer();
+	/**
+	 * @param PlayerQuitEvent $event
+	 * @priority NORMAL
+	 */
+	public function playerQuitEvent(PlayerQuitEvent $event): void{
 		if($this->arena->isInArena($event->getPlayer())){
 			$this->arena->leaveArena($event->getPlayer(), true);
 			$this->arena->checkAlive();
 		}
 	}
 
-	public function playerKickedEvent(PlayerKickEvent $event){
+	/**
+	 * @param PlayerKickEvent $event
+	 * @priority NORMAL
+	 */
+	public function playerKickedEvent(PlayerKickEvent $event): void{
 		if($this->arena->isInArena($event->getPlayer())){
 			$this->arena->leaveArena($event->getPlayer(), true);
 			$this->arena->checkAlive();
 		}
 	}
 
-	public function onDataPacket(DataPacketReceiveEvent $event){
+	/**
+	 * @param DataPacketReceiveEvent $event
+	 * @priority NORMAL
+	 */
+	public function onDataPacket(DataPacketReceiveEvent $event): void{
 		$packet = $event->getPacket();
 		$p = $event->getPlayer();
 		if($packet instanceof MapInfoRequestPacket){
@@ -440,8 +393,9 @@ class BasicListener implements Listener {
 	 * This prevents the player from using a command that is forbidden to this game.
 	 *
 	 * @param PlayerCommandPreprocessEvent $ev
+	 * @priority NORMAL
 	 */
-	public function onCommand(PlayerCommandPreprocessEvent $ev){
+	public function onCommand(PlayerCommandPreprocessEvent $ev): void{
 		$cmd = strtolower($ev->getMessage());
 		$p = $ev->getPlayer();
 		if($cmd{0} == '/'){
@@ -452,7 +406,7 @@ class BasicListener implements Listener {
 				&& $this->arena->getPlayerState($p) === State::PLAYER_ALIVE
 				&& $this->arena->getStatus() === State::STATE_ARENA_RUNNING;
 			if($val){
-				if(!in_array($cmd, Settings::$acceptedCommand) && $cmd !== "sw"){
+				if(!in_array($cmd, Settings::$acceptedCommand, true) && $cmd !== "sw"){
 					$ev->getPlayer()->sendMessage($this->gameAPI->plugin->getMsg($p, "banned-command"));
 					$ev->setCancelled(true);
 				}

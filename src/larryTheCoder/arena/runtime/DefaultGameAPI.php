@@ -39,6 +39,7 @@ use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\Block;
 use pocketmine\command\ConsoleCommandSender;
+use pocketmine\event\HandlerList;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
@@ -75,6 +76,8 @@ class DefaultGameAPI implements GameAPI {
 
 	/** @var Arena */
 	public $arena;
+	/** @var BasicListener */
+	private $eventListener;
 
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
@@ -82,7 +85,7 @@ class DefaultGameAPI implements GameAPI {
 		$this->fallTime = $arena->arenaGraceTime;
 		$this->plugin = SkyWarsPE::getInstance();
 		$this->scoreboard = new ArenaScoreboard($this);
-		Server::getInstance()->getPluginManager()->registerEvents(new BasicListener($this), $this->plugin);
+		Server::getInstance()->getPluginManager()->registerEvents($this->eventListener = new BasicListener($this), $this->plugin);
 	}
 
 	public function getDebugger(): GameDebugger{
@@ -150,7 +153,6 @@ class DefaultGameAPI implements GameAPI {
 	 * Remove cage of the player
 	 *
 	 * @param Player $p
-	 *
 	 * @return bool
 	 */
 	public function removeCage(Player $p): bool{
@@ -317,6 +319,9 @@ class DefaultGameAPI implements GameAPI {
 	}
 
 	public function shutdown(): void{
-		// TODO: Implement shutdown() method.
+		// Now this will work oop
+		$this->scoreboard->clearAll();
+
+		HandlerList::unregisterAll($this->eventListener);
 	}
 }

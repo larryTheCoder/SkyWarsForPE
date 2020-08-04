@@ -9,44 +9,44 @@
     Its time to burn those old fancy paid plugins and beat them in face!
 
 ## Introduction
-**This plugin is unstable and inconsistence, it is not ready to be used, use with caution.**
+**This plugin is unstable and inconsistent, it is not ready to be used, use with caution.**
 
-SkyWarsForPE is a plugin built for all of the Minecraft PE Community, this source has been moved to open sourced again due to some inactivity in project, as the result, this plugin will be continued to compete with other SkyWars plugin. I ensure you, this plugin is more powerful than ever before. Its all for free!
+SkyWarsForPE is a plugin built for all Minecraft PE Community, this source has been moved to open sourced again due to some inactivity in project, as the result, this plugin will be continued to compete with other SkyWars plugin. I ensure you, this plugin is more powerful than ever before. It's all for free!
 
 ## Implemented features:
-- Build in FormAPI inside, hmm... Great
+- Asynchronous world loading/unloading. (Technically just fast)
+- Setup arena with a FormAPI interface, its just easy.
 - GUI handled setup and settings.
 - Chest particles, effects, custom cloaks
 - More commands, A lot of working commands.
-- Support multi language, player based language!
 - Easy built in Item handling configuration. _check config.yml_
-- Uses database to save player data.
-- Incredible performance and fast setup.
+- Incredible performance and fast startup.
 - Saves world, load them, then restart them with style.
 - Random Chests (To be done).
 - Events, public API, Yes we welcome developers to come contribute.
-- NPC Top winners, oh yes, this what you been waiting for.
+- NPC Top winners, oh yes, this what been waiting for.
 - Top winners! Top winners! Who won the game?
 - All the player stats will be stored centrally in sql database.
 - Provides the best settings for your server.
-- Scoreboards is now implemented and it can be configured in [scoreboard.yml](https://github.com/larryTheCoder/SkyWarsForPE/blob/master/resources/scoreboard.yml).
+- Implemented scoreboards UI, it can be configured in [scoreboard.yml](https://github.com/larryTheCoder/SkyWarsForPE/blob/master/resources/scoreboard.yml).
 
 ### Planned Features
-Giving out planned features wont do anything without trying first. But these are the planned features for this plugin
+Giving out planned features won't do anything without trying first. These are the planned features for the plugin.
 
-- Proxy based game (Connects from server to server to play)
+- Proxy based game (Connects from server to server)
 - Chest randomized.
 - Chest Open Close packet (See Hypixel game behaviour)
 - Time manipulation
 - Game API (Do some cool stuff and controls the arena)
 - At the end of the round you will be placed in the gamemode 2 during the teleport.
-- Cofigurable particles at the end of the round (adjustable in Config.yml)
+- Configurable particles at the end of the round (adjustable in Config.yml)
 - Implementation of Team Mode for SkyWars.
 - Join title when entering a round (adjustable in Config.yml).
 - In the GUI for the cages images support (In the cages.yml adjustable for example: Image: "https://fileupload.com/up/ggisdagdg")
 
 
 ## Commands
+
 | Default command | Parameter | Description | Default Permission |
 | :-----: | :-------: | :---------: | :-------: |
 | /lobby | | back to lobby | `All` |

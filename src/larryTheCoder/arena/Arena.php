@@ -173,10 +173,24 @@ class Arena {
 		if($this->enableSpectator){
 			$this->setSpectator($pl);
 
+			$pl->setGamemode(Player::SPECTATOR);
+			$pl->sendMessage($this->plugin->getMsg($pl, 'player-spectate'));
+			$this->gameAPI->giveGameItems($pl, true);
+
+			foreach($this->getPlayers() as $p2){
+				/** @var Player $d */
+				if(($d = Server::getInstance()->getPlayer($p2)) instanceof Player){
+					$d->hidePlayer($pl);
+				}
+			}
+
+			$pl->teleport(Position::fromObject($this->arenaSpecPos, $this->getLevel()));
+
 			return;
 		}
-
 		$this->leaveArena($pl);
+
+		SkyWarsPE::$instance->getDatabase()->teleportLobby($pl);
 	}
 
 	/**

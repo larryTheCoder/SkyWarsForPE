@@ -70,6 +70,14 @@ class ArenaGameTick extends Task {
 		return "Arena Main Scheduling Task";
 	}
 
+	public function onRun(int $currentTick){
+		try{
+			$this->run($currentTick);
+		}catch(\Throwable $err){
+
+		}
+	}
+
 	/**
 	 * Actions to execute when run
 	 *
@@ -77,7 +85,7 @@ class ArenaGameTick extends Task {
 	 *
 	 * @return void
 	 */
-	public function onRun(int $currentTick){
+	public function run(int $currentTick){
 		$this->arenaTicks++; // Uwu u found me, now tell myself that I need to finish my code.
 
 		$this->checkLevelTime();

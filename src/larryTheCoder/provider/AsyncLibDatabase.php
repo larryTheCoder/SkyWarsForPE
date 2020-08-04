@@ -26,6 +26,8 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+declare(strict_types = 1);
+
 namespace larryTheCoder\provider;
 
 use larryTheCoder\player\PlayerData;
@@ -82,7 +84,7 @@ class AsyncLibDatabase {
 		Utils::send(TextFormat::YELLOW . "Successfully enabled database operations.");
 	}
 
-	public function close(){
+	public function close(): void{
 		$this->database->close();
 
 		Utils::send(TextFormat::RED . "Successfully disabled database operations.");
@@ -94,7 +96,7 @@ class AsyncLibDatabase {
 	 *
 	 * @param string $playerName
 	 */
-	public function createNewData(string $playerName){
+	public function createNewData(string $playerName): void{
 		// Just in case that the query has an unexpected results.
 		$this->database->executeChange(self::TABLE_CREATE_PLAYER, ["playerName" => $playerName], function(int $affectedRows){
 		});
@@ -107,7 +109,7 @@ class AsyncLibDatabase {
 	 * @param string $playerName The player name that needs to be queried.
 	 * @param callable $result The data returned with <code>function({@link PlayerData} $data) : void{}</code>
 	 */
-	public function getPlayerData(string $playerName, callable $result){
+	public function getPlayerData(string $playerName, callable $result): void{
 		// Gonna love PHP 7.0
 		$this->database->executeSelect(self::TABLE_SELECT_PLAYER, ["playerName" => $playerName],
 			function(array $rows) use ($result){
@@ -116,6 +118,7 @@ class AsyncLibDatabase {
 
 					return;
 				}
+
 				$result(AsyncLibDatabase::parsePlayerRow($rows[0]));
 			});
 	}
@@ -126,7 +129,7 @@ class AsyncLibDatabase {
 	 * @param string $playerName
 	 * @param PlayerData $pd
 	 */
-	public function setPlayerData(string $playerName, PlayerData $pd){
+	public function setPlayerData(string $playerName, PlayerData $pd): void{
 		$this->database->executeChange(self::TABLE_UPDATE_PLAYER, [
 			"playerName" => $playerName,
 			"playerTime" => $pd->time,
@@ -145,7 +148,7 @@ class AsyncLibDatabase {
 	 *
 	 * @param callable $result a callable object with datatype: <code>function({@link PlayerData[]} $data) : void{}</code>
 	 */
-	public function getPlayers(callable $result){
+	public function getPlayers(callable $result): void{
 		$this->database->executeSelect(self::TABLE_SELECT_PLAYERS, [],
 			function(array $rows) use ($result){
 				$players = [];
@@ -155,7 +158,16 @@ class AsyncLibDatabase {
 			});
 	}
 
-	public function teleportLobby(Player $pl){
+	/** @var Position|null */
+	private $cachedLobby = null;
+
+	public function teleportLobby(Player $pl): void{
+		if($this->cachedLobby !== null){
+			$this->teleport($pl, $this->cachedLobby);
+
+			return;
+		}
+
 		$this->database->executeSelect(self::TABLE_SELECT_LOBBY, [],
 			function(array $rows) use ($pl){
 				if(empty($rows)){
@@ -170,32 +182,33 @@ class AsyncLibDatabase {
 					$position = new Position(intval($rows[0]["lobbyX"]) + .5, intval($rows[0]["lobbyY"]) + .5, intval($rows[0]["lobbyZ"]) + .5, $level);
 				}
 
-				// Check either that the player is already been connected or no.
-				// Otherwise we had to force ourselves to save player's data...
-				if($pl->isConnected()){
-					$pl->teleport($position);
-				}else{
-					$server = Server::getInstance();
-
-					$data = $server->getOfflinePlayerData($pl->getName());
-					$data->setTag(new ListTag("Pos", [
-						new DoubleTag("", $position->x),
-						new DoubleTag("", $position->y),
-						new DoubleTag("", $position->z),
-					]), true);
-					$data->setTag(new StringTag("Level", $position->getLevel()->getFolderName()), true);
-
-					$server->saveOfflinePlayerData($pl->getName(), $data);
-				}
+				$this->teleport($pl, $position);
 			});
 	}
 
-	public function setLobby(Position $pos){
+	private function teleport(Player $pl, Position $position): void{
+		if($pl->isConnected()){
+			$pl->teleport($position);
+		}else{
+			$server = Server::getInstance();
+
+			$data = $server->getOfflinePlayerData($pl->getName());
+			$data->setTag(new ListTag("Pos", [
+				new DoubleTag("", $position->x),
+				new DoubleTag("", $position->y),
+				new DoubleTag("", $position->z),
+			]), true);
+			$data->setTag(new StringTag("Level", $position->getLevel()->getFolderName()), true);
+
+			$server->saveOfflinePlayerData($pl->getName(), $data);
+		}
+	}
+
+	public function setLobby(Position $pos): void{
 		$this->database->executeSelect(self::TABLE_SELECT_LOBBY, [],
 			function(array $rows) use ($pos){
-				$db = AsyncLibDatabase::$instance->database;
 				if(empty($rows)){
-					$db->executeInsert(AsyncLibDatabase::TABLE_CREATE_LOBBY, [
+					$this->database->executeInsert(self::TABLE_CREATE_LOBBY, [
 						"lobbyX"    => $pos->getFloorX(),
 						"lobbyY"    => $pos->getFloorY(),
 						"lobbyZ"    => $pos->getFloorZ(),
@@ -203,7 +216,7 @@ class AsyncLibDatabase {
 					]);
 				}else{
 					$lastLevel = $rows[0]["worldName"];
-					$db->executeInsert(AsyncLibDatabase::TABLE_UPDATE_LOBBY, [
+					$this->database->executeInsert(self::TABLE_UPDATE_LOBBY, [
 						"lobbyX"        => $pos->getFloorX(),
 						"lobbyY"        => $pos->getFloorY(),
 						"lobbyZ"        => $pos->getFloorZ(),
@@ -211,6 +224,8 @@ class AsyncLibDatabase {
 						"worldNameData" => $lastLevel,
 					]);
 				}
+
+				$this->cachedLobby = $pos;
 			});
 	}
 
