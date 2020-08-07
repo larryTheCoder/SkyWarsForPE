@@ -28,19 +28,19 @@
 
 namespace larryTheCoder\utils;
 
+use larryTheCoder\arena\api\ArenaState;
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\entity\FireworksRocket;
 use larryTheCoder\utils\fireworks\Fireworks;
-use pocketmine\{event\entity\EntityDamageEvent,
-	network\mcpe\protocol\AddActorPacket,
+use pocketmine\{network\mcpe\protocol\AddActorPacket,
 	Player,
 	Server,
 	utils\MainLogger,
 	utils\Random,
 	utils\TextFormat,
-	utils\TextFormat as VS};
+	utils\TextFormat as VS
+};
 use pocketmine\block\{Block, BlockIds, StainedGlass};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item, ItemIds};
@@ -111,55 +111,24 @@ class Utils {
 		if($arena->inSetup){
 			return new StainedGlass(14);
 		}
-		if(!$arena->arenaEnable){
+		if(!$arena->arenaEnable || $arena->levelBusy){
 			return new StainedGlass(14);
 		}
 
-		if($arena->getStatus() <= State::STATE_SLOPE_WAITING){
+		if($arena->getStatus() <= ArenaState::STATE_SLOPE_WAITING){
 			return new StainedGlass(13);
 		}
 		if($arena->getPlayers() >= $arena->minimumPlayers){
 			return new StainedGlass(4);
 		}
-		if($arena->getStatus() === State::STATE_ARENA_RUNNING){
+		if($arena->getStatus() === ArenaState::STATE_ARENA_RUNNING){
 			return new StainedGlass(6);
 		}
-		if($arena->getStatus() === State::STATE_ARENA_CELEBRATING){
+		if($arena->getStatus() === ArenaState::STATE_ARENA_CELEBRATING){
 			return new StainedGlass(11);
 		}
 
 		return new StainedGlass(0);
-	}
-
-	public static function getDeathMessageById(int $id){
-		switch($id){
-			case EntityDamageEvent::CAUSE_VOID:
-				return "death-message-void";
-			case EntityDamageEvent::CAUSE_SUICIDE:
-				return "death-message-suicide";
-			case EntityDamageEvent::CAUSE_SUFFOCATION:
-				return "death-message-suffocated";
-			case EntityDamageEvent::CAUSE_FIRE:
-				return "death-message-burned";
-			case EntityDamageEvent::CAUSE_CONTACT:
-				return "death-message-catused";
-			case EntityDamageEvent::CAUSE_FALL:
-				return "death-message-fall";
-			case EntityDamageEvent::CAUSE_LAVA:
-				return "death-message-toasted";
-			case EntityDamageEvent::CAUSE_DROWNING:
-				return "death-message-drowned";
-			case EntityDamageEvent::CAUSE_STARVATION:
-				return "death-message-nature";
-			case EntityDamageEvent::CAUSE_BLOCK_EXPLOSION:
-			case EntityDamageEvent::CAUSE_ENTITY_EXPLOSION:
-				return "death-message-explode";
-			case EntityDamageEvent::CAUSE_CUSTOM:
-				return "death-message-magic";
-		}
-
-		return "death-message-unknown";
-
 	}
 
 	function centerText(array $lines): string{

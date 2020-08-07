@@ -28,8 +28,8 @@
 
 namespace larryTheCoder\panel;
 
+use larryTheCoder\arena\api\ArenaState;
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\State;
 use larryTheCoder\forms\CustomForm;
 use larryTheCoder\forms\CustomFormResponse;
 use larryTheCoder\forms\elements\{Button, Dropdown, Input, Label, Slider, Toggle};
@@ -93,7 +93,7 @@ class FormPanel implements Listener {
 		$form->setOnSubmit(function(Player $player, Button $selected) use ($arena): void{
 			// Do not attempt to do anything if the arena is no longer running.
 			// Or the player is no longer in arena
-			if($arena->getStatus() !== State::STATE_ARENA_RUNNING || !$arena->isInArena($player)){
+			if($arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING || !$arena->isInArena($player)){
 				$player->sendMessage(TextFormat::RED . "You are no longer in the arena.");
 
 				return;
@@ -162,6 +162,7 @@ class FormPanel implements Listener {
 			}
 
 			foreach($this->plugin->getArenaManager()->getArenas() as $arena){
+				if($arena->getLevel() === null) continue; // Iterate to next arena.
 				if(strtolower($arena->getLevel()->getFolderName()) === strtolower($file)){
 					continue 2;
 				}
@@ -480,7 +481,7 @@ class FormPanel implements Listener {
 		$p->sendMessage("You are now be able to edit the world now, best of luck");
 		$p->sendMessage("Use blaze rod if you have finished editing the world.");
 
-		$arena->arena->performEdit(State::STARTING);
+		$arena->arena->performEdit(ArenaState::STARTING);
 
 		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
 		$p->teleport($level->getSpawnLocation());
@@ -600,7 +601,7 @@ class FormPanel implements Listener {
 			$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 			$p->teleport($spawn, 0, 0);
 
-			$this->temporaryData[$p->getName()]->arena->performEdit(State::FINISHED);
+			$this->temporaryData[$p->getName()]->arena->performEdit(ArenaState::FINISHED);
 
 			unset($this->actions[strtolower($p->getName())]['WORLD']);
 			$this->cleanupArray($p, true);

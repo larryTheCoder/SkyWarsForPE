@@ -29,7 +29,7 @@
 
 namespace larryTheCoder\commands;
 
-use larryTheCoder\arena\State;
+use larryTheCoder\arena\api\ArenaState;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
@@ -200,7 +200,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage("§cNo available arena, please try again later");
 						break;
 					}
-					$arena->joinToArena($sender);
+					$arena->joinArena($sender);
 					break;
 				case "reload":
 					if(!$sender->hasPermission("sw.command.reload")){
@@ -254,7 +254,7 @@ final class SkyWarsCommand {
 							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
 							break;
 						}
-						if($this->plugin->getArenaManager()->getArena($args[1])->getStatus() !== State::STATE_ARENA_RUNNING){
+						if($this->plugin->getArenaManager()->getArena($args[1])->getStatus() !== ArenaState::STATE_ARENA_RUNNING){
 							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
 							break;
 						}
@@ -265,7 +265,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'stop-usage'));
 						break;
 					}
-					if($this->plugin->getArenaManager()->getPlayerArena($sender)->getStatus() !== State::STATE_ARENA_RUNNING){
+					if($this->plugin->getArenaManager()->getPlayerArena($sender)->getStatus() !== ArenaState::STATE_ARENA_RUNNING){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
 						break;
 					}
@@ -296,7 +296,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-running'));
 						break;
 					}
-					$this->plugin->getArenaManager()->getArena($args[1])->joinToArena($sender);
+					$this->plugin->getArenaManager()->getArena($args[1])->joinArena($sender);
 					break;
 				case "setlobby":
 					if(!$sender->hasPermission('sw.command.setlobby')){

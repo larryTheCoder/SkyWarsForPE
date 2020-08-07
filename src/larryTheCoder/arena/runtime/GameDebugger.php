@@ -30,6 +30,7 @@ namespace larryTheCoder\arena\runtime;
 
 use pocketmine\Thread;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\Utils;
 
 class GameDebugger extends Thread {
 
@@ -72,6 +73,8 @@ class GameDebugger extends Thread {
 	}
 
 	public function run(){
+		$this->registerClassLoader();
+
 		$logResource = fopen($this->logFile, "ab");
 		if(!is_resource($logResource)){
 			throw new \RuntimeException("Couldn't open log file");
@@ -97,5 +100,64 @@ class GameDebugger extends Thread {
 			$chunk = $this->logStream->shift();
 			fwrite($logResource, $chunk);
 		}
+	}
+
+	/**
+	 * @param \Throwable $e
+	 * @param mixed[][]|null $trace
+	 * @return void
+	 *
+	 * @phpstan-param list<array<string, mixed>>|null $trace
+	 */
+	public function logException(\Throwable $e, $trace = null){
+		if($trace === null){
+			$trace = $e->getTrace();
+		}
+
+		$this->synchronized(function() use ($e, $trace) : void{
+			$this->log("-----");
+			$this->log(self::printExceptionMessage($e));
+			foreach(Utils::printableTrace($trace) as $line){
+				$this->log($line);
+			}
+			for($prev = $e->getPrevious(); $prev !== null; $prev = $prev->getPrevious()){
+				$this->log("Previous: " . self::printExceptionMessage($prev));
+				foreach(Utils::printableTrace($prev->getTrace()) as $line){
+					$this->log("  " . $line);
+				}
+			}
+			$this->log("-----");
+		});
+	}
+
+	private static function printExceptionMessage(\Throwable $e): string{
+		static $errorConversion = [
+			0                   => "EXCEPTION",
+			E_ERROR             => "E_ERROR",
+			E_WARNING           => "E_WARNING",
+			E_PARSE             => "E_PARSE",
+			E_NOTICE            => "E_NOTICE",
+			E_CORE_ERROR        => "E_CORE_ERROR",
+			E_CORE_WARNING      => "E_CORE_WARNING",
+			E_COMPILE_ERROR     => "E_COMPILE_ERROR",
+			E_COMPILE_WARNING   => "E_COMPILE_WARNING",
+			E_USER_ERROR        => "E_USER_ERROR",
+			E_USER_WARNING      => "E_USER_WARNING",
+			E_USER_NOTICE       => "E_USER_NOTICE",
+			E_STRICT            => "E_STRICT",
+			E_RECOVERABLE_ERROR => "E_RECOVERABLE_ERROR",
+			E_DEPRECATED        => "E_DEPRECATED",
+			E_USER_DEPRECATED   => "E_USER_DEPRECATED",
+		];
+
+		$errstr = preg_replace('/\s+/', ' ', trim($e->getMessage()));
+
+		$errno = $e->getCode();
+		$errno = $errorConversion[$errno] ?? $errno;
+
+		$errfile = Utils::cleanPath($e->getFile());
+		$errline = $e->getLine();
+
+		return get_class($e) . ": \"$errstr\" ($errno) in \"$errfile\" at line $errline";
 	}
 }

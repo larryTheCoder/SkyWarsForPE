@@ -69,7 +69,7 @@ Before you attempted to copy any of this plugin, please read following license b
 
     Adapted from the Wizardry License
 
-    Copyright (c) 2015-2019 larryTheCoder and contributors
+    Copyright (c) 2015-2020 larryTheCoder and contributors
 
     Permission is hereby granted to any persons and/or organizations
     using this software to copy, modify, merge, publish, and distribute it.

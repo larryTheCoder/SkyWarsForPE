@@ -28,7 +28,6 @@
 
 namespace larryTheCoder;
 
-use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\commands\SkyWarsCommand;
 use larryTheCoder\features\cages\ArenaCage;
 use larryTheCoder\features\chestRandom\RandomChest;
@@ -90,15 +89,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	public static function getInstance(): ?SkyWarsPE{
 		return self::$instance;
-	}
-
-	/** @var GameDebugger[] */
-	private static $gameDebuggers = [];
-
-	public static function registerDebugger(string $arenaName, GameDebugger $gameDebugger){
-		self::$gameDebuggers[$arenaName] = $gameDebugger;
-
-		$gameDebugger->log("[REG] Attempting to log $arenaName");
 	}
 
 	public function onLoad(){
@@ -252,19 +242,11 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 			Utils::unLoadGame();
 
-			// Cancel all the damn tasks
-			$this->getScheduler()->cancelAllTasks();
 			$this->database->close();
-
-			foreach(self::$gameDebuggers as $debugger){
-				$debugger->quit();
-			}
 
 			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
 		}catch(\Throwable $error){
 			MainLogger::getLogger()->logException($error);
-
-			foreach(self::$gameDebuggers as $debugger) $debugger->quit();
 
 			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'Failed to disable plugin accordingly.');
 		}

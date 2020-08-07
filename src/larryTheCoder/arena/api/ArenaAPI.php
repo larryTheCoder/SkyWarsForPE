@@ -26,20 +26,21 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\api;
+declare(strict_types = 1);
 
+namespace larryTheCoder\arena\api;
 
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 /**
- * GameAPI, a class that holds the information about how the arena behave towards their players.
+ * ArenaAPI, a class that holds the information about how the arena behave towards their players.
  * This is useful when you want to change some of the settings that been set within this code.
  * Make it more useful and fun instead of a plain core of skywars itself.
  *
  * @package larryTheCoder\arena\api
  */
-interface GameAPI {
+interface ArenaAPI {
 
 	/**
 	 * The API codename.
@@ -82,7 +83,7 @@ interface GameAPI {
 	 * Return the tasks required by the game to run.
 	 * This task will be executed periodically for each 1s
 	 *
-	 * @return array
+	 * @return ArenaTask[]
 	 */
 	public function getRuntimeTasks(): array;
 
@@ -97,4 +98,9 @@ interface GameAPI {
 	 * You may found this a very useful function.
 	 */
 	public function shutdown(): void;
+
+	/**
+	 * @return ArenaListener
+	 */
+	public function getEventListener(): ArenaListener;
 }

@@ -29,19 +29,19 @@
 namespace larryTheCoder\arena;
 
 use DateTime;
-use larryTheCoder\arena\api\GameAPI;
+use larryTheCoder\arena\api\ArenaAPI;
+use larryTheCoder\arena\api\ArenaState;
+use larryTheCoder\arena\api\task\CompressionAsyncTask;
 use larryTheCoder\arena\runtime\CageHandler;
 use larryTheCoder\arena\runtime\DefaultGameAPI;
 use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\task\CompressionAsyncTask;
 use larryTheCoder\utils\Utils;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
-use pocketmine\scheduler\Task;
-use pocketmine\scheduler\TaskHandler;
+use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\Timezone;
@@ -67,13 +67,14 @@ use pocketmine\utils\Timezone;
 class Arena {
 	use PlayerHandler;
 	use ArenaData;
+	use ArenaTask;
 
 	/*** @var SkyWarsPE */
 	private $plugin;
 	/** @var int */
-	private $arenaStatus = State::STATE_WAITING;
+	private $arenaStatus = ArenaState::STATE_WAITING;
 
-	/** @var GameAPI */
+	/** @var ArenaAPI */
 	public $gameAPI;
 	/** @var array */
 	public $data;
@@ -83,14 +84,15 @@ class Arena {
 	/** @var CageHandler */
 	public $cageHandler;
 
-	/** @var TaskHandler[] */
-	private $taskRunning = [];
-
 	/** @var GameDebugger */
 	public $gameDebugger = null;
 
 	public function getDebugger(): ?GameDebugger{
 		return $this->gameDebugger;
+	}
+
+	public function getPlugin(): ?PluginBase{
+		return $this->plugin;
 	}
 
 	public function __construct(string $arenaName, SkyWarsPE $plugin){
@@ -103,9 +105,8 @@ class Arena {
 			throw new \RuntimeException("Unable to set timezone properly for arena $arenaName", 0, $e);
 		}
 
-		$this->gameDebugger = new GameDebugger(SkyWarsPE::$instance->getDataFolder() . "logs/" . $time->format("Y-m-d") . " {$this->getArenaName()}.txt", $time);
-		SkyWarsPE::registerDebugger($arenaName, $this->gameDebugger);
-
+		$logsPath = $this->plugin->getDataFolder() . "logs/";
+		$this->gameDebugger = new GameDebugger($logsPath . $time->format("Y-m-d") . " {$this->getArenaName()}.txt", $time);
 		$this->reloadData();
 	}
 
@@ -114,7 +115,7 @@ class Arena {
 	 */
 	public function reloadData(){
 		$this->getDebugger()->log("[Arena]: reloadData() function executed");
-		$this->data = SkyWarsPE::getInstance()->getArenaManager()->getArenaConfig($this->arenaName)->getAll();
+		$this->data = $this->plugin->getArenaManager()->getArenaConfig($this->arenaName)->getAll();
 
 		$this->parseData();
 		$this->configTeam($this->getArenaData());
@@ -128,8 +129,8 @@ class Arena {
 		$this->gameAPI->startArena();
 
 		$this->startedTime = microtime(true);
-		$this->setStatus(State::STATE_ARENA_RUNNING);
-		$this->messageArenaPlayers('arena-start', false);
+		$this->setStatus(ArenaState::STATE_ARENA_RUNNING);
+		$this->broadcastToPlayers('arena-start', false);
 	}
 
 	/**
@@ -143,7 +144,7 @@ class Arena {
 
 		$this->resetArena();
 		$this->resetArenaWorld();
-		$this->setStatus(State::STATE_WAITING);
+		$this->setStatus(ArenaState::STATE_WAITING);
 	}
 
 	/**
@@ -161,39 +162,6 @@ class Arena {
 	}
 
 	/**
-	 * This function is used to handle player deaths or 'knocked outs'.
-	 * It is to make sure that this player will be removed from the game correctly
-	 * according to what is configured in the config file.
-	 *
-	 * @param Player $pl
-	 */
-	public function knockedOut(Player $pl){
-		$this->getDebugger()->log("[Arena]: {$pl->getName()} is knocked out in the game");
-
-		if($this->enableSpectator){
-			$this->setSpectator($pl);
-
-			$pl->setGamemode(Player::SPECTATOR);
-			$pl->sendMessage($this->plugin->getMsg($pl, 'player-spectate'));
-			$this->gameAPI->giveGameItems($pl, true);
-
-			foreach($this->getPlayers() as $p2){
-				/** @var Player $d */
-				if(($d = Server::getInstance()->getPlayer($p2)) instanceof Player){
-					$d->hidePlayer($pl);
-				}
-			}
-
-			$pl->teleport(Position::fromObject($this->arenaSpecPos, $this->getLevel()));
-
-			return;
-		}
-		$this->leaveArena($pl);
-
-		SkyWarsPE::$instance->getDatabase()->teleportLobby($pl);
-	}
-
-	/**
 	 * Forcefully reset the arena to its original state.
 	 */
 	public function resetArena(){
@@ -208,23 +176,11 @@ class Arena {
 		if($this->gameAPI === null) $this->gameAPI = new DefaultGameAPI($this);
 
 		// Remove the task first.
-		/** @var Task[] $tasks */
 		$tasks = $this->gameAPI->getRuntimeTasks();
-		if(!empty($this->taskRunning)){
-			foreach($this->taskRunning as $id => $data){
-				SkyWarsPE::getInstance()->getScheduler()->cancelTask($id);
-
-				unset($this->taskRunning[$id]);
-			}
-		}
+		$this->clearTasks();
 
 		// Then commit re-run.
-		foreach($tasks as $task){
-			$this->getDebugger()->log("Scheduling task {$task->getName()}.");
-
-			$runnable = SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask($task, 20);
-			$this->taskRunning[] = $runnable;
-		}
+		foreach($tasks as $task) $this->scheduleTask($task, 20);
 	}
 
 	/**
@@ -235,14 +191,7 @@ class Arena {
 		$this->gameAPI->shutdown();
 
 		$this->unsetAllPlayers();
-
-		if(!empty($this->taskRunning)){
-			foreach($this->taskRunning as $id => $data){
-				$data->cancel();
-
-				unset($this->taskRunning[$id]);
-			}
-		}
+		$this->clearTasks();
 	}
 
 	/**
@@ -266,7 +215,7 @@ class Arena {
 		return $this->arenaName;
 	}
 
-	private $levelBusy = false;
+	public $levelBusy = false;
 
 	/**
 	 * Reset the arena to its last state. In this function, the arena world will be reset and
@@ -312,17 +261,19 @@ class Arena {
 	 */
 	public function getReadableStatus(): string{
 		switch(true){
+			case $this->levelBusy:
+				return "&cFinishing things up";
 			case $this->inSetup:
 				return "&eIn setup";
 			case !$this->arenaEnable:
 				return "&cDisabled";
-			case $this->getStatus() <= State::STATE_SLOPE_WAITING:
+			case $this->getStatus() <= ArenaState::STATE_SLOPE_WAITING:
 				return "&6Click to join!";
 			case $this->getPlayers() >= $this->minimumPlayers:
 				return "&6Starting";
-			case $this->getStatus() === State::STATE_ARENA_RUNNING:
+			case $this->getStatus() === ArenaState::STATE_ARENA_RUNNING:
 				return "&cRunning";
-			case $this->getStatus() === State::STATE_ARENA_CELEBRATING:
+			case $this->getStatus() === ArenaState::STATE_ARENA_CELEBRATING:
 				return "&cEnded";
 		}
 
@@ -346,8 +297,8 @@ class Arena {
 	 *
 	 * @since 3.0
 	 */
-	public function joinToArena(Player $pl){
-		if($this->inSetup){
+	public function joinArena(Player $pl): void{
+		if($this->inSetup || $this->levelBusy){
 			$pl->sendMessage($this->plugin->getMsg($pl, 'arena-insetup'));
 
 			return;
@@ -360,7 +311,7 @@ class Arena {
 		}
 
 		// Arena is in game.
-		if($this->getStatus() >= State::STATE_ARENA_RUNNING){
+		if($this->getStatus() >= ArenaState::STATE_ARENA_RUNNING){
 			$pl->sendMessage($this->plugin->getMsg($pl, 'arena-running'));
 
 			return;
@@ -403,7 +354,7 @@ class Arena {
 	 *
 	 * @since 3.0
 	 */
-	public function leaveArena(Player $pl, bool $force = false){
+	public function leaveArena(Player $pl, bool $force = false): void{
 		$this->getDebugger()->log("{$pl->getName()} is leaving in arena" . ($force ? " by force." : "."));
 
 		if(!$this->gameAPI->leaveArena($pl, $force)){
@@ -417,7 +368,7 @@ class Arena {
 		// Remove the spawn pedestals
 		$this->cageHandler->removeCage($pl);
 
-		SkyWarsPE::getInstance()->getDatabase()->teleportLobby($pl);
+		$this->plugin->getDatabase()->teleportLobby($pl);
 
 		unset($this->kills[$pl->getName()]);
 	}
@@ -427,18 +378,12 @@ class Arena {
 	 */
 	public function unsetAllPlayers(){
 		$this->gameAPI->removeAllPlayers();
-		$this->executeCommands();
-
 		$this->resetPlayers();
 	}
 
-	private function executeCommands(){
-		// TODO
-	}
-
-	public function checkAlive(){
-		if(count($this->getPlayers()) === 1 and $this->getStatus() === State::STATE_ARENA_RUNNING){
-			$this->setStatus(State::STATE_ARENA_CELEBRATING);
+	public function checkAlive(): void{
+		if(count($this->getPlayers()) === 1 and $this->getStatus() === ArenaState::STATE_ARENA_RUNNING){
+			$this->setStatus(ArenaState::STATE_ARENA_CELEBRATING);
 			foreach($this->getPlayers() as $player){
 				$player->setXpLevel(0);
 				$player->removeAllEffects();
@@ -448,7 +393,7 @@ class Arena {
 				$player->setGamemode(Player::SPECTATOR);
 				$this->giveGameItems($player, true);
 			}
-		}elseif(empty($this->getPlayers()) && ($this->getStatus() !== State::STATE_SLOPE_WAITING && $this->getStatus() !== State::STATE_WAITING)){
+		}elseif(empty($this->getPlayers()) && ($this->getStatus() !== ArenaState::STATE_SLOPE_WAITING && $this->getStatus() !== ArenaState::STATE_WAITING)){
 			$this->stopGame();
 		}
 	}
@@ -460,7 +405,7 @@ class Arena {
 	 * @return int
 	 * @since 3.0
 	 */
-	public function getStatus(){
+	public function getStatus(): int{
 		return $this->arenaStatus;
 	}
 
@@ -502,7 +447,7 @@ class Arena {
 	}
 
 	private function configTeam(array $data){
-		if(!isset($data['arena-mode']) || $data['arena-mode'] == State::MODE_SOLO){
+		if(!isset($data['arena-mode']) || $data['arena-mode'] == ArenaState::MODE_SOLO){
 			return;
 		}
 		$this->getDebugger()->log("Parsing configTeam().");
@@ -550,7 +495,7 @@ class Arena {
 	}
 
 	public function performEdit(int $state){
-		if($state === State::STARTING){
+		if($state === ArenaState::STARTING){
 			Utils::deleteDirectory($this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaWorld . ".zip");
 		}else{
 			$this->saveArenaWorld();

@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\arena\runtime\tasks;
 
+use larryTheCoder\arena\api\ArenaTask;
 use larryTheCoder\arena\Arena;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
@@ -36,14 +37,18 @@ use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\tile\Sign;
 
-class SignTickTask extends Task {
+class SignTickTask extends Task implements ArenaTask {
 
 	/** @var Arena */
 	private $arena;
+	/** @var int */
 	private $updateTime;
+	/** @var bool */
+	private $forceTick;
 
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
+		$this->forceTick = true;
 	}
 
 	public function getName(): string{
@@ -59,7 +64,9 @@ class SignTickTask extends Task {
 	 */
 	public function onRun(int $currentTick){
 		$this->updateTime++;
-		if($this->updateTime >= $this->arena->statusLineUpdate){
+		if($this->updateTime >= $this->arena->statusLineUpdate || $this->forceTick){
+			$this->forceTick = false;
+
 			$vars = ['%alive', '%status', '%max', '&', '%world', '%prefix', '%name'];
 			$replace = [count($this->arena->getPlayers()), $this->arena->getReadableStatus(), $this->arena->maximumPlayers, "§", $this->arena->arenaWorld, SkyWarsPE::getInstance()->getPrefix(), $this->arena->arenaName];
 			$level = Server::getInstance()->getLevelByName($this->arena->joinSignWorld);
@@ -78,5 +85,11 @@ class SignTickTask extends Task {
 			skipUpdate:
 			$this->updateTime = 0;
 		}
+	}
+
+	public function shutdown(): void{
+		$this->arena->getDebugger()->log("Shutting down ArenaGameTick.");
+
+		$this->getHandler()->cancel();
 	}
 }

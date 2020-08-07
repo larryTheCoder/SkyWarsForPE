@@ -28,8 +28,8 @@
 
 namespace larryTheCoder\arena\runtime;
 
+use larryTheCoder\arena\api\ArenaState;
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\State;
 use larryTheCoder\utils\scoreboard\StandardScoreboard;
 use larryTheCoder\utils\Utils;
 use pocketmine\Player;
@@ -90,14 +90,14 @@ class ArenaScoreboard {
 
 	public function updateScoreboard(Player $pl){
 		switch($this->arena->getStatus()){
-			case State::STATE_SLOPE_WAITING: // Evaluate if we do need another custom scoreboard for this
-			case State::STATE_WAITING:
+			case ArenaState::STATE_SLOPE_WAITING: // Evaluate if we do need another custom scoreboard for this
+			case ArenaState::STATE_WAITING:
 				$data = $this->config->get("wait-arena", [""]);
 				break;
-			case State::STATE_ARENA_RUNNING:
+			case ArenaState::STATE_ARENA_RUNNING:
 				$data = $this->config->get("in-game-arena", [""]);
 				break;
-			case State::STATE_ARENA_CELEBRATING:
+			case ArenaState::STATE_ARENA_CELEBRATING:
 				$data = $this->config->get("ending-state-arena", [""]);
 				break;
 			default:
@@ -158,7 +158,7 @@ class ArenaScoreboard {
 			"{team_colour}", // TODO
 		];
 		$replace = [
-			$this->arena->arenaMode === State::MODE_SOLO ? "SOLO" : "TEAM",
+			$this->arena->arenaMode === ArenaState::MODE_SOLO ? "SOLO" : "TEAM",
 			$this->arena->arenaName,
 			$this->events,
 			$topPlayer,

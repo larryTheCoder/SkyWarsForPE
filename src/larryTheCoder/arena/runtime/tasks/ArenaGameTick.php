@@ -26,11 +26,14 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+declare(strict_types = 1);
+
 namespace larryTheCoder\arena\runtime\tasks;
 
+use larryTheCoder\arena\api\ArenaState;
+use larryTheCoder\arena\api\ArenaTask;
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\runtime\DefaultGameAPI;
-use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\task\ParticleTask;
 use larryTheCoder\utils\Settings;
@@ -40,8 +43,12 @@ use pocketmine\level\sound\ClickSound;
 use pocketmine\Player;
 use pocketmine\scheduler\Task;
 use pocketmine\tile\Chest;
+use pocketmine\utils\MainLogger;
 
-class ArenaGameTick extends Task {
+class ArenaGameTick extends Task implements ArenaTask {
+
+	/** @var int */
+	private $errorDepth = 0;
 
 	/**@var Arena */
 	private $arena;
@@ -53,7 +60,8 @@ class ArenaGameTick extends Task {
 	/** @var int */
 	private $arenaTicks = 0;
 	/** @var int */
-	private $refillCountdown = 0;
+	private $refillCountdown;
+	/** @var int */
 	private $endTime;
 
 	public function __construct(Arena $arena, DefaultGameAPI $gameAPI){
@@ -70,165 +78,157 @@ class ArenaGameTick extends Task {
 		return "Arena Main Scheduling Task";
 	}
 
-	public function onRun(int $currentTick){
+	public function onRun(int $currentTick): void{
 		try{
-			$this->run($currentTick);
-		}catch(\Throwable $err){
+			$this->arenaTicks++; // Uwu u found me, now tell myself that I need to finish my code.
 
-		}
-	}
+			$this->checkLevelTime();
+			$this->gameAPI->statusUpdate();
+			switch($this->arena->getStatus()){
+				case ArenaState::STATE_WAITING:
+					// Nothing interesting in this state yet...
+					// Just a few things to check if the player is starting or not...
+					if(empty($this->arena->getPlayersCount()) || $this->arena->getPlayersCount() < $this->arena->minimumPlayers){
+						$this->arena->broadcastToPlayers("arena-wait-players", true);
 
-	/**
-	 * Actions to execute when run
-	 *
-	 * @param int $currentTick
-	 *
-	 * @return void
-	 */
-	public function run(int $currentTick){
-		$this->arenaTicks++; // Uwu u found me, now tell myself that I need to finish my code.
+						$this->gameAPI->scoreboard->setCurrentEvent("§6Waiting for players");
 
-		$this->checkLevelTime();
-		$this->gameAPI->statusUpdate();
-		switch($this->arena->getStatus()){
-			case State::STATE_WAITING:
-				// Nothing interesting in this state yet...
-				// Just a few things to check if the player is starting or not...
-				if(empty($this->arena->getPlayersCount()) || $this->arena->getPlayersCount() < $this->arena->minimumPlayers){
-					$this->arena->messageArenaPlayers("arena-wait-players", true);
-
-					$this->gameAPI->scoreboard->setCurrentEvent("§6Waiting for players");
-
-					$this->startTime = $this->arena->arenaStartingTime;
-					break;
-				}
-
-				$this->arena->setStatus(State::STATE_SLOPE_WAITING);
-				break;
-			case State::STATE_SLOPE_WAITING:
-				// Check if there is any sufficient plays in the arena, otherwise reverse back
-				// to STATE_WAITING status.
-				if(empty($this->arena->getPlayersCount()) || $this->arena->getPlayersCount() < $this->arena->minimumPlayers){
-					$this->arena->messageArenaPlayers("arena-low-players", true);
-					$this->gameAPI->scoreboard->setCurrentEvent("§cNot enough players");
-
-					$this->startTime = $this->arena->arenaStartingTime;
-
-					$this->arena->setStatus(State::STATE_WAITING);
-					break;
-				}
-				$this->startTime--;
-				if($this->startTime <= 3 && $this->startTime > 1){
-					$this->gameAPI->scoreboard->setCurrentEvent("Starting in §6" . $this->startTime);
-				}elseif($this->startTime <= 1){
-					$this->gameAPI->scoreboard->setCurrentEvent("Starting in §c" . $this->startTime);
-				}else{
-					$this->gameAPI->scoreboard->setCurrentEvent("Starting in §a" . $this->startTime);
-				}
-
-				foreach($this->arena->getPlayers() as $p){
-					if($p instanceof Player){
-						$p->setXpLevel($this->startTime);
+						$this->startTime = $this->arena->arenaStartingTime;
+						break;
 					}
 
-					if($this->startTime <= 11){
-						$p->getLevel()->addSound((new ClickSound($p)), [$p]);
-						$p->setTitleDuration(1, 25, 1);
+					$this->arena->setStatus(ArenaState::STATE_SLOPE_WAITING);
+					break;
+				case ArenaState::STATE_SLOPE_WAITING:
+					// Check if there is any sufficient plays in the arena, otherwise reverse back
+					// to STATE_WAITING status.
+					if(empty($this->arena->getPlayersCount()) || $this->arena->getPlayersCount() < $this->arena->minimumPlayers){
+						$this->arena->broadcastToPlayers("arena-low-players", true);
+						$this->gameAPI->scoreboard->setCurrentEvent("§cNot enough players");
 
-						if($this->startTime === 11){
-							$p->sendTitle($this->getMessage($p, 'arena-starting', false));
-						}elseif($this->startTime <= 3){
-							$p->sendSubTitle($this->getMessage($p, 'arena-subtitle', false));
-							if($this->startTime > 1){
-								$p->sendTitle("§6" . $this->startTime);
+						$this->startTime = $this->arena->arenaStartingTime;
+
+						$this->arena->setStatus(ArenaState::STATE_WAITING);
+						break;
+					}
+					$this->startTime--;
+					if($this->startTime <= 3 && $this->startTime > 1){
+						$this->gameAPI->scoreboard->setCurrentEvent("Starting in §6" . $this->startTime);
+					}elseif($this->startTime <= 1){
+						$this->gameAPI->scoreboard->setCurrentEvent("Starting in §c" . $this->startTime);
+					}else{
+						$this->gameAPI->scoreboard->setCurrentEvent("Starting in §a" . $this->startTime);
+					}
+
+					foreach($this->arena->getPlayers() as $p){
+						if($p instanceof Player){
+							$p->setXpLevel($this->startTime);
+						}
+
+						if($this->startTime <= 11){
+							$p->getLevel()->addSound((new ClickSound($p)), [$p]);
+							$p->setTitleDuration(1, 25, 1);
+
+							if($this->startTime === 11){
+								$p->sendTitle($this->getMessage($p, 'arena-starting', false));
+							}elseif($this->startTime <= 3){
+								$p->sendSubTitle($this->getMessage($p, 'arena-subtitle', false));
+								if($this->startTime > 1){
+									$p->sendTitle("§6" . $this->startTime);
+								}else{
+									$p->sendTitle("§c" . $this->startTime);
+								}
 							}else{
-								$p->sendTitle("§c" . $this->startTime);
+								$p->sendTitle("§a" . $this->startTime);
 							}
-						}else{
-							$p->sendTitle("§a" . $this->startTime);
 						}
 					}
-				}
 
-				if($this->startTime == 0){
-					$this->arena->startGame();
-					$this->startTime = $this->arena->arenaStartingTime;
+					if($this->startTime == 0){
+						$this->arena->startGame();
+						$this->startTime = $this->arena->arenaStartingTime;
+						break;
+					}
+
+					if(Settings::$startWhenFull && $this->arena->maximumPlayers <= $this->arena->getPlayersCount()){
+						$this->arena->startGame();
+						$this->startTime = $this->arena->arenaStartingTime;
+					}
 					break;
-				}
+				case ArenaState::STATE_ARENA_RUNNING:
+					if($this->gameAPI->fallTime !== 0){
+						$this->gameAPI->fallTime--;
+					}
 
-				if(Settings::$startWhenFull && $this->arena->maximumPlayers <= $this->arena->getPlayersCount()){
-					$this->arena->startGame();
-					$this->startTime = $this->arena->arenaStartingTime;
-				}
-				break;
-			case State::STATE_ARENA_RUNNING:
-				if($this->gameAPI->fallTime !== 0){
-					$this->gameAPI->fallTime--;
-				}
+					// Chest refill and such...
+					if($this->refillCountdown <= 0 && $this->arena->refillChest){
+						$this->gameAPI->refillChests();
 
-				// Chest refill and such...
-				if($this->refillCountdown <= 0 && $this->arena->refillChest){
-					$this->gameAPI->refillChests();
+						$refillAvg = $this->arena->refillAverage;
+						$this->refillCountdown = $refillAvg[array_rand($refillAvg)];
 
-					$refillAvg = $this->arena->refillAverage;
-					$this->refillCountdown = $refillAvg[array_rand($refillAvg)];
-
-					foreach($this->arena->getLevel()->getTiles() as $tiles){
-						if($tiles instanceof Chest){
-							$task = new ParticleTask($tiles);
-							SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask($task, 1);
+						foreach($this->arena->getLevel()->getTiles() as $tiles){
+							if($tiles instanceof Chest){
+								$task = new ParticleTask($tiles);
+								SkyWarsPE::getInstance()->getScheduler()->scheduleRepeatingTask($task, 1);
+							}
 						}
 					}
-				}
-
-				break;
-			case State::STATE_ARENA_CELEBRATING:
-				if($this->endTime === 0){
-					$this->gameAPI->broadcastResult();
-				}
-
-				if(empty($this->arena->getPlayers())){
-					$this->arena->stopGame();
-					$this->endTime = 0;
 
 					break;
-				}
-
-				foreach($this->arena->getPlayers() as $player){
-					$facing = $player->getDirection();
-					$vec = $player->getSide($facing, -3);
-					if($this->endTime <= 5){
-						Utils::addFireworks($vec);
+				case ArenaState::STATE_ARENA_CELEBRATING:
+					if($this->endTime === 0){
+						$this->gameAPI->broadcastResult();
 					}
-				}
 
-				if($this->endTime > 10){
-					$this->arena->stopGame();
-					$this->endTime = 0;
-				}
+					if(empty($this->arena->getPlayers())){
+						$this->arena->stopGame();
+						$this->endTime = 0;
 
-				$this->endTime++;
-				break;
-		}
+						break;
+					}
 
-		$this->arena->checkAlive();
-		foreach($this->arena->getAllPlayers() as $pl){
-			$this->gameAPI->scoreboard->updateScoreboard($pl);
+					foreach($this->arena->getPlayers() as $player){
+						$facing = $player->getDirection();
+						$vec = $player->getSide($facing, -3);
+						if($this->endTime <= 5){
+							Utils::addFireworks($vec);
+						}
+					}
+
+					if($this->endTime > 10){
+						$this->arena->stopGame();
+						$this->endTime = 0;
+					}
+
+					$this->endTime++;
+					break;
+			}
+
+			$this->arena->checkAlive();
+			foreach($this->arena->getAllPlayers() as $pl){
+				$this->gameAPI->scoreboard->updateScoreboard($pl);
+			}
+
+			$this->errorDepth--;
+		}catch(\Throwable $error){
+			$this->errorDepth++;
+
+			$this->gameAPI->getDebugger()->logException($error);
+			if($this->errorDepth < 5){
+				MainLogger::getLogger()->logException($error);
+			}else{
+				throw new \RuntimeException("Repeated amount of trace logs has been detected", 0, $error);
+			}
 		}
 	}
 
-	private $updateFrequency = 0;
-
-	public function getMessage(?CommandSender $p, $key, $prefix = true){
+	public function getMessage(?CommandSender $p, $key, $prefix = true): string{
 		return SkyWarsPE::getInstance()->getMsg($p, $key, $prefix);
 	}
 
-	private function tickBossBar(Player $p, int $id, $data = null){
-		// TODO: Boss bar feature.
-	}
-
-	private function checkLevelTime(){
-		$tickTime = $this->arena->arenaTime;
+	private function checkLevelTime(): void{
+		$tickTime = (int)$this->arena->arenaTime;
 		if(!$tickTime){
 			return;
 		}
@@ -238,5 +238,11 @@ class ArenaGameTick extends Task {
 
 		$level->setTime($tickTime);
 		$level->stopTime();
+	}
+
+	public function shutdown(): void{
+		$this->gameAPI->getDebugger()->log("Shutting down ArenaGameTick.");
+
+		$this->getHandler()->cancel();
 	}
 }

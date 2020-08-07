@@ -29,6 +29,7 @@
 namespace larryTheCoder\arena;
 
 
+use larryTheCoder\arena\api\ArenaState;
 use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\utils\Utils;
 use pocketmine\math\Vector3;
@@ -50,7 +51,7 @@ trait ArenaData {
 	// The root of the config.
 	public $arenaEnable = false;
 	public $arenaName = "";
-	public $arenaMode = State::MODE_SOLO;
+	public $arenaMode = ArenaState::MODE_SOLO;
 
 	// Team settings
 	public $playerPerTeam = 0;
@@ -161,7 +162,7 @@ trait ArenaData {
 			}
 
 			// Team data(s)
-			if($data['arena-mode'] === State::MODE_TEAM){
+			if($data['arena-mode'] === ArenaState::MODE_TEAM){
 				$this->getDebugger()->log("[ArenaConfig]: Overriding {$this->arenaName} default players settings");
 
 				$this->maximumTeams = $data['team-settings']['world-teams-avail'];     // Maximum teams   in arena

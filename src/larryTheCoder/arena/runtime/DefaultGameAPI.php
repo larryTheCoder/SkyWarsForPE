@@ -26,14 +26,19 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+declare(strict_types = 1);
+
 namespace larryTheCoder\arena\runtime;
 
-use larryTheCoder\arena\api\GameAPI;
+use larryTheCoder\arena\api\ArenaAPI;
+use larryTheCoder\arena\api\ArenaListener;
+use larryTheCoder\arena\api\ArenaState;
+use larryTheCoder\arena\api\ArenaTask;
+use larryTheCoder\arena\api\listener\BasicListener;
 use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\runtime\listener\BasicListener;
+use larryTheCoder\arena\runtime\listener\BaseListener;
 use larryTheCoder\arena\runtime\tasks\ArenaGameTick;
 use larryTheCoder\arena\runtime\tasks\SignTickTask;
-use larryTheCoder\arena\State;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
@@ -58,7 +63,7 @@ use pocketmine\utils\TextFormat;
  *
  * @package larryTheCoder\arena\api
  */
-class DefaultGameAPI implements GameAPI {
+class DefaultGameAPI implements ArenaAPI {
 
 	/** @var SkyWarsPE */
 	public $plugin;
@@ -120,10 +125,10 @@ class DefaultGameAPI implements GameAPI {
 	}
 
 	public function leaveArena(Player $p, bool $force = false): bool{
-		if($this->arena->getPlayerState($p) === State::PLAYER_ALIVE){
-			if($this->arena->getStatus() !== State::STATE_ARENA_RUNNING || $force){
+		if($this->arena->getPlayerState($p) === ArenaState::PLAYER_ALIVE){
+			if($this->arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING || $force){
 				if($force){
-					$this->arena->messageArenaPlayers('leave-others', false, ["%1", "%2"], [$p->getName(), $this->arena->getPlayersCount()]);
+					$this->arena->broadcastToPlayers('leave-others', false, ["%1", "%2"], [$p->getName(), $this->arena->getPlayersCount()]);
 				}
 				$this->arena->checkAlive();
 				$this->removeCage($p);
@@ -171,13 +176,13 @@ class DefaultGameAPI implements GameAPI {
 	 * Return the tasks required by the game to run.
 	 * This task will be executed periodically for each 1 seconds
 	 *
-	 * @return array
+	 * @return ArenaTask[]
 	 */
 	public function getRuntimeTasks(): array{
 		return [new ArenaGameTick($this->arena, $this), new SignTickTask($this->arena)];
 	}
 
-	public function statusUpdate(){
+	public function statusUpdate(): void{
 		$i = 0;
 		arsort($this->arena->kills);
 		foreach($this->arena->kills as $player => $kills){
@@ -199,7 +204,7 @@ class DefaultGameAPI implements GameAPI {
 	 * Do something when the code is trying to remove every players
 	 * from the list.
 	 */
-	public function removeAllPlayers(){
+	public function removeAllPlayers(): void{
 		$this->cageToRemove = [];
 	}
 
@@ -233,7 +238,7 @@ class DefaultGameAPI implements GameAPI {
 		$this->scoreboard->setCurrentEvent(TextFormat::RED . "In match");
 
 		$this->refillChests();
-		$this->arena->messageArenaPlayers('arena-start', false);
+		$this->arena->broadcastToPlayers('arena-start', false);
 	}
 
 	/**
@@ -246,7 +251,7 @@ class DefaultGameAPI implements GameAPI {
 		$this->broadcastResult();
 	}
 
-	public function giveGameItems(Player $p, bool $true){
+	public function giveGameItems(Player $p, bool $true): void{
 		// TODO
 	}
 
@@ -255,7 +260,7 @@ class DefaultGameAPI implements GameAPI {
 	 *
 	 * TODO: Chest items can be configured in the config file.
 	 */
-	public function refillChests(){
+	public function refillChests(): void{
 		$contents = Utils::getChestContents();
 		foreach($this->arena->getLevel()->getTiles() as $tile){
 			if($tile instanceof Chest){
@@ -290,7 +295,7 @@ class DefaultGameAPI implements GameAPI {
 		unset($contents, $tile);
 	}
 
-	public function broadcastResult(){
+	public function broadcastResult(): void{
 		foreach($this->arena->getPlayers() as $p){
 			$p->setXpLevel(0);
 		}
@@ -310,8 +315,6 @@ class DefaultGameAPI implements GameAPI {
 				}
 			}
 		}
-
-		// TODO: Broadcast winners to other players?
 	}
 
 	public function getCodeName(): string{
@@ -323,5 +326,9 @@ class DefaultGameAPI implements GameAPI {
 		$this->scoreboard->clearAll();
 
 		HandlerList::unregisterAll($this->eventListener);
+	}
+
+	public function getEventListener(): ArenaListener{
+		return new BaseListener($this->arena);
 	}
 }

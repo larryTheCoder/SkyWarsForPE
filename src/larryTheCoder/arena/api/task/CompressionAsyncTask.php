@@ -26,7 +26,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\task;
+namespace larryTheCoder\arena\api\task;
 
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
@@ -39,7 +39,7 @@ use ZipArchive;
  * Using a thread to compress files is dumb, they do not often being used
  * for heavy tasks and it will be a waste of resources.
  *
- * @package larryTheCoder\task
+ * @package larryTheCoder\arena\api\task
  */
 class CompressionAsyncTask extends AsyncTask {
 

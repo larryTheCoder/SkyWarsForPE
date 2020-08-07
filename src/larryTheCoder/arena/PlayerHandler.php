@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\arena;
 
+use larryTheCoder\arena\api\ArenaState;
 use larryTheCoder\arena\runtime\GameDebugger;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
@@ -145,7 +146,7 @@ trait PlayerHandler {
 		$this->teams[strtolower($pl->getName())] = $team;
 	}
 
-	public function messageArenaPlayers(string $msg, $popup = true, $toReplace = [], $replacement = []){
+	public function broadcastToPlayers(string $msg, $popup = true, $toReplace = [], $replacement = []): void{
 		$this->getDebugger()->log("[Arena Broadcast]): " . str_replace($toReplace, $replacement, SkyWarsPE::getInstance()->getMsg(null, $msg, false)));
 
 		$inGame = array_merge($this->getPlayers(), $this->getSpectators());
@@ -188,7 +189,7 @@ trait PlayerHandler {
 				$toGive->setNamedTag($tag);
 			}
 			if(empty($itemPermission) || $p->hasPermission($itemPermission)){
-				if($giveAtWin && $this->getStatus() === State::STATE_ARENA_CELEBRATING){
+				if($giveAtWin && $this->getStatus() === ArenaState::STATE_ARENA_CELEBRATING){
 					$p->getInventory()->setItem($placeAt, $toGive, true);
 					continue;
 				}
@@ -311,15 +312,15 @@ trait PlayerHandler {
 	public function getPlayerState($sender): int{
 		if($sender instanceof Player){
 			if(isset($this->players[strtolower($sender->getName())])){
-				return State::PLAYER_ALIVE;
+				return ArenaState::PLAYER_ALIVE;
 			}elseif(isset($this->spectators[strtolower($sender->getName())])){
-				return State::PLAYER_SPECTATE;
+				return ArenaState::PLAYER_SPECTATE;
 			}elseif($this->arenaLevel !== null && strtolower($sender->getLevel()->getName()) === strtolower($this->arenaLevel->getName())){
-				return State::PLAYER_SPECIAL;
+				return ArenaState::PLAYER_SPECIAL;
 			}
 		}
 
-		return State::PLAYER_UNSET;
+		return ArenaState::PLAYER_UNSET;
 	}
 
 	public function resetPlayers(){
