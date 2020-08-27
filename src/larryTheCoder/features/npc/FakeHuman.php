@@ -159,7 +159,7 @@ class FakeHuman extends Human {
 		}
 	}
 
-	public function sendText(array $text, bool $resend = false, Player $players = null){
+	public function sendText(array $text, bool $resend = false, ?Player $players = null){
 		if($resend){
 			foreach($this->tags as $id => $particle){
 				if(is_null($players)){

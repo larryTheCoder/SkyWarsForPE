@@ -69,7 +69,7 @@ class DefaultGameAPI implements ArenaAPI {
 	public $plugin;
 	/** @var int */
 	public $fallTime = 0;
-	/** @var array<int, <int,string>> */
+	/** @var array */
 	public $winners = [];
 	/** @var int[] */
 	public $winnersFixed = [];
@@ -251,8 +251,11 @@ class DefaultGameAPI implements ArenaAPI {
 		$this->broadcastResult();
 	}
 
-	public function giveGameItems(Player $p, bool $true): void{
-		// TODO
+	public function getArena(): Arena{
+		return $this->arena;
+	}
+
+	public function playerSpectate(Player $p): void{
 	}
 
 	/**

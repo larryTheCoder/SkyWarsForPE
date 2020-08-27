@@ -29,6 +29,7 @@
 
 namespace larryTheCoder\features\chestRandom;
 
+use AttachableThreadedLogger;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\item\enchantment\Enchantment;
@@ -42,7 +43,7 @@ class RandomChest {
 	private $plugin;
 	/** @var ChestLevel[] */
 	private $chestLevels;
-	/** @var MainLogger */
+	/** @var AttachableThreadedLogger */
 	private $logger;
 
 	public function __construct(SkyWarsPE $plugin){
@@ -126,6 +127,7 @@ class RandomChest {
 						$encAll = explode(" ", $split['enchantments']);
 						foreach($encAll as $value){
 							$encType = explode(":", $value);
+							if($encType === false) continue;
 							if(count($encType) > 1 && count($encType) < 3){
 								if(is_numeric($encType[0])){
 									$encConfirm = Enchantment::getEnchantment(intval($encType[0]));
@@ -212,7 +214,7 @@ class RandomChest {
 		$totalValue = 0;
 		$inventory = [];
 		while($totalValue <= $chestLevel){
-			/** @var ChestLevel $level */
+			/** @var ChestLevel|null $level */
 			$level = null;
 			$chanceIndex = rand(0, $totalChance);
 			$accumulatedChance = 0;

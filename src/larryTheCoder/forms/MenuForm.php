@@ -44,7 +44,9 @@ class MenuForm extends Form {
 		if(isset($buttons[0]) && is_string($buttons[0])){
 			$buttons = Button::createFromList(...$buttons);
 		}
-		$this->buttons = array_merge($this->buttons, $buttons);
+		/** @var Button[] $result */
+		$result = $buttons;
+		$this->buttons = array_merge($this->buttons, $result);
 
 		return $this;
 	}

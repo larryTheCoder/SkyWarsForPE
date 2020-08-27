@@ -62,7 +62,7 @@ class Input extends Element {
 	}
 
 	/**
-	 * @param $value
+	 * @param mixed $value
 	 */
 	public function validate($value): void{
 		if(!is_string($value)){

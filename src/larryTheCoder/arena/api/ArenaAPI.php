@@ -30,6 +30,7 @@ declare(strict_types = 1);
 
 namespace larryTheCoder\arena\api;
 
+use larryTheCoder\arena\Arena;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -60,6 +61,19 @@ interface ArenaAPI {
 	 * reset the arena if possible.
 	 */
 	public function stopArena(): void;
+
+	/**
+	 * Returns an arena object. Note, change this value if you
+	 * wanted to have a custom arena implementation.
+	 *
+	 * @return Arena
+	 */
+	public function getArena(): Arena;
+
+	/**
+	 * @param Player $player
+	 */
+	public function playerSpectate(Player $player): void;
 
 	/**
 	 * Called when a player joins into the arena

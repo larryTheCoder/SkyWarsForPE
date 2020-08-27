@@ -77,7 +77,7 @@ class BasicListener implements Listener {
 
 	public function __construct(ArenaAPI $api){
 		$this->gameAPI = $api;
-		$this->arena = $api->arena;
+		$this->arena = $api->getArena();
 		$this->listener = $api->getEventListener();
 	}
 

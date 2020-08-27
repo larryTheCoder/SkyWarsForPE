@@ -57,9 +57,6 @@ class Kits {
 	}
 
 	public function registerKit(KitsAPI $api){
-		if(is_null($api)){
-			throw new \InvalidArgumentException("null Kits were given to register in swKit");
-		}
 		if(isset($this->kits[$api->getKitName()])){
 			throw new \LogicException("Could not add kit UUID#{$api->getKitName()}, data already exists!");
 		}
@@ -89,9 +86,7 @@ class Kits {
 	 * @param KitsAPI $kit
 	 */
 	public function setPlayerKit(Player $player, KitsAPI $kit){
-		if($kit === null && isset($this->playerKit[$player->getName()])){
-			unset($this->playerKit[$player->getName()]);
-		}
+		if(isset($this->playerKit[$player->getName()])) unset($this->playerKit[$player->getName()]);
 
 		$reflect = $this;
 		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player, $reflect, $kit){

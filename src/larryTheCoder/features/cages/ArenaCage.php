@@ -43,7 +43,7 @@ class ArenaCage {
 	private $plugin;
 	/** @var Cage[] */
 	private $playerCages;
-	/** @var Cage */
+	/** @var Cage|null */
 	private $defaultCage = null;
 
 	public function __construct(SkyWarsPE $plugin){
@@ -86,7 +86,6 @@ class ArenaCage {
 			$this->defaultCage = new Cage("Default Cage", 0, $array2);
 			$this->cage[strtolower("Default Cage")] = $this->defaultCage;
 		}
-
 	}
 
 	/**

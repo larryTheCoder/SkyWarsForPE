@@ -36,6 +36,7 @@ use larryTheCoder\arena\Arena;
 use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
+use larryTheCoder\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -71,10 +72,12 @@ class BaseListener implements ArenaListener {
 			$pd->death++;
 			$pd->lost++;
 			$pd->kill += $this->arena->kills[$targetPlayer->getName()] ?? 0;
-			$pd->time += (microtime(true) - $this->arena->startedTime);
+			$pd->time += (int)floor(microtime(true) - $this->arena->startedTime);
 
 			SkyWarsPE::$instance->getDatabase()->setPlayerData($targetPlayer->getName(), $pd);
 		});
+
+		Utils::strikeLightning($targetPlayer);
 
 		$this->arena->getDebugger()->log("[Arena]: {$targetPlayer->getName()} is knocked out in the game");
 
@@ -83,7 +86,7 @@ class BaseListener implements ArenaListener {
 
 			$targetPlayer->setGamemode(Player::SPECTATOR);
 			$targetPlayer->sendMessage(SkyWarsPE::getInstance()->getMsg($targetPlayer, 'player-spectate'));
-			$this->arena->gameAPI->giveGameItems($targetPlayer, true);
+			$this->arena->gameAPI->playerSpectate($targetPlayer);
 
 			foreach($this->arena->getPlayers() as $p2) $p2->hidePlayer($targetPlayer);
 

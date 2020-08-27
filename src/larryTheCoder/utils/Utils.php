@@ -189,7 +189,7 @@ class Utils {
 		$light = new AddActorPacket();
 		$light->metadata = [];
 
-		$light->type = 93;
+		$light->type = AddActorPacket::LEGACY_ID_MAP_BC[93];
 		$light->entityRuntimeId = Entity::$entityCount++;
 		$light->entityUniqueId = 0;
 

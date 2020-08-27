@@ -91,7 +91,7 @@ class Cage {
 			$loc->y = $loc->y + 1;
 		}
 		$loc->y = $loc->y - 1;
-		$list[] = $loc->asVector3();
+		$list[] = Position::fromObject($loc->asVector3(), $locate->getLevel());
 		$level->setBlock($loc->asVector3(), $part[4], true, true);
 
 		return $list;

@@ -511,7 +511,7 @@ class FormPanel implements Listener {
 	public function onBlockBreak(BlockBreakEvent $e){
 		$p = $e->getPlayer();
 		if(isset($this->temporaryData[$p->getName()]) && isset($this->actions[strtolower($p->getName())]['type'])){
-			if(!is_null($e->getItem()) && $e->getItem()->getId() === Item::BLAZE_ROD){
+			if($e->getItem()->getId() === Item::BLAZE_ROD){
 				if(!isset($this->mode[strtolower($p->getName())])) $this->mode[strtolower($p->getName())] = 1;
 
 				$e->setCancelled(true);
@@ -565,7 +565,6 @@ class FormPanel implements Listener {
 		}
 
 		if(isset($this->actions[strtolower($p->getName())]['NPC'])
-			&& !is_null($e->getItem())
 			&& $e->getItem()->getId() === Item::BLAZE_ROD){
 			$e->setCancelled(true);
 			$b = $e->getBlock();
@@ -589,7 +588,6 @@ class FormPanel implements Listener {
 		}
 
 		if(isset($this->actions[strtolower($p->getName())]['WORLD'])
-			&& !is_null($e->getItem())
 			&& $e->getItem()->getId() === Item::BLAZE_ROD){
 			$e->setCancelled(true);
 
