@@ -7,4 +7,6 @@ projects:
     libs:
       - src: poggit/libasynql/libasynql
         version: ^3.0
+      - src: https://poggit.pmmp.io/r/92648/JasonDB_dev-1.phar
+        vendor: raw
 ...

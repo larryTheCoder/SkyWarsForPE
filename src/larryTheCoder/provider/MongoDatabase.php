@@ -28,36 +28,10 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arena\api;
+namespace larryTheCoder\provider;
 
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
-use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\event\player\PlayerMoveEvent;
-use pocketmine\Player;
+use DenielWorld\JasonDB\task\AsyncDBTask;
 
-/**
- * Arena listener class, you may want to extends this class in order to work properly.
- * This package is considered to be used within the game API. In the other hand, all other
- * internal listener will be handled in other class.
- *
- * @package larryTheCoder\arena\runtime\listener
- */
-interface ArenaListener {
+class MongoDatabase extends AsyncDBTask {
 
-	public function onPlayerMove(PlayerMoveEvent $event): void;
-
-	public function onBlockPlaceEvent(BlockPlaceEvent $event): void;
-
-	public function onBlockBreakEvent(BlockBreakEvent $event): void;
-
-	public function onPlayerHitEvent(EntityDamageEvent $event): void;
-
-	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void;
-
-	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $ev): void;
-
-	public function onPlayerInteractEvent(PlayerInteractEvent $e): void;
 }

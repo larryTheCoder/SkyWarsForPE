@@ -35,6 +35,7 @@ use larryTheCoder\arena\api\ArenaListener;
 use larryTheCoder\arena\api\ArenaState;
 use larryTheCoder\arena\Arena;
 use larryTheCoder\arena\runtime\GameDebugger;
+use larryTheCoder\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
@@ -42,13 +43,16 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\level\Location;
+use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
+use pocketmine\Server;
 
 /**
  * A very basic listener for the arena.
@@ -333,6 +337,26 @@ class BasicListener implements Listener {
 		if($cmd[0] === '/' && $this->arena->isInArena($p)){
 			$this->listener->onPlayerExecuteCommand($ev);
 		}
+	}
+
+	/**
+	 * Handles player interaction with the arena signs.
+	 *
+	 * @param PlayerInteractEvent $e
+	 * @priority NORMAL
+	 */
+	public function onBlockTouch(PlayerInteractEvent $e){
+		Utils::loadFirst($this->arena->joinSignWorld, true);
+
+		$p = $e->getPlayer();
+		$b = $e->getBlock();
+
+		# Player is interacting with game signs
+		if($b->equals(Position::fromObject($this->arena->joinSignVec, Server::getInstance()->getLevelByName($this->arena->joinSignWorld)))){
+			$this->arena->joinArena($p);
+		}
+
+		if($this->arena->isInArena($p)) $this->listener->onPlayerInteractEvent($e);
 	}
 
 	public static function getDeathMessageById(int $id){

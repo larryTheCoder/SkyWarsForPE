@@ -59,6 +59,7 @@ wait-arena:
   - ""
   - "&6{arena_status}"
   - "Status:"
+  - ""
 
 # This scoreboard key is used
 # when the game is started.

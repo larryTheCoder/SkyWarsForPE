@@ -40,6 +40,7 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\level\Position;
 use pocketmine\Player;
@@ -109,5 +110,8 @@ class BaseListener implements ArenaListener {
 				$ev->setCancelled(true);
 			}
 		}
+	}
+
+	public function onPlayerInteractEvent(PlayerInteractEvent $e): void{
 	}
 }

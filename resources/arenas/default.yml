@@ -98,7 +98,7 @@ signs:
   # Sign will update every 'x" seconds
   # The 'x' is depends on this section.
   # This effects the client connections.
-  sign-update-time: 10
+  sign-update-time: 1
 
 # The chest configuration config
 chest:
