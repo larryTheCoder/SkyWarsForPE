@@ -60,4 +60,6 @@ interface ArenaListener {
 	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $ev): void;
 
 	public function onPlayerInteractEvent(PlayerInteractEvent $e): void;
+
+	public function onPlayerEscapeCage(PlayerMoveEvent $e);
 }

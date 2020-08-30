@@ -43,7 +43,9 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\level\Location;
 use pocketmine\level\Position;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class BaseListener implements ArenaListener {
@@ -65,6 +67,11 @@ class BaseListener implements ArenaListener {
 	}
 
 	public function onPlayerHitEvent(EntityDamageEvent $event): void{
+		if($this->arena->gameAPI->fallTime !== 0){
+			$event->setCancelled(true);
+
+			return;
+		}
 	}
 
 	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void{
@@ -116,5 +123,16 @@ class BaseListener implements ArenaListener {
 	}
 
 	public function onPlayerInteractEvent(PlayerInteractEvent $e): void{
+	}
+
+	public function onPlayerEscapeCage(PlayerMoveEvent $e){
+		$p = $e->getPlayer();
+
+		/** @var Vector3 $loc */
+		$loc = $this->arena->cageHandler->getCage($p);
+
+		if(($loc->getY() - $e->getTo()->getY()) >= 1.55){
+			$e->setTo(new Location($loc->getX(), $loc->getY(), $loc->getZ(), $p->yaw, $p->pitch, $p->getLevel()));
+		}
 	}
 }

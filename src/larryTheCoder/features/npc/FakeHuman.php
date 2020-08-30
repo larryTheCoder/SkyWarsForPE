@@ -162,7 +162,7 @@ class FakeHuman extends Human {
 	public function sendText(array $text, bool $resend = false, ?Player $players = null){
 		if($resend){
 			foreach($this->tags as $id => $particle){
-				if(is_null($players)){
+				if($players === null){
 					$this->level->addParticle($particle);
 				}else{
 					$pk = $particle->encode();
@@ -170,11 +170,7 @@ class FakeHuman extends Human {
 						$pk = [$pk];
 					}
 
-					if($players === null){
-						$this->level->addParticle($particle);
-					}else{
-						foreach($pk as $ack) $players->sendDataPacket($ack);
-					}
+					foreach($pk as $ack) $players->sendDataPacket($ack);
 				}
 			}
 

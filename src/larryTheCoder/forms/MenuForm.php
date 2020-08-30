@@ -23,7 +23,7 @@ class MenuForm extends Form {
 	/**
 	 * @param string $title
 	 * @param string $text
-	 * @param Button|string[] $buttons
+	 * @param Button[]|string[] $buttons
 	 * @param Closure|null $onSubmit
 	 * @param Closure|null $onClose
 	 */

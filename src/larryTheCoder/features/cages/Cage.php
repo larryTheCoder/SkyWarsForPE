@@ -66,11 +66,13 @@ class Cage {
 
 		$loc = clone $locate;
 		$this->clearObstacle(clone $locate);
+
+		/** @var Position[] $list */
 		$list = [];
 		$level = $loc->getLevel();
 		$part = $this->parts;
 		$loc->y = $loc->y - 1;
-		$list[] = $loc->asVector3();
+		$list[] = clone $loc;
 		$level->setBlock($loc->asVector3(), $part[0], true, true);
 		for($i = 0; $i <= 4; $i++){
 			$array = [

@@ -43,7 +43,7 @@ use pocketmine\entity\Entity;
 use pocketmine\event\{Listener, player\PlayerJoinEvent};
 use pocketmine\math\Vector3;
 use pocketmine\Player;
-use pocketmine\plugin\{Plugin, PluginBase};
+use pocketmine\plugin\{PluginBase};
 use pocketmine\utils\{Config, MainLogger, TextFormat};
 
 /**
@@ -64,7 +64,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	/** @var SkyWarsCommand */
 	public $cmd;
-	/** @var EconomyAPI|Plugin */
+	/** @var EconomyAPI */
 	public $economy;
 	/** @var RandomChest */
 	public $chest;

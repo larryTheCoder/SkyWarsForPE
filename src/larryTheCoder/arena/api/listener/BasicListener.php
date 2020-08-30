@@ -47,9 +47,7 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\level\Location;
 use pocketmine\level\Position;
-use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -100,12 +98,7 @@ class BasicListener implements Listener {
 				return;
 			}
 
-			/** @var Vector3 $loc */
-			$loc = $this->arena->cageHandler->getCage($p);
-
-			if(($loc->getY() - $e->getTo()->getY()) >= 1.55){
-				$e->setTo(new Location($loc->getX(), $loc->getY(), $loc->getZ(), $p->yaw, $p->pitch, $p->getLevel()));
-			}
+			$this->listener->onPlayerEscapeCage($e);
 
 			return;
 		}
@@ -168,12 +161,6 @@ class BasicListener implements Listener {
 		if(!$this->arena->isInArena($player)){
 			return;
 		}
-		# Falling time isn't over yet
-		if($this->gameAPI->fallTime !== 0){
-			$e->setCancelled(true);
-
-			return;
-		}
 		# Arena not running yet cancel it
 		if($this->arena->getStatus() != ArenaState::STATE_ARENA_RUNNING){
 			$e->setCancelled(true);
@@ -189,6 +176,9 @@ class BasicListener implements Listener {
 		if(isset($this->lastHit[$player->getName()])){
 			$this->getDebugger()->log("Last hit by: {$this->lastHit[$player->getName()]}.");
 		}
+
+		$this->listener->onPlayerHitEvent($e);
+		if($e->isCancelled()) return;
 
 		// In order to remove "death" loading screen. Immediate respawn.
 		$health = $player->getHealth() - $e->getFinalDamage();
@@ -262,16 +252,10 @@ class BasicListener implements Listener {
 					}
 					break;
 				case EntityDamageEvent::CAUSE_MAGIC:
-					if($e instanceof EntityDamageByEntityEvent || $e instanceof EntityDamageByChildEntityEvent){
+					if($e instanceof EntityDamageByChildEntityEvent){
+						$damage = $e->getChild();
+					}elseif($e instanceof EntityDamageByEntityEvent){
 						$damage = $e->getDamager();
-						if($damage instanceof Player){
-							$this->getDebugger()->log("Magic damage is done by a player {$damage->getName()}}.");
-
-							$this->lastHit[$player->getName()] = $damage->getName();
-							$this->cooldown[$player->getName()] = $now + 30;
-						}else{
-							$this->getDebugger()->log("Magic damage is done by an unknown entity {$damage->getNameTag()}.");
-						}
 					}else{
 						$this->getDebugger()->log("Magic damage is done by an unknown object.");
 						if(isset($this->cooldown[$player->getName()])){
@@ -282,6 +266,17 @@ class BasicListener implements Listener {
 							unset($this->cooldown[$player->getName()]);
 							break;
 						}
+
+						return;
+					}
+
+					if($damage instanceof Player){
+						$this->getDebugger()->log("Magic damage is done by a player {$damage->getName()}}.");
+
+						$this->lastHit[$player->getName()] = $damage->getName();
+						$this->cooldown[$player->getName()] = $now + 30;
+					}else{
+						$this->getDebugger()->log("Magic damage is done by an unknown entity {$damage->getNameTag()}.");
 					}
 					break;
 				default:
@@ -297,8 +292,6 @@ class BasicListener implements Listener {
 					}
 					break;
 			}
-
-			$this->listener->onPlayerHitEvent($e);
 		}
 	}
 
