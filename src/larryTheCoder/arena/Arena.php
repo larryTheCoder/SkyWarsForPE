@@ -80,6 +80,8 @@ class Arena {
 	public $data;
 	/** @var float */
 	public $startedTime = 0;
+	/** @var int */
+	public $fallTime = 0;
 
 	/** @var CageHandler */
 	public $cageHandler;

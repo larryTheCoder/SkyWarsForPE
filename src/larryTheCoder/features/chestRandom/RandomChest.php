@@ -127,15 +127,11 @@ class RandomChest {
 						$encAll = explode(" ", $split['enchantments']);
 						foreach($encAll as $value){
 							$encType = explode(":", $value);
-							if($encType === false) continue;
 							if(count($encType) > 1 && count($encType) < 3){
 								if(is_numeric($encType[0])){
 									$encConfirm = Enchantment::getEnchantment(intval($encType[0]));
-								}elseif(is_string($encType[0])){
-									$encConfirm = Enchantment::getEnchantmentByName($encType[0]);
 								}else{
-									$this->errorLog("Invalid chests.yml: enchantment `" . $encType[0] . "` in `" . $key . "` doesn't appears to be correct.");
-									continue;
+									$encConfirm = Enchantment::getEnchantmentByName($encType[0]);
 								}
 								// I swear, if they can't do this correctly, I will need to warn them.
 								// Just skips it and move to another block.

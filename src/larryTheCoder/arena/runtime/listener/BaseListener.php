@@ -67,11 +67,7 @@ class BaseListener implements ArenaListener {
 	}
 
 	public function onPlayerHitEvent(EntityDamageEvent $event): void{
-		if($this->arena->gameAPI->fallTime !== 0){
-			$event->setCancelled(true);
-
-			return;
-		}
+		if($this->arena->fallTime !== 0) $event->setCancelled(true);
 	}
 
 	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void{

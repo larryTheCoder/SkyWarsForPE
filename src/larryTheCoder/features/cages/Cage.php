@@ -87,7 +87,7 @@ class Cage {
 			];
 			for($j = 0; $j < count($array); ++$j){
 				$loc2 = $array[$j];
-				$list[] = $loc2;
+				$list[] = Position::fromObject($loc2, $level);
 				$level->setBlock($loc2, $part[$i], true, true);
 			}
 			$loc->y = $loc->y + 1;

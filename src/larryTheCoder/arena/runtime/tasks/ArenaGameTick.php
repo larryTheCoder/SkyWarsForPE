@@ -68,7 +68,7 @@ class ArenaGameTick extends Task implements ArenaTask {
 		$this->arena = $arena;
 		$this->gameAPI = $gameAPI;
 
-		$this->gameAPI->fallTime = $arena->arenaGraceTime;
+		$this->arena->fallTime = $arena->arenaGraceTime;
 
 		$refillAvg = $this->arena->refillAverage;
 		$this->refillCountdown = $refillAvg[array_rand($refillAvg)];
@@ -156,9 +156,7 @@ class ArenaGameTick extends Task implements ArenaTask {
 					}
 					break;
 				case ArenaState::STATE_ARENA_RUNNING:
-					if($this->gameAPI->fallTime !== 0){
-						$this->gameAPI->fallTime--;
-					}
+					if($this->arena->fallTime !== 0) $this->arena->fallTime--;
 
 					// Chest refill and such...
 					if($this->refillCountdown <= 0 && $this->arena->refillChest){

@@ -67,8 +67,6 @@ class DefaultGameAPI implements ArenaAPI {
 
 	/** @var SkyWarsPE */
 	public $plugin;
-	/** @var int */
-	public $fallTime = 0;
 	/** @var array */
 	public $winners = [];
 	/** @var int[] */
@@ -87,7 +85,6 @@ class DefaultGameAPI implements ArenaAPI {
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
 
-		$this->fallTime = $arena->arenaGraceTime;
 		$this->plugin = SkyWarsPE::getInstance();
 		$this->scoreboard = new ArenaScoreboard($this);
 		Server::getInstance()->getPluginManager()->registerEvents($this->eventListener = new BasicListener($this), $this->plugin);
