@@ -385,7 +385,7 @@ class FormPanel implements Listener {
 				$a->startOnFull($startWhenFull);
 				$a->applyFullChanges();
 
-				$player->sendMessage("Done!");
+				$player->sendMessage(TextFormat::GREEN . "Successfully updated arena " . TextFormat::YELLOW . $arena->arenaName);
 			},
 			function(Player $pl): void{
 				$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
@@ -423,7 +423,7 @@ class FormPanel implements Listener {
 			$a->setStatusLine($response->getInput()->getValue(), 3);
 			$a->setStatusLine($response->getInput()->getValue(), 4);
 
-			$player->sendMessage("Done!");
+			$player->sendMessage(TextFormat::GREEN . "Successfully updated sign lines for " . TextFormat::YELLOW . $data->arenaName);
 		});
 		$form->setOnClose(function(Player $pl): void{
 			$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));

@@ -127,6 +127,7 @@ trait ArenaData {
 			$chest = $data['chest'];
 			$this->refillChest = boolval($chest['refill']);
 			$this->refillAverage = $chest['refill-average'];
+			$this->winnersCommand = [];
 
 			// Winner config
 			$winner = $data['winners'];
@@ -155,6 +156,8 @@ trait ArenaData {
 			$this->maximumPlayers = intval($arena['max-players']);
 			$this->minimumPlayers = intval($arena['min-players']);
 			$this->arenaStartingTime = intval($arena['starting-time']);
+
+			$this->spawnPedestals = []; // Reset spawn pedestals.
 			foreach($arena['spawn-positions'] as $val => $pos){
 				$strPos = explode(':', $pos);
 

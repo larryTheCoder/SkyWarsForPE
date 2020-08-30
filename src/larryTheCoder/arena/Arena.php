@@ -205,6 +205,7 @@ class Arena {
 	 */
 	public function setData(Config $config){
 		$this->data = $config->getAll();
+		$this->parseData();
 	}
 
 	/**
