@@ -36,7 +36,7 @@ use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\panel\FormPanel;
 use larryTheCoder\provider\AsyncLibDatabase;
 use larryTheCoder\task\NPCValidationTask;
-use larryTheCoder\utils\{Settings, Utils};
+use larryTheCoder\utils\{fireworks\entity\FireworksRocket, Settings, Utils};
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
@@ -172,8 +172,11 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->arenaManager = new ArenaManager($this);
 		$this->panel = new FormPanel($this);
 		$this->chest = new RandomChest($this);
+		$this->cage = new ArenaCage($this);
+		$this->kits = new Kits($this);
 
-		$this->checkLibraries();
+		Entity::registerEntity(FireworksRocket::class, true, ["Firework", "minecraft:firework_rocket"]);
+
 		$this->getArenaManager()->checkArenas();
 		//$this->loadHumans(); // FIXME
 
@@ -292,19 +295,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 	 */
 	public function onPlayerLogin(PlayerJoinEvent $e){
 		$this->getDatabase()->createNewData($e->getPlayer()->getName());
-	}
-
-	/**
-	 * Check private libraries for this plugin.
-	 * The features are private. The features are:
-	 * - Cages
-	 * - Kits
-	 * - Diagnostics
-	 */
-	private function checkLibraries(){
-		// No its private, you can't have it, do not open an issue about that.
-		$this->cage = new ArenaCage($this);
-		$this->kits = new Kits($this);
 	}
 
 	/**
