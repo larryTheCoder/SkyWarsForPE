@@ -30,7 +30,7 @@ namespace larryTheCoder;
 
 use larryTheCoder\commands\SkyWarsCommand;
 use larryTheCoder\features\cages\ArenaCage;
-use larryTheCoder\features\chestRandom\RandomChest;
+use larryTheCoder\features\chest\RandomChest;
 use larryTheCoder\features\kits\Kits;
 use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\panel\FormPanel;
@@ -64,7 +64,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	/** @var SkyWarsCommand */
 	public $cmd;
-	/** @var EconomyAPI */
+	/** @var EconomyAPI|null */
 	public $economy;
 	/** @var RandomChest */
 	public $chest;
@@ -228,6 +228,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$ins = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
 		if($ins instanceof EconomyAPI){
 			$this->economy = $ins;
+		}else{
+			$this->economy = null;
 		}
 	}
 

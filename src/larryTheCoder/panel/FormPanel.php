@@ -439,25 +439,22 @@ class FormPanel implements Listener {
 	 * @param Player $player
 	 */
 	public function showChooseCage(Player $player){
-		// TODO
-		// FIXME: Reflection properties mismatched.
 		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player){
 			$form = new MenuForm("§cChoose Your Cage");
 			$form->setText("§aVarieties of cages available!");
 
+			$cages = [];
 			foreach($this->plugin->getCage()->getCages() as $cage){
 				if((is_array($pd->cages) && !in_array(strtolower($cage->getCageName()), $pd->cages)) && $cage->getPrice() !== 0){
-					$form->append("§8" . $cage->getCageName() . "\n§d§l[$" . $cage->getPrice() . "]");
+					$form->append("§8" . $cage->getCageName() . "\n§e[Price $" . $cage->getPrice() . "]");
 				}else{
 					$form->append("§8" . $cage->getCageName() . "\n§aBought");
 				}
-				$array[] = $cage->getCageName();
+				$cages[] = $cage;
 			}
 
-			$form->setOnSubmit(function(Player $player, Button $selected): void{
-				$player->sendMessage("This function is on done.");
-
-				// TODO: Implement this method.
+			$form->setOnSubmit(function(Player $player, Button $selected) use ($cages): void{
+				$this->plugin->getCage()->setPlayerCage($player, $cages[$selected->getValue()]);
 			});
 
 			$player->sendForm($form);

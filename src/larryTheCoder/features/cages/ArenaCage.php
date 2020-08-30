@@ -95,35 +95,40 @@ class ArenaCage {
 	 * @param Cage $cage
 	 */
 	public function setPlayerCage(Player $player, Cage $cage){
-		$reflect = $this;
-		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player, $reflect, $cage){
+		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player, $cage){
 			if(!in_array(strtolower($cage->getCageName()), $pd->cages)){
-				$reflect->buyCage($player, $cage);
+				$this->buyCage($player, $cage);
 
 				return;
 			}
-			$reflect->playerCages[$player->getName()] = $cage;
-			$player->sendMessage($reflect->plugin->getPrefix() . "§aChosen cage §7" . $cage->getCageName());
+
+			$this->playerCages[$player->getName()] = $cage;
+			$player->sendMessage($this->plugin->getPrefix() . "§aChosen cage §7" . $cage->getCageName());
 		});
 	}
 
 	public function buyCage(Player $p, Cage $cage){
-		$reflect = $this;
-		$this->plugin->getDatabase()->getPlayerData($p->getName(), function(PlayerData $playerData) use ($p, $cage, $reflect){
+		$this->plugin->getDatabase()->getPlayerData($p->getName(), function(PlayerData $playerData) use ($p, $cage){
 			if(in_array(strtolower($cage->getCageName()), $playerData->cages)){
 				$p->sendMessage("You already bought this cage");
 
 				return;
 			}
 
+			if($this->plugin->economy === null){
+				$p->sendMessage("This feature is disabled when EconomyAPI is not installed.");
+
+				return;
+			}
+
 			$price = $cage->getPrice();
-			if($reflect->plugin->economy->myMoney($p) < $price){
+			if($this->plugin->economy->myMoney($p) < $price){
 				$p->sendMessage("You don't have enough money to buy this");
 
 				return;
 			}
 
-			$ret = $reflect->plugin->economy->reduceMoney($p->getName(), $price);
+			$ret = $this->plugin->economy->reduceMoney($p->getName(), $price);
 			if($ret !== EconomyAPI::RET_SUCCESS){
 				$p->sendMessage("Cannot process your payment. Try again later");
 
@@ -131,8 +136,10 @@ class ArenaCage {
 			}
 
 			$playerData->cages[] = strtolower($cage->getCageName());
-			$reflect->plugin->getDatabase()->setPlayerData($p->getName(), $playerData);
-			$reflect->setPlayerCage($p, $cage);
+			$this->plugin->getDatabase()->setPlayerData($p->getName(), $playerData);
+			$this->setPlayerCage($p, $cage);
+
+			var_dump("Buying cage.");
 		});
 	}
 

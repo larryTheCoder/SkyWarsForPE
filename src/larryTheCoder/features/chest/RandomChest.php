@@ -27,7 +27,7 @@
  */
 
 
-namespace larryTheCoder\features\chestRandom;
+namespace larryTheCoder\features\chest;
 
 use AttachableThreadedLogger;
 use larryTheCoder\SkyWarsPE;
