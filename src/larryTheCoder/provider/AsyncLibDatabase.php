@@ -102,6 +102,10 @@ class AsyncLibDatabase {
 		});
 	}
 
+	public function addDeaths(string $playerName){
+		$this->database->executeChangeRaw("UPDATE players SET deaths = deaths + 1 WHERE playerName = ?", [$playerName]);
+	}
+
 	/**
 	 * Retrieves a specified player information inside the given
 	 * database.

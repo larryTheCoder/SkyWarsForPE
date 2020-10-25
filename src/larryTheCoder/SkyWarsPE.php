@@ -144,14 +144,12 @@ class SkyWarsPE extends PluginBase implements Listener {
 	}
 
 	/** @var bool */
-	private $fail = false;
+	private $crashed = true;
 
 	public function onEnable(){
 		if(\Phar::running(true) === ""){
 			if(!class_exists("poggit\libasynql\libasynql")){
 				$this->getLogger()->error("libasynql library not found! Please refer to https://github.com/poggit/libasynql and install this first!");
-
-				$this->fail = true;
 				$this->getServer()->getPluginManager()->disablePlugin($this);
 
 				return;
@@ -179,6 +177,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->getArenaManager()->checkArenas();
 		//$this->loadHumans(); // FIXME
+
+		$this->crashed = false;
 
 		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
 	}
@@ -243,7 +243,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	public function onDisable(){
 		try{
-			if($this->fail) return;
+			if($this->crashed) return;
 
 			Utils::unLoadGame();
 
