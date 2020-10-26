@@ -56,6 +56,7 @@ abstract class Arena implements ShutdownSequence {
 	// for arena flags in setFlags() and hasFlags()
 	public const WORLD_ATTEMPT_LOAD = 0x1;
 	public const ARENA_OFFLINE_MODE = 0x2;
+
 	/** @var CageManager */
 	protected $cageManager;
 	/** @var string|null */
@@ -77,14 +78,26 @@ abstract class Arena implements ShutdownSequence {
 	/** @var int */
 	private $gameFlags = 0x0;
 
+	/** @var ShutdownSequence[] */
+	protected $shutdownSequence = [];
+
+	public function getLevel(): ?Level{
+		if($this->lobbyLevel !== null){
+			return $this->level;
+		}else{
+			return $this->lobbyLevel;
+		}
+	}
+
 	public function __construct(Plugin $plugin){
 		$this->plugin = $plugin;
 		$this->playerData = new PlayerManager($this);
 
-		$plugin->getScheduler()->scheduleRepeatingTask($this->getArenaTask(), 20);
-	}
+		$task = $this->getArenaTask();
+		$plugin->getScheduler()->scheduleRepeatingTask($task, 20);
 
-	public abstract function getArenaTask(): ArenaTickTask;
+		$this->shutdownSequence[] = $task;
+	}
 
 	/**
 	 * The API codename.
@@ -106,12 +119,18 @@ abstract class Arena implements ShutdownSequence {
 	public abstract function stopArena(): void;
 
 	/**
-	 * Shutdown this API from using this arena.
-	 * You may find this a very useful function.
+	 * Reset the player objects that were set in game.
+	 *
+	 * @param Player $player
+	 * @param bool $isSpectator
 	 */
-	public abstract function shutdown(): void;
+	public abstract function unsetPlayer(Player $player, bool $isSpectator = false);
 
 	public abstract function getMinPlayer(): int;
+
+	public abstract function getMaxPlayer(): int;
+
+	public abstract function getArenaTask(): ArenaTickTask;
 
 	public abstract function getEventListener(): ArenaListener;
 
@@ -124,18 +143,11 @@ abstract class Arena implements ShutdownSequence {
 	 * @param bool $force
 	 */
 	public function leaveArena(Player $player, bool $force = false): void{
-		$this->unsetPlayer($player);
+		$this->unsetPlayer($player, $this->getPlayerManager()->isSpectator($player->getName()));
 
 		$this->getPlayerManager()->removePlayer($player);
 		$this->getCageManager()->removeCage($player);
 	}
-
-	/**
-	 * Reset the player objects that were set in game.
-	 *
-	 * @param Player $player
-	 */
-	public abstract function unsetPlayer(Player $player);
 
 	/**
 	 * Return the object where the players are being queued into
@@ -257,6 +269,9 @@ abstract class Arena implements ShutdownSequence {
 				$isLobby = false;
 			}
 
+			$level->setTime(Level::TIME_DAY);
+			$level->stopTime();
+
 			$this->setFlags(self::ARENA_OFFLINE_MODE, false);
 			$this->setFlags(self::WORLD_ATTEMPT_LOAD, false);
 
@@ -283,18 +298,17 @@ abstract class Arena implements ShutdownSequence {
 	 * @param Level $level
 	 * @param bool $isLobby
 	 */
-	public abstract function initArena(Level $level, bool $isLobby): void;
+	public function initArena(Level $level, bool $isLobby): void{
+		// NOOP
+	}
 
 	public function getStatus(): int{
 		return $this->arenaStatus;
 	}
 
-	public abstract function getMaxPlayer(): int;
-
 	/**
 	 * Called when a player joins into the arena, this will only be called
-	 * by a function and this function will be called when a player joined as
-	 * a "contestant" or a "spectator".
+	 * by a function and this function will be called when a player joined as a contestant
 	 *
 	 * @param Player $player
 	 */
@@ -307,6 +321,9 @@ abstract class Arena implements ShutdownSequence {
 		}else{
 			$player->teleport(Position::fromObject($cage, $this->level));
 		}
+
+		$player->getInventory()->clearAll();
+		$player->getArmorInventory()->clearAll();
 	}
 
 	/**
@@ -315,9 +332,16 @@ abstract class Arena implements ShutdownSequence {
 	public abstract function playerSpectate(Player $player): void;
 
 	final public function resetArena(): void{
-		foreach($this->getPlayerManager()->resetPlayers() as $player){
-			$this->unsetPlayer($player);
+		$pm = $this->getPlayerManager()->resetPlayers();
+		foreach($pm as $type => $player){
+			if($type === "player"){
+				$this->unsetPlayer($player);
+			}else{
+				$this->unsetPlayer($player, true);
+			}
 		}
+
+		$this->getCageManager()->resetAll();
 
 		$this->setStatus(ArenaState::STATE_WAITING);
 	}
@@ -346,5 +370,11 @@ abstract class Arena implements ShutdownSequence {
 
 	public function getPlugin(): Plugin{
 		return $this->plugin;
+	}
+
+	public function shutdown(): void{
+		foreach($this->shutdownSequence as $shutdown){
+			$shutdown->shutdown();
+		}
 	}
 }

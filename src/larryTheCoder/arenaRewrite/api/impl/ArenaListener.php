@@ -36,6 +36,7 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 
 /**
@@ -54,6 +55,8 @@ interface ArenaListener {
 	public function onBlockBreakEvent(BlockBreakEvent $event): void;
 
 	public function onPlayerHitEvent(EntityDamageEvent $event): void;
+
+	public function onPlayerQuitEvent(PlayerQuitEvent $event): void;
 
 	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void;
 

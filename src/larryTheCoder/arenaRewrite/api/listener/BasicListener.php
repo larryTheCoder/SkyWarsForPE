@@ -143,6 +143,15 @@ class BasicListener implements Listener {
 		$this->listener->onBlockBreakEvent($e);
 	}
 
+	public function onPlayerQuitEvent(PlayerQuitEvent $e): void{
+		$p = $e->getPlayer();
+
+		$pm = $this->arena->getPlayerManager();
+		if($pm->isInArena($p)){
+			$this->listener->onPlayerQuitEvent($e);
+		}
+	}
+
 	/**
 	 * Handles player damages towards another players. This event is to log player's damages towards
 	 * another player entity. This is required to check who actually killed this player.

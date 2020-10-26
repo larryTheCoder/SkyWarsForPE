@@ -28,7 +28,7 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\provider;
+namespace larryTheCoder\database;
 
 use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
@@ -50,6 +50,8 @@ use poggit\libasynql\libasynql;
  * @package larryTheCoder\provider
  */
 class AsyncLibDatabase {
+
+	// TODO: Again rewrite this D:
 
 	/** @var AsyncLibDatabase */
 	public static $instance;

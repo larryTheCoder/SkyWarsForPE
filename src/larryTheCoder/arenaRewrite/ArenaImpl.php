@@ -32,13 +32,17 @@ declare(strict_types = 1);
 namespace larryTheCoder\arenaRewrite;
 
 use larryTheCoder\arenaRewrite\api\Arena;
+use larryTheCoder\arenaRewrite\api\CageManager;
 use larryTheCoder\arenaRewrite\api\impl\ArenaListener;
+use larryTheCoder\arenaRewrite\api\impl\ArenaState;
 use larryTheCoder\arenaRewrite\api\SignManager;
 use larryTheCoder\arenaRewrite\api\task\ArenaTickTask;
 use larryTheCoder\arenaRewrite\task\SkyWarsTask;
 use larryTheCoder\SkyWarsPE;
-use pocketmine\level\Level;
+use larryTheCoder\utils\Settings;
+use pocketmine\block\BlockFactory;
 use pocketmine\Player;
+use pocketmine\Server;
 
 class ArenaImpl extends Arena {
 	use ArenaData;
@@ -52,6 +56,8 @@ class ArenaImpl extends Arena {
 	private $arenaData;
 	/** @var SignManager */
 	private $signManager;
+	/** @var float */
+	private $startedTime = -1;
 
 	public function __construct(SkyWarsPE $plugin, array $arenaData){
 		$this->arenaData = $arenaData;
@@ -59,6 +65,7 @@ class ArenaImpl extends Arena {
 
 		$this->eventListener = new EventListener($this);
 		$this->signManager = new SignManager($this, $this->getSignPosition());
+		$this->cageManager = new CageManager($this->spawnPedestals);
 
 		parent::__construct($plugin);
 	}
@@ -67,32 +74,93 @@ class ArenaImpl extends Arena {
 		return $this->arenaData;
 	}
 
-	public function initArena(Level $level, bool $isLobby): void{
-		if($isLobby){
-
-		}else{
-
-		}
-	}
-
 	public function getCodeName(): string{
 		return "Seven Red Suns";
 	}
 
 	public function startArena(): void{
+		$pm = $this->getPlayerManager();
+		$cm = $this->getCageManager();
 
+		foreach($pm->getAlivePlayers() as $player){
+			// Set the player gamemode first
+			$player->setGamemode(0);
+			$player->getInventory()->clearAll();
+			$player->getArmorInventory()->clearAll();
+
+			// Set the player health and food
+			$player->setMaxHealth(Settings::$joinHealth);
+			$player->setMaxHealth($player->getMaxHealth());
+
+			// just to be really sure
+			if($player->getAttributeMap() != null){
+				$player->setHealth(Settings::$joinHealth);
+				$player->setFood(20);
+			}
+
+			// Cage factory reset.
+			$pos = $cm->getCage($player);
+			foreach($pos as $block){
+				$this->getLevel()->setBlock(BlockFactory::get(0), $block);
+			}
+		}
+
+		$this->startedTime = microtime(true);
+
+		$this->setFlags(self::ARENA_INVINCIBLE_PERIOD, true);
+	}
+
+	public function getTimeStarted(): float{
+		return $this->startedTime;
+	}
+
+	public function joinToArena(Player $player): void{
+		parent::joinToArena($player);
+
+		$player->setGamemode(Player::ADVENTURE);
+
+		// TODO: Give player items
 	}
 
 	public function stopArena(): void{
+		// TODO: Spawn to default lobby location.
+		foreach($this->getPlayerManager()->getAllPlayers() as $player){
+			$player->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
+		}
 
+		$this->startedTime = -1;
+
+		$this->setFlags(self::ARENA_INVINCIBLE_PERIOD, false);
 	}
 
 	public function playerSpectate(Player $player): void{
-
+		// TODO: Give spectator items to players.
 	}
 
-	public function unsetPlayer(Player $player){
+	public function unsetPlayer(Player $player, bool $isSpectator = false){
+		$player->setGamemode(0);
 
+		if($isSpectator){
+			$player->setAllowFlight(false);
+		}else{
+			$player->getInventory()->clearAll();
+			$player->getArmorInventory()->clearAll();
+		}
+	}
+
+	public function leaveArena(Player $player, bool $force = false): void{
+		$pm = $this->getPlayerManager();
+		$isSpectator = $pm->isSpectator($player->getName());
+
+		// Do nothing if the player itself is a spectator or the arena
+		// is not running.
+		if($isSpectator || $this->getStatus() !== ArenaState::STATE_ARENA_RUNNING) return;
+
+		if($force){
+			$pm->broadcastToPlayers("{$player->getName()} has disconnected.");
+		}else{
+			$pm->broadcastToPlayers("{$player->getName()} has left the game.");
+		}
 	}
 
 	public function getMinPlayer(): int{
@@ -113,9 +181,5 @@ class ArenaImpl extends Arena {
 
 	public function getArenaTask(): ArenaTickTask{
 		return new SkyWarsTask($this);
-	}
-
-	public function shutdown(): void{
-
 	}
 }

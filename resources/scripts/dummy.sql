@@ -1,4 +1,3 @@
-<?php
 /*
  * Adapted from the Wizardry License
  *
@@ -26,20 +25,4 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-declare(strict_types = 1);
-
-namespace larryTheCoder\arenaRewrite;
-
-
-use larryTheCoder\arenaRewrite\api\CageManager;
-
-class ArenaImplCage extends CageManager {
-
-	/**
-	 * Attempt to teleport all players to the cage.
-	 */
-	public function teleportToCages(): void{
-		// TODO: Operation syscall.
-	}
-
-}
+-- #!mysql

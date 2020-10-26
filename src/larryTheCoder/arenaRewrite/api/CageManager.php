@@ -37,7 +37,7 @@ use pocketmine\Player;
  * Class CageManager
  * @package larryTheCoder\arenaRewrite\api
  */
-abstract class CageManager {
+class CageManager {
 
 	/** @var Vector3[] */
 	protected $claimedCages = [];

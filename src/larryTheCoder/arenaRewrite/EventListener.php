@@ -31,24 +31,27 @@ declare(strict_types = 1);
 namespace larryTheCoder\arenaRewrite;
 
 
-use larryTheCoder\arenaRewrite\api\Arena;
 use larryTheCoder\arenaRewrite\api\impl\ArenaListener;
+use larryTheCoder\arenaRewrite\api\impl\ArenaState;
+use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\level\Position;
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 
 class EventListener implements ArenaListener {
 
-	/**
-	 * @var Arena
-	 */
+	/** @var ArenaImpl */
 	private $arena;
 
-	public function __construct(Arena $arena){
+	public function __construct(ArenaImpl $arena){
 		$this->arena = $arena;
 	}
 
@@ -64,21 +67,45 @@ class EventListener implements ArenaListener {
 		// NOOP
 	}
 
+	public function onPlayerInteractEvent(PlayerInteractEvent $e): void{
+		// NOOP
+	}
+
+	public function onPlayerQuitEvent(PlayerQuitEvent $event): void{
+		$player = $event->getPlayer();
+
+		$this->arena->leaveArena($player, true);
+	}
+
 	public function onPlayerHitEvent(EntityDamageEvent $event): void{
 		if($this->arena->hasFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD)){
 			$event->setCancelled();
 		}
 	}
 
-	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void{
-		// TODO: Implement onPlayerDeath() method.
+	public function onPlayerDeath(Player $player, $deathFrom): void{
+		Utils::strikeLightning($player);
+
+		$pm = $this->arena->getPlayerManager();
+		$this->arena->playerSpectate($player);
+		$pm->setSpectator($player);
+
+		$player->setGamemode(Player::ADVENTURE);
+		$player->setAllowFlight(true);
+		$player->sendMessage(SkyWarsPE::getInstance()->getMsg($player, 'player-spectate'));
+
+		foreach($pm->getAllPlayers() as $p2) $p2->hidePlayer($player);
+
+		$player->teleport(Position::fromObject($this->arena->arenaSpecPos, $this->arena->getLevel()));
 	}
 
-	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $ev): void{
-		// TODO: Implement onPlayerExecuteCommand() method.
-	}
+	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $event): void{
+		$player = $event->getPlayer();
 
-	public function onPlayerInteractEvent(PlayerInteractEvent $e): void{
-		// TODO: Implement onPlayerInteractEvent() method.
+		if(!in_array(strtolower($event->getMessage()), ['sw', 'skywars'], true)
+			&& $this->arena->getStatus() === ArenaState::STATE_ARENA_RUNNING
+			&& !$player->hasPermission("sw.command.bypass")){
+			$player->sendMessage(TextFormat::RED . "You cannot execute any command while in game.");
+		}
 	}
 }

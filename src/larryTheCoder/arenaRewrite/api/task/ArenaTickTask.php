@@ -34,6 +34,7 @@ namespace larryTheCoder\arenaRewrite\api\task;
 use larryTheCoder\arenaRewrite\api\Arena;
 use larryTheCoder\arenaRewrite\api\impl\ArenaState;
 use larryTheCoder\arenaRewrite\api\impl\ShutdownSequence;
+use pocketmine\level\sound\ClickSound;
 use pocketmine\scheduler\Task;
 
 /**
@@ -85,12 +86,28 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				break;
 			case ArenaState::STATE_STARTING:
 				if(count($pm->getAlivePlayers()) < $arena->getMinPlayer()){
-					$pm->broadcastToPlayers("Not enough players, countdown cancelled.");
+					$pm->broadcastTitle("Not enough players, countdown cancelled.");
 
 					$arena->setStatus(ArenaState::STATE_WAITING);
 					break;
 				}
 
+				// Game starting title.
+				if($this->timeElapsed === 20){
+					$pm->broadcastTitle("Starting in", "", 1, 25, 1);
+				}elseif($this->timeElapsed > 20){
+					foreach($pm->getAllPlayers() as $player){
+						$player->getLevel()->addSound((new ClickSound($player)), [$player]);
+					}
+
+					if($this->timeElapsed < 29){
+						$pm->broadcastTitle("§6" . (30 - $this->timeElapsed), "", 1, 25, 1);
+					}else{
+						$pm->broadcastTitle("§c" . (30 - $this->timeElapsed), "", 1, 25, 1);
+					}
+				}
+
+				// Preparation unit and so on.
 				if($this->timeElapsed === 25){
 					$arena->loadWorld(false);
 				}elseif($this->timeElapsed === 30){
@@ -151,7 +168,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
 	/**
 	 * This function however will be called when the arena reached its maximum arena tick as defined in
-	 * {@link ShutdownSequence::getMaxTime()}.
+	 * {@link ArenaTickTask::getMaxTime()}.
 	 */
 	public function overtimeTick(): void{
 		// NOOP
@@ -161,8 +178,8 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 	 * This function will be called when the arena state has changed to {@link ArenaState::STATE_ARENA_CELEBRATING}
 	 */
 	public function endTick(): void{
-		$this->getArena()->resetArena();
 		$this->getArena()->stopArena();
+		$this->getArena()->resetArena();
 	}
 
 	public function tickPreScoreboard(): void{

@@ -29,12 +29,12 @@
 namespace larryTheCoder;
 
 use larryTheCoder\commands\SkyWarsCommand;
+use larryTheCoder\database\AsyncLibDatabase;
 use larryTheCoder\features\cages\ArenaCage;
 use larryTheCoder\features\chest\RandomChest;
 use larryTheCoder\features\kits\Kits;
 use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\panel\FormPanel;
-use larryTheCoder\provider\AsyncLibDatabase;
 use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\utils\{fireworks\entity\FireworksRocket, Settings, Utils};
 use onebone\economyapi\EconomyAPI;

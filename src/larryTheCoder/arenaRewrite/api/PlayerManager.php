@@ -53,13 +53,13 @@ class PlayerManager {
 	/** @var int */
 	public $minimumMembers = 0;
 	/** @var Player[] */
-	private $players = []; // "Player" => "Team color"
+	private $players = [];
 	/** @var Player[] */
 	private $spectators = [];
 	/** @var Level|null */
 	private $arenaLevel;
 	/** @var int[] */
-	private $teams = [];
+	private $teams = []; // "Player" => "Team color"
 	/** @var Arena */
 	private $arena;
 
@@ -183,17 +183,6 @@ class PlayerManager {
 	}
 
 	/**
-	 * Give the player the items that required in config.yml
-	 * For spectator or NON-Spectator
-	 *
-	 * @param Player $p
-	 * @param bool $spectate
-	 */
-	public function giveGameItems(Player $p, bool $spectate){
-		// TODO: Give special items.
-	}
-
-	/**
 	 * Return the default player name for this string. This function is perhaps
 	 * to get the player information within this class.
 	 *
@@ -302,7 +291,9 @@ class PlayerManager {
 	 * @return Player[]
 	 */
 	public function resetPlayers(): array{
-		$data = array_merge($this->players, $this->spectators);
+		$data = [];
+		$data["player"] = $this->players;
+		$data["spectator"] = $this->spectators;
 
 		$this->spectators = [];
 		$this->players = [];
@@ -312,15 +303,25 @@ class PlayerManager {
 		return $data;
 	}
 
-	public function addDeaths(string $playerName){
-
+	public function addKills(string $target): void{
+		$this->kills[$target] = $this->getKills($target) + 1;
 	}
 
-	public function addKills(string $target){
-
+	public function getKills(string $target): int{
+		return $this->kills[$target] ?? 0;
 	}
 
 	public function isSolo(): bool{
 		return !$this->teamMode;
+	}
+
+	public function isSpectator(string $player){
+		return in_array($player, $this->spectators, true);
+	}
+
+	public function broadcastTitle(string $title, string $subtitle = "", int $fadeIn = -1, int $stay = -1, int $fadeOut = -1){
+		foreach($this->getAllPlayers() as $player){
+			$player->sendTitle($title, $subtitle, $fadeIn, $stay, $fadeOut);
+		}
 	}
 }
