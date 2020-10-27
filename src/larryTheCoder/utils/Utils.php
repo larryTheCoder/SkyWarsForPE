@@ -28,8 +28,9 @@
 
 namespace larryTheCoder\utils;
 
-use larryTheCoder\arena\api\ArenaState;
-use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\entity\FireworksRocket;
 use larryTheCoder\utils\fireworks\Fireworks;
@@ -39,8 +40,7 @@ use pocketmine\{network\mcpe\protocol\AddActorPacket,
 	utils\MainLogger,
 	utils\Random,
 	utils\TextFormat,
-	utils\TextFormat as VS
-};
+	utils\TextFormat as VS};
 use pocketmine\block\{Block, BlockIds, StainedGlass};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item, ItemIds};
@@ -107,18 +107,15 @@ class Utils {
 		return null;
 	}
 
-	public static function getBlockStatus(Arena $arena){
-		if($arena->inSetup){
-			return new StainedGlass(14);
-		}
-		if(!$arena->arenaEnable || $arena->levelBusy){
+	public static function getBlockStatus(ArenaImpl $arena){
+		if(!$arena->arenaEnable || $arena->hasFlags(Arena::ARENA_IN_SETUP_MODE)){
 			return new StainedGlass(14);
 		}
 
-		if($arena->getStatus() <= ArenaState::STATE_SLOPE_WAITING){
+		if($arena->getStatus() <= ArenaState::STATE_STARTING){
 			return new StainedGlass(13);
 		}
-		if($arena->getPlayers() >= $arena->minimumPlayers){
+		if($arena->getPlayerManager()->getPlayersCount() >= $arena->minimumPlayers){
 			return new StainedGlass(4);
 		}
 		if($arena->getStatus() === ArenaState::STATE_ARENA_RUNNING){
@@ -204,8 +201,9 @@ class Utils {
 
 	public static function unloadGame(){
 		foreach(SkyWarsPE::getInstance()->getArenaManager()->getArenas() as $name => $arena){
-			$arena->forceShutdown();
+			$arena->shutdown();
 		}
+
 		SkyWarsPE::getInstance()->getArenaManager()->invalidate();
 	}
 
@@ -443,7 +441,7 @@ class Utils {
 		}
 	}
 
-	public static function loadDefaultConfig(){
+	public static function getScoreboardConfig(){
 		if(isset(self::$scoreboard)) return self::$scoreboard;
 
 		$scoreboard = new Config(SkyWarsPE::getInstance()->getDataFolder() . "scoreboard.yml");

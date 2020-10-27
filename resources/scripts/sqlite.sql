@@ -78,6 +78,7 @@ WHERE worldName = :worldNameData;
 -- #}
 -- #{ select.players
 SELECT *
-FROM players;
+FROM players
+ORDER BY kills DESC LIMIT 5;
 -- #}
 -- #}

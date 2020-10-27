@@ -29,7 +29,6 @@
 
 namespace larryTheCoder\commands;
 
-use larryTheCoder\arena\api\ArenaState;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
@@ -54,21 +53,21 @@ final class SkyWarsCommand {
 
 						return true;
 					}
-				if(!$sender instanceof Player){
-					$this->consoleSender($sender);
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+
+						return true;
+					}
+					$pManager = $this->plugin->getArenaManager();
+					$arena = $pManager->getPlayerArena($sender);
+					if($arena === null || !$pManager->insideArenaLevel($sender)){
+						$sender->sendMessage('Please use this command in-arena');
+
+						return true;
+					}
+					$arena->leaveArena($sender);
 
 					return true;
-				}
-				$pManager = $this->plugin->getArenaManager();
-				$arena = $pManager->getPlayerArena($sender);
-				if($arena === null || !$pManager->insideArenaLevel($sender)){
-					$sender->sendMessage('Please use this command in-arena');
-
-					return true;
-				}
-				$arena->leaveArena($sender);
-
-				return true;
 				case "test":
 					if(!$sender instanceof Player){
 						$this->consoleSender($sender);
@@ -98,12 +97,6 @@ final class SkyWarsCommand {
 					}
 					if($sender->hasPermission("sw.command.create")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'create-help', false));
-					}
-					if($sender->hasPermission("sw.command.start")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'start-help', false));
-					}
-					if($sender->hasPermission("sw.command.stop")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'stop-help', false));
 					}
 					if($sender->hasPermission("sw.command.set")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'settings-help', false));
@@ -200,7 +193,7 @@ final class SkyWarsCommand {
 						$sender->sendMessage("§cNo available arena, please try again later");
 						break;
 					}
-					$arena->joinArena($sender);
+					$arena->getPlayerManager()->addQueue($sender);
 					break;
 				case "reload":
 					if(!$sender->hasPermission("sw.command.reload")){
@@ -217,63 +210,6 @@ final class SkyWarsCommand {
 					}
 
 					$sender->sendMessage($this->plugin->getMsg($sender, 'plugin-reload'));
-					break;
-				case "start":
-					if(!$sender->hasPermission('sw.command.start')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(isset($args[1])){
-						if(!$this->plugin->getArenaManager()->arenaExist($args[1])){
-							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
-							break;
-						}
-						$this->plugin->getArenaManager()->getArena($args[1])->startGame();
-						$sender->sendMessage(str_replace("{ARENA}", $args[1], $this->plugin->getMsg($sender, 'arena-started')));
-						break;
-					}
-					if(!$sender instanceof Player){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'start-usage'));
-						break;
-					}
-					if($this->plugin->getArenaManager()->getPlayerArena($sender) === null){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'start-usage'));
-						break;
-					}
-					$arena = $this->plugin->getArenaManager()->getPlayerArena($sender);
-					$arena->startGame();
-					$sender->sendMessage(str_replace("{ARENA}", $arena->getArenaName(), $this->plugin->getMsg($sender, 'arena-started')));
-					break;
-				case "stop":
-					if(!$sender->hasPermission('sw.command.stop')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(isset($args[1])){
-						if(!$this->plugin->getArenaManager()->arenaExist($args[1])){
-							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
-							break;
-						}
-						if($this->plugin->getArenaManager()->getArena($args[1])->getStatus() !== ArenaState::STATE_ARENA_RUNNING){
-							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
-							break;
-						}
-						$this->plugin->getArenaManager()->getArena($args[1])->stopGame();
-						break;
-					}
-					if(!$sender instanceof Player){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'stop-usage'));
-						break;
-					}
-					if($this->plugin->getArenaManager()->getPlayerArena($sender)->getStatus() !== ArenaState::STATE_ARENA_RUNNING){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-running'));
-						break;
-					}
-					if($this->plugin->getArenaManager()->getPlayerArena($sender) === null){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'stop-usage'));
-						break;
-					}
-					$this->plugin->getArenaManager()->getPlayerArena($sender)->stopGame();
 					break;
 				case "join":
 					if(!$sender->hasPermission('sw.command.join')){
@@ -292,11 +228,13 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
 						break;
 					}
-					if($this->plugin->getArenaManager()->getArena($args[1])->isInArena($sender)){
+					$pm = $this->plugin->getArenaManager()->getArena($args[1])->getPlayerManager();
+					if($pm->isInArena($sender)){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-running'));
 						break;
 					}
-					$this->plugin->getArenaManager()->getArena($args[1])->joinArena($sender);
+
+					$pm->addQueue($sender);
 					break;
 				case "setlobby":
 					if(!$sender->hasPermission('sw.command.setlobby')){

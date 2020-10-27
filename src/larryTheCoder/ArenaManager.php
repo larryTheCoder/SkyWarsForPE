@@ -81,7 +81,7 @@ final class ArenaManager {
 		}
 	}
 
-	public function reloadArena($arenaF, bool $resetLevel = false): bool{
+	public function reloadArena($arenaF): bool{
 		$arenaName = $this->getRealArenaName($arenaF);
 		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§aReloading arena§e $arenaName");
 		if(!$this->arenaExist($arenaName)){
@@ -133,7 +133,6 @@ final class ArenaManager {
 		}
 
 		$arena->setConfig($config->getAll());
-		$arena->resetArena();
 	}
 
 	// Checked and passed
@@ -209,7 +208,7 @@ final class ArenaManager {
 		return $this->arenas;
 	}
 
-	public function getArenaByInt(int $id): Arena{
+	public function getArenaByInt(int $id): ArenaImpl{
 		$arenas = [];
 		foreach($this->getArenas() as $arena){
 			$arenas[] = $arena;

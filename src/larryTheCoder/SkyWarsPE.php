@@ -30,13 +30,9 @@ namespace larryTheCoder;
 
 use larryTheCoder\commands\SkyWarsCommand;
 use larryTheCoder\database\AsyncLibDatabase;
-use larryTheCoder\features\cages\ArenaCage;
-use larryTheCoder\features\chest\RandomChest;
-use larryTheCoder\features\kits\Kits;
-use larryTheCoder\features\npc\FakeHuman;
 use larryTheCoder\panel\FormPanel;
-use larryTheCoder\task\NPCValidationTask;
-use larryTheCoder\utils\{fireworks\entity\FireworksRocket, Settings, Utils};
+use larryTheCoder\utils\{fireworks\entity\FireworksRocket, npc\FakeHuman, npc\PedestalManager, Settings, Utils};
+use larryTheCoder\utils\cage\ArenaCage;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
@@ -66,10 +62,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 	public $cmd;
 	/** @var EconomyAPI|null */
 	public $economy;
-	/** @var RandomChest */
-	public $chest;
-	/** @var FakeHuman[] */
-	public $entities;
 
 	/** @var array */
 	private $translation = [];
@@ -79,13 +71,13 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private $database;
 	/** @var ArenaCage */
 	private $cage = null;
-	/** @var Kits */
-	private $kits = null;
 
 	/** @var bool */
 	public $disabled;
 	/** @var FormPanel */
 	public $panel;
+	/** @var PedestalManager */
+	private $pedestalManager;
 
 	public static function getInstance(): ?SkyWarsPE{
 		return self::$instance;
@@ -169,14 +161,13 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager($this);
 		$this->panel = new FormPanel($this);
-		$this->chest = new RandomChest($this);
 		$this->cage = new ArenaCage($this);
-		$this->kits = new Kits($this);
 
 		Entity::registerEntity(FireworksRocket::class, true, ["Firework", "minecraft:firework_rocket"]);
+		Entity::registerEntity(FakeHuman::class, true, ["FakeHuman", "skywars:npc"]);
 
 		$this->getArenaManager()->checkArenas();
-		//$this->loadHumans(); // FIXME
+		$this->loadHumans();
 
 		$this->crashed = false;
 
@@ -186,6 +177,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private function loadHumans(){
 		$cfg = new Config($this->getDataFolder() . "npc.yml", Config::YAML);
 
+		$levelName = $cfg->get("level", "");
 		$npc1E = $cfg->get("npc-1", []);
 		$npc2E = $cfg->get("npc-2", []);
 		$npc3E = $cfg->get("npc-3", []);
@@ -197,31 +189,15 @@ class SkyWarsPE extends PluginBase implements Listener {
 			return;
 		}
 
-		Utils::loadFirst($npc1E[3]);
-		Utils::loadFirst($npc2E[3]);
-		Utils::loadFirst($npc3E[3]);
+		Utils::loadFirst($levelName);
 
-		$level = $this->getServer()->getLevelByName($npc1E[3]);
+		$level = $this->getServer()->getLevelByName($levelName);
 
-		$nbt1 = Entity::createBaseNBT(new Vector3($npc1E[0], $npc1E[1], $npc1E[2]));
-		$nbt2 = Entity::createBaseNBT(new Vector3($npc2E[0], $npc2E[1], $npc2E[2]));
-		$nbt3 = Entity::createBaseNBT(new Vector3($npc3E[0], $npc3E[1], $npc3E[2]));
+		$vectors[] = new Vector3((float)$npc1E[0], (float)$npc1E[1], (float)$npc1E[2]);
+		$vectors[] = new Vector3((float)$npc2E[0], (float)$npc2E[1], (float)$npc2E[2]);
+		$vectors[] = new Vector3((float)$npc3E[0], (float)$npc3E[1], (float)$npc3E[2]);
 
-		$entity1 = new FakeHuman($level, $nbt1, 1);
-		$entity2 = new FakeHuman($level, $nbt2, 2);
-		$entity3 = new FakeHuman($level, $nbt3, 3);
-
-		$entity1->spawnToAll();
-		$entity2->spawnToAll();
-		$entity3->spawnToAll();
-
-		$this->entities[] = $entity1;
-		$this->entities[] = $entity2;
-		$this->entities[] = $entity3;
-
-		// Delay 2 seconds for this task to run and then repeat it
-		// every 1 second. <--- Sounds bad but its okay?
-		$this->getScheduler()->scheduleDelayedRepeatingTask(new NPCValidationTask($this), 40, 20);
+		$this->pedestalManager = new PedestalManager($vectors, $level);
 	}
 
 	private function checkPlugins(){
@@ -248,6 +224,10 @@ class SkyWarsPE extends PluginBase implements Listener {
 			Utils::unLoadGame();
 
 			$this->database->close();
+
+			if(!is_null($this->pedestalManager)){
+				$this->pedestalManager->closeAll();
+			}
 
 			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
 		}catch(\Throwable $error){
@@ -304,12 +284,5 @@ class SkyWarsPE extends PluginBase implements Listener {
 	 */
 	public function getCage(): ?ArenaCage{
 		return $this->cage;
-	}
-
-	/**
-	 * @return null|Kits
-	 */
-	public function getKits(): ?Kits{
-		return $this->kits;
 	}
 }

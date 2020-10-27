@@ -1,8 +1,8 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2020 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,7 +26,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\features\cages;
+namespace larryTheCoder\utils\cage;
 
 use larryTheCoder\utils\Utils;
 use pocketmine\block\Block;

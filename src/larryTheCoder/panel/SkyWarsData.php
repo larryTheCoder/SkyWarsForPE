@@ -29,7 +29,7 @@
 
 namespace larryTheCoder\panel;
 
-use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\ArenaImpl;
 
 class SkyWarsData {
 	public $arenaName = "";
@@ -44,6 +44,6 @@ class SkyWarsData {
 	public $line2 = "";
 	public $line3 = "";
 	public $line4 = "";
-	/** @var Arena */
+	/** @var ArenaImpl */
 	public $arena;
 }

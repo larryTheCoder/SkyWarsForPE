@@ -28,18 +28,19 @@
 
 namespace larryTheCoder\panel;
 
-use larryTheCoder\arena\api\ArenaState;
-use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
+use larryTheCoder\arena\api\task\CompressionAsyncTask;
+use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\forms\CustomForm;
 use larryTheCoder\forms\CustomFormResponse;
 use larryTheCoder\forms\elements\{Button, Dropdown, Input, Label, Slider, Toggle};
 use larryTheCoder\forms\MenuForm;
 use larryTheCoder\forms\ModalForm;
-use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\task\NPCValidationTask;
 use larryTheCoder\utils\{ConfigManager, Utils};
-use pocketmine\{block\Slab, Player, Server, utils\TextFormat};
+use larryTheCoder\utils\PlayerData;
+use pocketmine\{block\Slab, level\Level, Player, Server, utils\TextFormat};
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\item\{BlazeRod, Item};
@@ -78,28 +79,26 @@ class FormPanel implements Listener {
 
 	/**
 	 * @param Player $player
-	 * @param Arena $arena
+	 * @param ArenaImpl $arena
 	 */
-	public function showSpectatorPanel(Player $player, Arena $arena){
+	public function showSpectatorPanel(Player $player, ArenaImpl $arena){
 		$form = new MenuForm(TextFormat::BLUE . "Select Player Name");
 
-		$players = [];
-		foreach($arena->getPlayers() as $inGame){
+		foreach($arena->getPlayerManager()->getAlivePlayers() as $inGame){
 			$form->append(new Button($inGame->getName()));
-			$players[] = $inGame->getName();
 		}
 
 		$form->setText("Select a player to spectate");
 		$form->setOnSubmit(function(Player $player, Button $selected) use ($arena): void{
 			// Do not attempt to do anything if the arena is no longer running.
 			// Or the player is no longer in arena
-			if($arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING || !$arena->isInArena($player)){
+			if($arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING || !$arena->getPlayerManager()->isInArena($player)){
 				$player->sendMessage(TextFormat::RED . "You are no longer in the arena.");
 
 				return;
 			}
 
-			$target = $arena->getOriginPlayer($selected->getValue());
+			$target = $arena->getPlayerManager()->getOriginPlayer($selected->getValue());
 			if($target === null){
 				$player->sendMessage(TextFormat::RED . "That player is no longer in the arena.");
 
@@ -254,9 +253,9 @@ class FormPanel implements Listener {
 		$p->getInventory()->setItemInHand(new BlazeRod());
 	}
 
-	private function cleanupArray(Player $player, bool $resetWorld = false){
+	private function cleanupArray(Player $player){
 		if(isset($this->temporaryData[$player->getName()])){
-			$this->plugin->getArenaManager()->reloadArena($this->temporaryData[$player->getName()]->arenaName, $resetWorld);
+			$this->plugin->getArenaManager()->reloadArena($this->temporaryData[$player->getName()]->arenaName);
 			unset($this->temporaryData[$player->getName()]);
 		}
 
@@ -278,14 +277,14 @@ class FormPanel implements Listener {
 	public function showSettingPanel(Player $player){
 		$form = new MenuForm("§aChoose your arena first.");
 		foreach($this->plugin->getArenaManager()->getArenas() as $arena){
-			$form->append(ucwords($arena->getArenaName()));
+			$form->append(ucwords($arena->getMapName()));
 		}
 
 		$form->setOnSubmit(function(Player $player, Button $selected): void{
 			$arena = $this->plugin->getArenaManager()->getArenaByInt($selected->getValue());
 			$data = $this->toData($arena);
 
-			$form = new MenuForm("Setup for arena {$arena->getArenaName()}");
+			$form = new MenuForm("Setup for arena {$arena->getMapName()}");
 			$form->append(
 				"Setup Arena Spawn",            // Arena Spawn
 				"Setup Spectator Spawn",        // Spectator spawn
@@ -331,21 +330,21 @@ class FormPanel implements Listener {
 		$player->sendForm($form);
 	}
 
-	private function toData(Arena $arena): SkyWarsData{
+	private function toData(ArenaImpl $arena): SkyWarsData{
 		$data = new SkyWarsData();
 		$data->arena = $arena;
 		$data->maxPlayer = $arena->maximumPlayers;
 		$data->minPlayer = $arena->minimumPlayers;
 		$data->arenaLevel = $arena->arenaWorld;
-		$data->arenaName = $arena->getArenaName();
-		$data->spectator = $arena->data["arena"]["spectator-mode"];
-		$data->startWhenFull = $arena->data["arena"]["start-when-full"];
-		$data->graceTimer = $arena->data["arena"]["grace-time"];
-		$data->enabled = $arena->data["enabled"];
-		$data->line1 = str_replace("&", "§", $arena->data['signs']['status-line-1']);
-		$data->line2 = str_replace("&", "§", $arena->data['signs']['status-line-2']);
-		$data->line3 = str_replace("&", "§", $arena->data['signs']['status-line-3']);
-		$data->line4 = str_replace("&", "§", $arena->data['signs']['status-line-4']);
+		$data->arenaName = $arena->getMapName();
+		$data->spectator = $arena->enableSpectator;
+		$data->startWhenFull = $arena->arenaStartOnFull;
+		$data->graceTimer = $arena->arenaGraceTime;
+		$data->enabled = $arena->arenaEnable;
+		$data->line1 = str_replace("&", "§", $arena->statusLine1);
+		$data->line2 = str_replace("&", "§", $arena->statusLine2);
+		$data->line3 = str_replace("&", "§", $arena->statusLine3);
+		$data->line4 = str_replace("&", "§", $arena->statusLine4);
 
 		return $data;
 	}
@@ -478,13 +477,31 @@ class FormPanel implements Listener {
 		$p->sendMessage("You are now be able to edit the world now, best of luck");
 		$p->sendMessage("Use blaze rod if you have finished editing the world.");
 
-		$arena->arena->performEdit(ArenaState::STARTING);
+		$levelName = $arena->arena->getLevelName();
 
-		$level = $this->plugin->getServer()->getLevelByName($arena->arenaLevel);
-		$p->teleport($level->getSpawnLocation());
+		$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $levelName . ".zip";
+		$toPath = $this->plugin->getServer()->getDataPath() . "worlds/" . $levelName;
 
-		$p->getInventory()->setHeldItemIndex(0);
-		$p->getInventory()->clearAll(); // Perhaps
+		$task = new CompressionAsyncTask([$fromPath, $toPath, false], function() use ($fromPath, $levelName, $p){
+			$task = new AsyncDirectoryDelete([$fromPath]);
+			Server::getInstance()->getAsyncPool()->submitTask($task);
+
+			Server::getInstance()->loadLevel($levelName);
+
+			$level = Server::getInstance()->getLevelByName($levelName);
+			$level->setAutoSave(false);
+
+			$level->setTime(Level::TIME_DAY);
+			$level->stopTime();
+
+			$p->teleport($level->getSpawnLocation());
+
+			$p->getInventory()->setHeldItemIndex(0);
+			$p->getInventory()->clearAll(); // Perhaps
+
+			$p->sendMessage("You can now edit this world.");
+		});
+		Server::getInstance()->getAsyncPool()->submitTask($task);
 	}
 
 	private function deleteSure(Player $p, SkyWarsData $data){
@@ -579,7 +596,6 @@ class FormPanel implements Listener {
 				unset($this->mode[strtolower($p->getName())]);
 				unset($this->actions[strtolower($p->getName())]['NPC']);
 				$this->cleanupArray($p);
-				NPCValidationTask::setChanged();
 			}
 			$cfg->save();
 		}
@@ -599,7 +615,7 @@ class FormPanel implements Listener {
 			$this->temporaryData[$p->getName()]->arena->performEdit(ArenaState::FINISHED);
 
 			unset($this->actions[strtolower($p->getName())]['WORLD']);
-			$this->cleanupArray($p, true);
+			$this->cleanupArray($p);
 		}
 	}
 

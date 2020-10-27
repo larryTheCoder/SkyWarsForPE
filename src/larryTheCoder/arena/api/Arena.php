@@ -69,8 +69,6 @@ abstract class Arena implements ShutdownSequence {
 
 	/** @var string|null */
 	protected $lobbyName = null;
-	/** @var string */
-	protected $arenaName;
 
 	/** @var int */
 	private $arenaStatus = ArenaState::STATE_WAITING;
@@ -141,6 +139,8 @@ abstract class Arena implements ShutdownSequence {
 
 	public abstract function getMapName(): string;
 
+	public abstract function getLevelName(): string;
+
 	public abstract function getArenaTask(): ArenaTickTask;
 
 	public abstract function getEventListener(): ArenaListener;
@@ -151,9 +151,9 @@ abstract class Arena implements ShutdownSequence {
 	 * Called when a player leaves the arena.
 	 *
 	 * @param Player $player
-	 * @param bool $force
+	 * @param bool $onQuit
 	 */
-	public function leaveArena(Player $player, bool $force = false): void{
+	public function leaveArena(Player $player, bool $onQuit = false): void{
 		$this->unsetPlayer($player, $this->getPlayerManager()->isSpectator($player->getName()));
 
 		$this->getPlayerManager()->removePlayer($player);
@@ -249,8 +249,8 @@ abstract class Arena implements ShutdownSequence {
 		// Lobby/Arena pre loading.
 		if($onStart){
 			if($this->lobbyName === null){
-				$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaName . ".zip";
-				$toPath = $this->plugin->getServer()->getDataPath() . "worlds/" . $this->arenaName;
+				$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->getLevelName() . ".zip";
+				$toPath = $this->plugin->getServer()->getDataPath() . "worlds/" . $this->getLevelName();
 			}else{
 				$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->lobbyName . ".zip";
 				$toPath = $this->plugin->getServer()->getDataPath() . "worlds/" . $this->lobbyName;
@@ -258,23 +258,25 @@ abstract class Arena implements ShutdownSequence {
 		}else{
 			if($this->lobbyName === null) return; // Do nothing because the level has already been loaded.
 
-			$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->arenaName . ".zip";
-			$toPath = $this->plugin->getServer()->getDataPath() . "worlds/" . $this->arenaName;
+			$fromPath = $this->plugin->getDataFolder() . 'arenas/worlds/' . $this->getLevelName() . ".zip";
+			$toPath = $this->plugin->getServer()->getDataPath() . "worlds/" . $this->getLevelName();
 		}
 
 		if(is_file($this->plugin->getDataFolder() . 'arenas/worlds/')) return;
 		if(!file_exists($toPath)) @mkdir($toPath, 0755);
 
 		$task = new CompressionAsyncTask([$fromPath, $toPath, false], function() use ($onStart){
-			Server::getInstance()->loadLevel($this->arenaName);
-
 			if($this->lobbyName !== null && $onStart){
-				$level = $this->lobbyLevel = Server::getInstance()->getLevelByName($this->arenaName);
+				Server::getInstance()->loadLevel($this->lobbyName);
+
+				$level = $this->lobbyLevel = Server::getInstance()->getLevelByName($this->lobbyName);
 				$this->lobbyLevel->setAutoSave(false);
 
 				$isLobby = true;
 			}else{
-				$level = $this->level = Server::getInstance()->getLevelByName($this->arenaName);
+				Server::getInstance()->loadLevel($this->getLevelName());
+
+				$level = $this->level = Server::getInstance()->getLevelByName($this->getLevelName());
 				$this->level->setAutoSave(false);
 
 				$isLobby = false;

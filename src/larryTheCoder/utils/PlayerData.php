@@ -1,8 +1,8 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2020 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -27,36 +27,28 @@
  */
 
 
-namespace larryTheCoder\features\chest;
+namespace larryTheCoder\utils;
 
-use pocketmine\item\Item;
+class PlayerData {
 
-class ChestLevel {
-
+	/** @var integer */
+	public $kill = 0;
+	/** @var integer */
+	public $death = 0;
+	/** @var integer */
+	public $wins;
+	/** @var integer */
+	public $lost = 0;
 	/** @var string */
-	public $name;
-	/** @var int */
-	public $itemValue;
-	/** @var int */
-	public $chance;
-	/** @var Item[] */
-	public $items;
-
-	/**
-	 * ChestLevel constructor.
-	 * @param string $name
-	 * @param int $itemValue
-	 * @param int $chance
-	 * @param Item[] $items
-	 */
-	public function __construct(string $name, int $itemValue, int $chance, array $items){
-		$this->name = $name;
-		$this->itemValue = $itemValue;
-		$this->chance = $chance;
-		$this->items = $items;
-	}
+	public $player = "";
+	/** @var integer */
+	public $time = 0;
+	/** @var string[] */
+	public $cages = [];
+	/** @var string[] */
+	public $kitId = [];
 
 	public function __toString(){
-		return "(ChestLevel) $this->name, $this->itemValue, $this->chance";
+		return "PlayerData(player= " . $this->player . ",kill=" . $this->kill . ",death=" . $this->death . ",wins=" . $this->wins . ",lost=" . $this->lost . ", " . implode(":", $this->cages) . ", time=" . $this->time . ") ";
 	}
 }

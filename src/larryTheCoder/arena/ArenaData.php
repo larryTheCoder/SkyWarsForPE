@@ -45,12 +45,11 @@ trait ArenaData {
 
 	public $configVersion = 1;
 	public $gameAPICodename = "Default API";
-	public $inSetup = false;
 	public $configChecked = false;
 
 	// The root of the config.
 	public $arenaEnable = false;
-	public $arenaName = "";
+	public $arenaFileName = "";
 	public $arenaMode = ArenaState::MODE_SOLO;
 
 	// Team settings
@@ -109,7 +108,7 @@ trait ArenaData {
 
 			// Root of the config.
 			$this->arenaEnable = boolval($data["enabled"]);
-			$this->arenaName = $data['arena-name'];
+			$this->arenaFileName = $data['arena-name'];
 			$this->arenaMode = $data['arena-mode'];
 
 			// Signs config.
@@ -175,13 +174,13 @@ trait ArenaData {
 			// Verify spawn pedestals.
 			$spawnPedestals = count($this->spawnPedestals);
 			if(($this->teamMode && ($this->playerPerTeam * $this->worldTeamMembers) > $spawnPedestals) || $this->maximumPlayers > $spawnPedestals){
-				Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Spawn pedestals is not configured correctly.");
+				Utils::send("§6" . ucwords($this->arenaFileName) . " §a§l-§r§c Spawn pedestals is not configured correctly.");
 				throw new \Exception("Spawn pedestals is not configured correctly.");
 			}elseif(($this->teamMode && ($this->playerPerTeam * $this->worldTeamMembers) < $spawnPedestals) || $this->maximumPlayers < $spawnPedestals){
-				Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§e Spawn pedestals is over configured.");
+				Utils::send("§6" . ucwords($this->arenaFileName) . " §a§l-§r§e Spawn pedestals is over configured.");
 			}
 		}catch(\Exception $ex){
-			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Failed to verify config files.");
+			Utils::send("§6" . ucwords($this->arenaFileName) . " §a§l-§r§c Failed to verify config files.");
 			$this->arenaEnable = false;
 
 			Server::getInstance()->getLogger()->logException($ex);
@@ -189,9 +188,9 @@ trait ArenaData {
 		$this->configChecked = true;
 
 		if($this->arenaEnable){
-			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§a Arena loaded and enabled");
+			Utils::send("§6" . ucwords($this->arenaFileName) . " §a§l-§r§a Arena loaded and enabled");
 		}else{
-			Utils::send("§6" . ucwords($this->arenaName) . " §a§l-§r§c Arena disabled");
+			Utils::send("§6" . ucwords($this->arenaFileName) . " §a§l-§r§c Arena disabled");
 		}
 	}
 

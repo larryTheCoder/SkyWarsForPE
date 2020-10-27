@@ -30,8 +30,8 @@ declare(strict_types = 1);
 
 namespace larryTheCoder\database;
 
-use larryTheCoder\player\PlayerData;
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\PlayerData;
 use larryTheCoder\utils\Utils;
 use pocketmine\level\Position;
 use pocketmine\nbt\tag\DoubleTag;

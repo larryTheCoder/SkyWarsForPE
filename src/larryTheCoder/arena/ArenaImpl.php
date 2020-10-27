@@ -35,11 +35,13 @@ use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\CageManager;
 use larryTheCoder\arena\api\impl\ArenaListener;
 use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\api\scoreboard\Internal;
 use larryTheCoder\arena\api\SignManager;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\task\SkyWarsTask;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
+use larryTheCoder\utils\Utils;
 use pocketmine\block\BlockFactory;
 use pocketmine\level\Position;
 use pocketmine\Player;
@@ -67,6 +69,7 @@ class ArenaImpl extends Arena {
 		$this->eventListener = new EventListener($this);
 		$this->signManager = new SignManager($this, $this->getSignPosition());
 		$this->cageManager = new CageManager($this->spawnPedestals);
+		$this->scoreboard = new Internal($this, Utils::getScoreboardConfig());
 
 		parent::__construct($plugin);
 	}
@@ -161,7 +164,7 @@ class ArenaImpl extends Arena {
 		}
 	}
 
-	public function leaveArena(Player $player, bool $force = false): void{
+	public function leaveArena(Player $player, bool $onQuit = false): void{
 		$pm = $this->getPlayerManager();
 		$isSpectator = $pm->isSpectator($player->getName());
 
@@ -169,7 +172,7 @@ class ArenaImpl extends Arena {
 		// is not running.
 		if($isSpectator || $this->getStatus() !== ArenaState::STATE_ARENA_RUNNING) return;
 
-		if($force){
+		if($onQuit){
 			$pm->broadcastToPlayers("{$player->getName()} has disconnected.");
 		}else{
 			$pm->broadcastToPlayers("{$player->getName()} has left the game.");
@@ -177,7 +180,7 @@ class ArenaImpl extends Arena {
 			$player->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
 		}
 
-		parent::leaveArena($player, $force);
+		parent::leaveArena($player, $onQuit);
 	}
 
 	public function getMinPlayer(): int{
@@ -189,7 +192,11 @@ class ArenaImpl extends Arena {
 	}
 
 	public function getMapName(): string{
-		return $this->arenaName;
+		return $this->arenaFileName;
+	}
+
+	public function getLevelName(): string{
+		return $this->arenaWorld;
 	}
 
 	public function getMode(): int{
