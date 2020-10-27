@@ -81,7 +81,11 @@ class Internal implements Scoreboard {
 				$data = $this->config->get("wait-arena", [""]);
 				break;
 			case ArenaState::STATE_ARENA_RUNNING:
-				$data = $this->config->get("in-game-arena", [""]);
+				if($this->arena->getPlayerManager()->isSpectator($pl->getName())){
+					$data = $this->config->get("spectate-scoreboard", [""]);
+				} else {
+					$data = $this->config->get("in-game-arena", [""]);
+				}
 				break;
 			case ArenaState::STATE_ARENA_CELEBRATING:
 				$data = $this->config->get("ending-state-arena", [""]);
@@ -105,7 +109,7 @@ class Internal implements Scoreboard {
 				continue;
 			}
 
-			StandardScoreboard::setScoreLine($pl, $line, $msg);
+			$pl->batchDataPacket(StandardScoreboard::setScoreLine($pl, $line, $msg));
 
 			$this->networkBound[$pl->getName()][$line] = $msg;
 		}

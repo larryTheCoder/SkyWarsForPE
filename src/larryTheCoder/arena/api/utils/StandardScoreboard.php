@@ -127,18 +127,19 @@ class StandardScoreboard {
 	 * @param Player $player
 	 * @param int $line
 	 * @param string $message
+	 * @return SetScorePacket|null
 	 */
-	public static function setScoreLine(Player $player, int $line, string $message): void{
+	public static function setScoreLine(Player $player, int $line, string $message): ?SetScorePacket{
 		if(!isset(self::$scoreboards[$player->getName()])){
 			Server::getInstance()->getLogger()->error("Cannot set a score to a player with no scoreboard");
 
-			return;
+			return null;
 		}
 		if($line < self::MIN_LINES || $line > self::MAX_LINES){
 			Server::getInstance()->getLogger()->error("Score must be between the value of " . self::MIN_LINES . " to " . self::MAX_LINES . ".");
 			Server::getInstance()->getLogger()->error($line . " is out of range");
 
-			return;
+			return null;
 		}
 
 		$entry = new ScorePacketEntry();
@@ -151,6 +152,7 @@ class StandardScoreboard {
 		$pk = new SetScorePacket();
 		$pk->type = $pk::TYPE_CHANGE;
 		$pk->entries[] = $entry;
-		$player->sendDataPacket($pk);
+
+		return $pk;
 	}
 }

@@ -70,7 +70,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 	/** @var AsyncLibDatabase */
 	private $database;
 	/** @var ArenaCage */
-	private $cage = null;
+	private $cage;
 
 	/** @var bool */
 	public $disabled;
@@ -91,7 +91,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 	public function initConfig(){
 		Utils::ensureDirectory();
-		Utils::ensureDirectory("logs/");
 		Utils::ensureDirectory("image/");
 		Utils::ensureDirectory("language/");
 		Utils::ensureDirectory("arenas/");

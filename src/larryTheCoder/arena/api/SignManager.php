@@ -78,6 +78,12 @@ class SignManager {
 
 		// Improved queue method.
 		if($b->equals($this->signTile) && !$pm->inQueue($p)){
+			if($this->arena->hasFlags(Arena::ARENA_CRASHED)){
+				$p->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
+
+				return;
+			}
+
 			$pm->addQueue($p);
 
 			if($this->arena->hasFlags(Arena::ARENA_OFFLINE_MODE)){

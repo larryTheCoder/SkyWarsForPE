@@ -214,12 +214,12 @@ class FakeHuman extends Human {
 		Server::getInstance()->batchPackets($player, $pk);
 	}
 
-	public function sendText(array $messages, bool $resend = false, ?Player $players = null){
+	public function sendText(array $messages, bool $resend = false, ?Player $player = null){
 		$pk = [];
 
 		if($resend){
 			foreach($this->networkCache as $particle){
-				if(is_null($players)){
+				if(is_null($player)){
 					$this->getLevel()->addParticle($particle);
 				}else{
 					$packet = $particle->encode();
@@ -248,8 +248,10 @@ class FakeHuman extends Human {
 			}
 		}
 
-		if($players !== null){
-			Server::getInstance()->batchPackets([$players], $pk);
+		if($player !== null){
+			foreach($pk as $packet){
+				$player->batchDataPacket($packet);
+			}
 		}else{
 			Server::getInstance()->batchPackets($this->getViewers(), $pk);
 		}

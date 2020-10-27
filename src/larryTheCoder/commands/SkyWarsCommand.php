@@ -29,6 +29,7 @@
 
 namespace larryTheCoder\commands;
 
+use larryTheCoder\arena\api\Arena;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
@@ -193,6 +194,12 @@ final class SkyWarsCommand {
 						$sender->sendMessage("§cNo available arena, please try again later");
 						break;
 					}
+					if($arena->hasFlags(Arena::ARENA_CRASHED)){
+						$sender->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
+
+						break;
+					}
+
 					$arena->getPlayerManager()->addQueue($sender);
 					break;
 				case "reload":
@@ -231,6 +238,11 @@ final class SkyWarsCommand {
 					$pm = $this->plugin->getArenaManager()->getArena($args[1])->getPlayerManager();
 					if($pm->isInArena($sender)){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-running'));
+						break;
+					}
+					if($this->plugin->getArenaManager()->getArena($args[1])->hasFlags(Arena::ARENA_CRASHED)){
+						$sender->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
+
 						break;
 					}
 

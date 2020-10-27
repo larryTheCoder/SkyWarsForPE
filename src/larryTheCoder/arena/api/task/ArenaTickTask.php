@@ -36,6 +36,8 @@ use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\ShutdownSequence;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\scheduler\Task;
+use pocketmine\utils\MainLogger;
+use Throwable;
 
 /**
  * This class implicitly calls for arena tasking function, for instance, waiting task, in game tasks and overtime tasks.
@@ -59,6 +61,24 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 	}
 
 	final public function onRun(int $currentTick): void{
+		$this->getArena()->getSignManager()->processSign();
+
+		// Arena has encountered an unrecoverable error.
+		if($this->getArena()->hasFlags(Arena::ARENA_CRASHED)){
+			return;
+		}
+
+		try{
+			$this->run();
+		}catch(Throwable $err){
+			$this->getArena()->setFlags(Arena::ARENA_CRASHED, true);
+			$this->endTick();
+
+			MainLogger::getLogger()->logException($err);
+		}
+	}
+
+	private function run(): void{
 		$arena = $this->getArena();
 
 		// Do nothing since the arena is in setup mode.
@@ -70,7 +90,6 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 		$pm = $arena->getPlayerManager();
 
 		$arena->processQueue();
-		$arena->getSignManager()->processSign();
 
 		// Do not perform anything when the world is offline
 		if($arena->hasFlags(Arena::ARENA_OFFLINE_MODE)){

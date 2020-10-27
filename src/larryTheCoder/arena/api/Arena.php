@@ -61,6 +61,7 @@ abstract class Arena implements ShutdownSequence {
 	public const WORLD_ATTEMPT_LOAD = 0x1;
 	public const ARENA_OFFLINE_MODE = 0x2;
 	public const ARENA_IN_SETUP_MODE = 0x3;
+	public const ARENA_CRASHED = 0x4;
 
 	/** @var CageManager */
 	protected $cageManager;
