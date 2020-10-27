@@ -28,7 +28,7 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arenaRewrite\api;
+namespace larryTheCoder\arena\api;
 
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\level\Position;

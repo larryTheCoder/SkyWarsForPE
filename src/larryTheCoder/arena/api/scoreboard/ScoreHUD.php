@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
  * Copyright (c) 2015-2020 larryTheCoder and contributors
@@ -28,38 +28,34 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arena\api;
+namespace larryTheCoder\arena\api\scoreboard;
 
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
-use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\event\player\PlayerMoveEvent;
+use larryTheCoder\arena\api\impl\Scoreboard;
 use pocketmine\Player;
 
 /**
- * Arena listener class, you may want to extends this class in order to work properly.
- * This package is considered to be used within the game API. In the other hand, all other
- * internal listener will be handled in other class.
- *
- * @package larryTheCoder\arena\runtime\listener
+ * ScoreHUD compatibility layer class, allows communication with this plugin
+ * and perhaps improve gameplay experience as v6.0 allows event-driven scoreboards.
  */
-interface ArenaListener {
+class ScoreHUD implements Scoreboard {
 
-	public function onPlayerMove(PlayerMoveEvent $event): void;
+	public function __construct(){
+		// TODO: Figure out how to gain dominance in this haha.
+	}
 
-	public function onBlockPlaceEvent(BlockPlaceEvent $event): void;
+	public function tickScoreboard(): void{
+		// TODO: Implement tickScoreboard() method.
+	}
 
-	public function onBlockBreakEvent(BlockBreakEvent $event): void;
+	public function resetScoreboard(): void{
+		// TODO: Implement resetScoreboard() method.
+	}
 
-	public function onPlayerHitEvent(EntityDamageEvent $event): void;
+	public function removePlayer(Player $pl): void{
+		// TODO: Implement removePlayer() method.
+	}
 
-	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void;
-
-	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $ev): void;
-
-	public function onPlayerInteractEvent(PlayerInteractEvent $e): void;
-
-	public function onPlayerEscapeCage(PlayerMoveEvent $e);
+	public function addPlayer(Player $pl): void{
+		// TODO: Implement addPlayer() method.
+	}
 }

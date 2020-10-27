@@ -28,8 +28,9 @@
 
 namespace larryTheCoder;
 
-use larryTheCoder\arena\api\ArenaState;
-use larryTheCoder\arena\Arena;
+use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\utils\Utils;
 use pocketmine\entity\Entity;
 use pocketmine\Player;
@@ -39,7 +40,7 @@ final class ArenaManager {
 
 	/** @var string[] */
 	public $arenaRealName = [];
-	/** @var Arena[] */
+	/** @var ArenaImpl[] */
 	private $arenas = [];
 	/** @var Config[] */
 	private $arenaConfig = [];
@@ -68,14 +69,13 @@ final class ArenaManager {
 			$this->arenaRealName[strtolower($baseName)] = $arenaName;
 			$this->arenaConfig[strtolower($arenaName)] = $arena;
 
-			$baseArena = new Arena($arenaName, $this->pl);
+			$baseArena = new ArenaImpl($this->pl, $arena->getAll());
 			if(!$baseArena->configChecked){
 				unset($this->arenaRealName[strtolower($arenaName)]);
 				unset($this->arenaRealName[strtolower($baseName)]);
 				unset($this->arenaConfig[strtolower($arenaName)]);
 				continue;
 			}
-			$baseArena->resetArena();
 
 			$this->arenas[strtolower($arenaName)] = $baseArena;
 		}
@@ -98,10 +98,7 @@ final class ArenaManager {
 
 			return false;
 		}
-		$game->inSetup = false;
-		$game->reloadData();
-		if($resetLevel) $game->saveArenaWorld();
-
+		$game->setFlags(Arena::ARENA_IN_SETUP_MODE, false);
 		$game->resetArena();
 
 		return true;
@@ -124,24 +121,23 @@ final class ArenaManager {
 			$this->arenaConfig[strtolower($arenaName)] = $config;
 
 			// Create a new arena if it doesn't exists.
-			$baseArena = new Arena($arenaName, $this->pl);
+			$baseArena = new ArenaImpl($this->pl, $config->getAll());
 			if(!$baseArena->configChecked){
 				unset($this->arenaRealName[strtolower($arenaName)]);
 				unset($this->arenaConfig[strtolower($arenaName)]);
 
 				return null;
 			}
-			$baseArena->resetArena();
 
 			$arena = $this->arenas[strtolower($arenaName)] = $baseArena;
 		}
 
-		$arena->setData($config);
+		$arena->setConfig($config->getAll());
 		$arena->resetArena();
 	}
 
 	// Checked and passed
-	public function getArena($arena): ?Arena{
+	public function getArena($arena): ?ArenaImpl{
 		if(!$this->arenaExist($arena)){
 			Utils::sendDebug("getArena($arena): Not found");
 
@@ -158,15 +154,15 @@ final class ArenaManager {
 
 	public function deleteArena($arena){
 		if($this->arenaExist($arena)){
-			$this->getArena($arena)->forceShutdown();
+			$this->getArena($arena)->shutdown();
 			unset($this->arenas[strtolower($arena)]);
 			unset($this->arenaConfig[strtolower($arena)]);
 		}
 	}
 
-	public function getPlayerArena(Player $p): ?Arena{
+	public function getPlayerArena(Player $p): ?ArenaImpl{
 		foreach($this->arenas as $arena){
-			if($arena->isInArena($p)){
+			if($arena->getPlayerManager()->isInArena($p)){
 				return $arena;
 			}
 		}
@@ -182,11 +178,11 @@ final class ArenaManager {
 		return $this->arenaConfig[strtolower($arenaName)];
 	}
 
-	public function getAvailableArena(): ?Arena{
+	public function getAvailableArena(): ?ArenaImpl{
 		$arena = $this->getArenas();
 		# Check if there is a player in one of the arenas
 		foreach($arena as $selector){
-			if(!empty($selector->getPlayers()) && $selector->getStatus() <= ArenaState::STATE_SLOPE_WAITING){
+			if(!empty($selector->getPlayerManager()->getAlivePlayers()) && $selector->getStatus() <= ArenaState::STATE_STARTING){
 				return $selector;
 			}
 		}
@@ -195,7 +191,7 @@ final class ArenaManager {
 		# By not letting the player to join a started arena
 		$arenas = [];
 		foreach($arena as $selector){
-			if($selector->getStatus() <= ArenaState::STATE_SLOPE_WAITING && $selector->arenaEnable){
+			if($selector->getStatus() <= ArenaState::STATE_STARTING && $selector->arenaEnable){
 				$arenas[] = $selector;
 			}
 		}

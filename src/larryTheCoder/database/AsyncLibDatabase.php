@@ -51,8 +51,6 @@ use poggit\libasynql\libasynql;
  */
 class AsyncLibDatabase {
 
-	// TODO: Again rewrite this D:
-
 	/** @var AsyncLibDatabase */
 	public static $instance;
 
@@ -102,10 +100,6 @@ class AsyncLibDatabase {
 		// Just in case that the query has an unexpected results.
 		$this->database->executeChange(self::TABLE_CREATE_PLAYER, ["playerName" => $playerName], function(int $affectedRows){
 		});
-	}
-
-	public function addDeaths(string $playerName){
-		$this->database->executeChangeRaw("UPDATE players SET deaths = deaths + 1 WHERE playerName = ?", [$playerName]);
 	}
 
 	/**

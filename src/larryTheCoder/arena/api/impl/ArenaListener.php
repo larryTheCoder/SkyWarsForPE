@@ -26,29 +26,41 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arenaRewrite\api\impl;
+declare(strict_types = 1);
 
+namespace larryTheCoder\arena\api\impl;
 
-interface ArenaState {
+use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\Player;
 
-	// Arena modes
-	const MODE_SOLO = 0;
-	const MODE_TEAM = 1;
+/**
+ * Arena listener class, you may want to extends this class in order to work properly.
+ * This package is considered to be used within the game API. In the other hand, all other
+ * internal listener will be handled in other class.
+ *
+ * @package larryTheCoder\arenaRewrite\runtime\listener
+ */
+interface ArenaListener {
 
-	// Arena states
-	const STATE_WAITING = 0;        // Arena is idling...
-	const STATE_STARTING = 1;        // Arena is begin to start
-	const STATE_ARENA_RUNNING = 2;
-	const STATE_ARENA_CELEBRATING = 3;
-	const STATE_ARENA_INSETUP = 4;
+	public function onPlayerMove(PlayerMoveEvent $event): void;
 
-	// Player states
-	const PLAYER_UNSET = 0;
-	const PLAYER_ALIVE = 1;
-	const PLAYER_SPECTATE = 2;
-	const PLAYER_SPECIAL = 3;
+	public function onBlockPlaceEvent(BlockPlaceEvent $event): void;
 
-	// World edit states.
-	const STARTING = 0;
-	const FINISHED = 1;
+	public function onBlockBreakEvent(BlockBreakEvent $event): void;
+
+	public function onPlayerHitEvent(EntityDamageEvent $event): void;
+
+	public function onPlayerQuitEvent(PlayerQuitEvent $event): void;
+
+	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void;
+
+	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $ev): void;
+
+	public function onPlayerInteractEvent(PlayerInteractEvent $e): void;
 }

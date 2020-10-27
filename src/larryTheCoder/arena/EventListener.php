@@ -28,8 +28,12 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arenaRewrite\api\impl;
+namespace larryTheCoder\arena;
 
+
+use larryTheCoder\arena\api\impl\ArenaListener;
+use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -38,29 +42,59 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 
-/**
- * Arena listener class, you may want to extends this class in order to work properly.
- * This package is considered to be used within the game API. In the other hand, all other
- * internal listener will be handled in other class.
- *
- * @package larryTheCoder\arenaRewrite\runtime\listener
- */
-interface ArenaListener {
+class EventListener implements ArenaListener {
 
-	public function onPlayerMove(PlayerMoveEvent $event): void;
+	/** @var ArenaImpl */
+	private $arena;
 
-	public function onBlockPlaceEvent(BlockPlaceEvent $event): void;
+	public function __construct(ArenaImpl $arena){
+		$this->arena = $arena;
+	}
 
-	public function onBlockBreakEvent(BlockBreakEvent $event): void;
+	public function onPlayerMove(PlayerMoveEvent $event): void{
+		// NOOP
+	}
 
-	public function onPlayerHitEvent(EntityDamageEvent $event): void;
+	public function onBlockPlaceEvent(BlockPlaceEvent $event): void{
+		// NOOP
+	}
 
-	public function onPlayerQuitEvent(PlayerQuitEvent $event): void;
+	public function onBlockBreakEvent(BlockBreakEvent $event): void{
+		// NOOP
+	}
 
-	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void;
+	public function onPlayerInteractEvent(PlayerInteractEvent $e): void{
+		// NOOP
+	}
 
-	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $ev): void;
+	public function onPlayerQuitEvent(PlayerQuitEvent $event): void{
+		$player = $event->getPlayer();
 
-	public function onPlayerInteractEvent(PlayerInteractEvent $e): void;
+		$this->arena->leaveArena($player, true);
+	}
+
+	public function onPlayerHitEvent(EntityDamageEvent $event): void{
+		if($this->arena->hasFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD)){
+			$event->setCancelled();
+		}
+	}
+
+	public function onPlayerDeath(Player $player, $deathFrom): void{
+		Utils::strikeLightning($player);
+
+		$this->arena->getPlayerManager()->setSpectator($player);
+		$this->arena->playerSpectate($player);
+	}
+
+	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $event): void{
+		$player = $event->getPlayer();
+
+		if(!in_array(strtolower($event->getMessage()), ['sw', 'skywars'], true)
+			&& $this->arena->getStatus() === ArenaState::STATE_ARENA_RUNNING
+			&& !$player->hasPermission("sw.command.bypass")){
+			$player->sendMessage(TextFormat::RED . "You cannot execute any command while in game.");
+		}
+	}
 }

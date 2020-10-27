@@ -30,12 +30,10 @@ declare(strict_types = 1);
 
 namespace larryTheCoder\arena\api\listener;
 
-use larryTheCoder\arena\api\ArenaAPI;
-use larryTheCoder\arena\api\ArenaListener;
-use larryTheCoder\arena\api\ArenaState;
-use larryTheCoder\arena\Arena;
-use larryTheCoder\arena\runtime\GameDebugger;
-use larryTheCoder\utils\Utils;
+use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\impl\ArenaListener;
+use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\ArenaImpl;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
@@ -47,22 +45,19 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\level\Position;
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
-use pocketmine\Server;
 
 /**
  * A very basic listener for the arena.
  * This concept is basically to handle player as-it-should be handled
  * by the arena itself.
  *
- * @package larryTheCoder\arena\api\listener
+ * @package larryTheCoder\arenaRewrite\api\listener
  */
 class BasicListener implements Listener {
 
-	/** @var ArenaAPI */
-	private $gameAPI;
 	/**@var Arena */
 	private $arena;
 
@@ -73,14 +68,9 @@ class BasicListener implements Listener {
 	/** @var ArenaListener */
 	private $listener;
 
-	public function __construct(ArenaAPI $api){
-		$this->gameAPI = $api;
-		$this->arena = $api->getArena();
-		$this->listener = $api->getEventListener();
-	}
-
-	public function getDebugger(): GameDebugger{
-		return $this->arena->getDebugger();
+	public function __construct(Arena $arena){
+		$this->arena = $arena;
+		$this->listener = $arena->getEventListener();
 	}
 
 	/**
@@ -92,17 +82,25 @@ class BasicListener implements Listener {
 	 */
 	public function onMove(PlayerMoveEvent $e): void{
 		$p = $e->getPlayer();
-		if(!$this->arena->isInArena($p)) return;
-		if($this->arena->getStatus() <= ArenaState::STATE_SLOPE_WAITING && $p->isSurvival()){
-			if(!isset($this->arena->usedPedestals[$p->getName()])){
-				return;
+
+		$pm = $this->arena->getPlayerManager();
+		if(!$pm->isInArena($p)) return;
+		if($this->arena->getStatus() <= ArenaState::STATE_STARTING && $p->isSurvival()){
+			$cage = $this->arena->getCageManager()->getCage($p);
+			if($cage === null){
+				goto handleMovement;
 			}
 
-			$this->listener->onPlayerEscapeCage($e);
+			$newVec = $p->floor();
+			if($newVec->distance($cage) >= 3){
+				$p->teleport($cage->add(new Vector3(0.5, 0, 0.5)));
+				$e->setCancelled();
+			}
 
 			return;
 		}
 
+		handleMovement:
 		$this->listener->onPlayerMove($e);
 	}
 
@@ -115,7 +113,9 @@ class BasicListener implements Listener {
 	 */
 	public function onPlaceEvent(BlockPlaceEvent $e): void{
 		$p = $e->getPlayer();
-		if(!$this->arena->isInArena($p)) return;
+
+		$pm = $this->arena->getPlayerManager();
+		if(!$pm->isInArena($p)) return;
 		if($p->isSurvival() && $this->arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING){
 			$e->setCancelled(true);
 
@@ -134,11 +134,23 @@ class BasicListener implements Listener {
 	 */
 	public function onBreakEvent(BlockBreakEvent $e): void{
 		$p = $e->getPlayer();
-		if($this->arena->isInArena($p) && $p->isSurvival() && $this->arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING){
+
+		$pm = $this->arena->getPlayerManager();
+		if(!$pm->isInArena($p)) return;
+		if($p->isSurvival() && $this->arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING){
 			$e->setCancelled(true);
 		}
 
 		$this->listener->onBlockBreakEvent($e);
+	}
+
+	public function onPlayerQuitEvent(PlayerQuitEvent $e): void{
+		$p = $e->getPlayer();
+
+		$pm = $this->arena->getPlayerManager();
+		if($pm->isInArena($p)){
+			$this->listener->onPlayerQuitEvent($e);
+		}
 	}
 
 	/**
@@ -158,23 +170,14 @@ class BasicListener implements Listener {
 			return;
 		}
 		# Player must be inside of arena otherwise its a fake
-		if(!$this->arena->isInArena($player)){
-			return;
-		}
+		$pm = $this->arena->getPlayerManager();
+		if(!$pm->isInArena($player)) return;
+
 		# Arena not running yet cancel it
 		if($this->arena->getStatus() != ArenaState::STATE_ARENA_RUNNING){
 			$e->setCancelled(true);
 
 			return;
-		}
-
-		$this->getDebugger()->log("An entity {$player->getName()} is being attacked, cause ID: {$e->getCause()}");
-
-		if(isset($this->cooldown[$player->getName()])){
-			$this->getDebugger()->log("Under cooldown counter " . ($this->cooldown[$player->getName()] - $now) . "s.");
-		}
-		if(isset($this->lastHit[$player->getName()])){
-			$this->getDebugger()->log("Last hit by: {$this->lastHit[$player->getName()]}.");
 		}
 
 		$this->listener->onPlayerHitEvent($e);
@@ -185,23 +188,19 @@ class BasicListener implements Listener {
 		if($health <= 0){
 			$e->setCancelled();
 
-			$this->getDebugger()->log("A living player died in the arena.");
-
 			$target = -1;
 			$playerName = !isset($this->lastHit[$player->getName()]) ? $player->getName() : $this->lastHit[$player->getName()];
 			if(!is_integer($playerName)){
-				$this->getDebugger()->log("This player is getting killed by {$playerName}.");
 				if($playerName === $player->getName()){
-					$this->arena->broadcastToPlayers('death-message-suicide', false, ["{PLAYER}"], [$player->getName()]);
+					$pm->broadcastToPlayers('death-message-suicide', false, ["{PLAYER}"], [$player->getName()]);
 				}else{
-					$this->arena->broadcastToPlayers('death-message', false, ["{PLAYER}", "{KILLER}"], [$player->getName(), $target = $playerName]);
-					$this->arena->kills[$playerName]++;
+					$pm->broadcastToPlayers('death-message', false, ["{PLAYER}", "{KILLER}"], [$player->getName(), $target = $playerName]);
+
+					$pm->addKills($target);
 				}
 			}else{
-				$this->getDebugger()->log("This player is getting killed with ID: {$playerName}.");
-
 				$target = self::getDeathMessageById($playerName);
-				$this->arena->broadcastToPlayers($target, false, ["{PLAYER}"], [$player->getName()]);
+				$pm->broadcastToPlayers($target, false, ["{PLAYER}"], [$player->getName()]);
 			}
 			unset($this->lastHit[$player->getName()]);
 
@@ -214,14 +213,8 @@ class BasicListener implements Listener {
 						if($damage instanceof Player){
 							$this->lastHit[$player->getName()] = $damage->getName();
 							$this->cooldown[$player->getName()] = $now + 30;
-
-							$this->getDebugger()->log("Damage is done by a player {$damage->getName()}");
-						}else{
-							$this->getDebugger()->log("Damage is done by an entity {$damage->getSaveId()}");
 						}
 					}else{
-						$this->getDebugger()->log("Damage is done by an unknown entity.");
-
 						if(isset($this->cooldown[$player->getName()])){
 							if($this->cooldown[$player->getName()] - $now >= 0){
 								break;
@@ -236,18 +229,12 @@ class BasicListener implements Listener {
 					if($e instanceof EntityDamageByChildEntityEvent){
 						$damage = $e->getDamager();
 						if($damage instanceof Player){
-							$this->getDebugger()->log("Projectile damage is done by a player {$damage->getName()}.");
-
 							$this->lastHit[$player->getName()] = $damage->getName();
 							$this->cooldown[$player->getName()] = $now + 30;
 							$volume = 0x10000000 * (min(30, 10) / 5); //No idea why such odd numbers, but this works...
 							$damage->level->broadcastLevelSoundEvent($damage, LevelSoundEventPacket::SOUND_LEVELUP, 1, (int)$volume);
-						}else{
-							$this->getDebugger()->log("Projectile damage is done by an unknown entity.");
 						}
 					}else{
-						$this->getDebugger()->log("Projectile damage is done by an unknown object.");
-
 						$this->lastHit[$player->getName()] = $player->getName();
 					}
 					break;
@@ -257,11 +244,11 @@ class BasicListener implements Listener {
 					}elseif($e instanceof EntityDamageByEntityEvent){
 						$damage = $e->getDamager();
 					}else{
-						$this->getDebugger()->log("Magic damage is done by an unknown object.");
 						if(isset($this->cooldown[$player->getName()])){
 							if($this->cooldown[$player->getName()] - $now >= 0){
 								break;
 							}
+
 							$this->lastHit[$player->getName()] = $player->getNameTag();
 							unset($this->cooldown[$player->getName()]);
 							break;
@@ -271,17 +258,11 @@ class BasicListener implements Listener {
 					}
 
 					if($damage instanceof Player){
-						$this->getDebugger()->log("Magic damage is done by a player {$damage->getName()}}.");
-
 						$this->lastHit[$player->getName()] = $damage->getName();
 						$this->cooldown[$player->getName()] = $now + 30;
-					}else{
-						$this->getDebugger()->log("Magic damage is done by an unknown entity {$damage->getNameTag()}.");
 					}
 					break;
 				default:
-					$this->getDebugger()->log("Unknown damage caused by the player.");
-
 					if(isset($this->cooldown[$player->getName()])){
 						if($this->cooldown[$player->getName()] - $now >= 0){
 							break;
@@ -293,63 +274,6 @@ class BasicListener implements Listener {
 					break;
 			}
 		}
-	}
-
-	/**
-	 * @param PlayerQuitEvent $event
-	 * @priority NORMAL
-	 */
-	public function playerQuitEvent(PlayerQuitEvent $event): void{
-		if($this->arena->isInArena($event->getPlayer())){
-			$this->arena->leaveArena($event->getPlayer(), true);
-			$this->arena->checkAlive();
-		}
-	}
-
-	/**
-	 * @param PlayerKickEvent $event
-	 * @priority NORMAL
-	 */
-	public function playerKickedEvent(PlayerKickEvent $event): void{
-		if($this->arena->isInArena($event->getPlayer())){
-			$this->arena->leaveArena($event->getPlayer(), true);
-			$this->arena->checkAlive();
-		}
-	}
-
-	/**
-	 * Handles player commands thru a severe permissions checks.
-	 * This prevents the player from using a command that is forbidden to this game.
-	 *
-	 * @param PlayerCommandPreprocessEvent $ev
-	 * @priority NORMAL
-	 */
-	public function onCommand(PlayerCommandPreprocessEvent $ev): void{
-		$cmd = strtolower($ev->getMessage());
-		$p = $ev->getPlayer();
-		if($cmd[0] === '/' && $this->arena->isInArena($p)){
-			$this->listener->onPlayerExecuteCommand($ev);
-		}
-	}
-
-	/**
-	 * Handles player interaction with the arena signs.
-	 *
-	 * @param PlayerInteractEvent $e
-	 * @priority NORMAL
-	 */
-	public function onBlockTouch(PlayerInteractEvent $e){
-		Utils::loadFirst($this->arena->joinSignWorld, true);
-
-		$p = $e->getPlayer();
-		$b = $e->getBlock();
-
-		# Player is interacting with game signs
-		if($b->equals(Position::fromObject($this->arena->joinSignVec, Server::getInstance()->getLevelByName($this->arena->joinSignWorld)))){
-			$this->arena->joinArena($p);
-		}
-
-		if($this->arena->isInArena($p)) $this->listener->onPlayerInteractEvent($e);
 	}
 
 	public static function getDeathMessageById(int $id){
@@ -380,5 +304,55 @@ class BasicListener implements Listener {
 		}
 
 		return "death-message-unknown";
+	}
+
+	/**
+	 * @param PlayerKickEvent $event
+	 * @priority NORMAL
+	 */
+	public function playerKickEvent(PlayerKickEvent $event): void{
+		if($this->arena->getPlayerManager()->isInArena($event->getPlayer())){
+			$this->arena->leaveArena($event->getPlayer(), true);
+		}
+	}
+
+	/**
+	 * Handles player commands thru a severe permissions checks.
+	 * This prevents the player from using a command that is forbidden to this game.
+	 *
+	 * @param PlayerCommandPreprocessEvent $ev
+	 * @priority NORMAL
+	 */
+	public function onCommand(PlayerCommandPreprocessEvent $ev): void{
+		$cmd = strtolower($ev->getMessage());
+		$p = $ev->getPlayer();
+		if($cmd[0] === '/' && $this->arena->getPlayerManager()->isInArena($p)){
+			$this->listener->onPlayerExecuteCommand($ev);
+		}
+	}
+
+	/**
+	 * Handles player interaction with the arena signs.
+	 *
+	 * @param PlayerInteractEvent $e
+	 * @priority NORMAL
+	 */
+	public function onPlayerInteract(PlayerInteractEvent $e){
+		$p = $e->getPlayer();
+
+		if($this->arena->getPlayerManager()->isInArena($p)){
+			$this->listener->onPlayerInteractEvent($e);
+
+			if($e->getItem() === ArenaImpl::getLeaveItem()){
+				$this->arena->leaveArena($p);
+			}
+
+			return;
+		}
+
+		$signManager = $this->arena->getSignManager();
+		if($signManager === null) return;
+
+		$signManager->onInteract($e);
 	}
 }

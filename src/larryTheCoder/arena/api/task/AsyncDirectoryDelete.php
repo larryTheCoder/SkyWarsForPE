@@ -31,10 +31,54 @@ declare(strict_types = 1);
 namespace larryTheCoder\arena\api\task;
 
 use pocketmine\scheduler\AsyncTask;
+use pocketmine\Server;
 
 class AsyncDirectoryDelete extends AsyncTask {
 
+	/** @var string */
+	private $worldTable;
+
+	public function __construct(array $worldToDelete, ?callable $onComplete = null){
+		$this->storeLocal($onComplete);
+
+		$this->worldTable = serialize($worldToDelete);
+	}
+
 	public function onRun(){
-		// TODO: Implement onRun() method.
+		$worldToDelete = unserialize($this->worldTable);
+
+		foreach($worldToDelete as $level){
+			self::deleteDirectory($level);
+		}
+	}
+
+	public static function deleteDirectory($dir){
+		if(!file_exists($dir)){
+			return true;
+		}
+
+		if(!is_dir($dir)){
+			return unlink($dir);
+		}
+
+		foreach(scandir($dir) as $item){
+			if($item == '.' || $item == '..'){
+				continue;
+			}
+
+			if(!self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)){
+				return false;
+			}
+
+		}
+
+		return rmdir($dir);
+	}
+
+	public function onCompletion(Server $server){
+		$call = $this->fetchLocal();
+		if($call === null) return;
+
+		$call();
 	}
 }

@@ -39,7 +39,7 @@ use ZipArchive;
  * Using a thread to compress files is dumb, they do not often being used
  * for heavy tasks and it will be a waste of resources.
  *
- * @package larryTheCoder\arena\api\task
+ * @package larryTheCoder\arenaRewrite\api\task
  */
 class CompressionAsyncTask extends AsyncTask {
 
@@ -101,6 +101,9 @@ class CompressionAsyncTask extends AsyncTask {
 		$res = $zip->open($fromPath);
 
 		if(!$res) return;
+
+		// Force deleting the same arena name.
+		AsyncDirectoryDelete::deleteDirectory($toPath);
 
 		$zip->extractTo($toPath);
 		$zip->close();

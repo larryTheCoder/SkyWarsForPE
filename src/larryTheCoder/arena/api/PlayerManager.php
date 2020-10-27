@@ -28,9 +28,10 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arenaRewrite\api;
+namespace larryTheCoder\arena\api;
 
-use larryTheCoder\arenaRewrite\api\impl\ArenaState;
+use larryTheCoder\arena\api\impl\ArenaState;
+use pocketmine\block\utils\ColorBlockMetaHelper;
 use pocketmine\level\Level;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\Player;
@@ -62,6 +63,9 @@ class PlayerManager {
 	private $teams = []; // "Player" => "Team color"
 	/** @var Arena */
 	private $arena;
+
+	/** @var string[] */
+	private $winners = [];
 
 	/** @var Player[] */
 	private $playerQueue = [];
@@ -112,6 +116,7 @@ class PlayerManager {
 		}
 
 		$this->players[strtolower($pl->getName())] = $pl;
+		$this->kills[strtolower($pl->getName())] = 0;
 
 		// Check if the arena is in team mode.
 		if($this->teamMode){
@@ -125,19 +130,9 @@ class PlayerManager {
 	}
 
 	public function removePlayer(Player $pl): void{
-		// Check if the player do exists
-		if(isset($this->players[strtolower($pl->getName())])){
-			unset($this->players[strtolower($pl->getName())]);
-
-			// Unset the player from this team.
-			if(isset($this->teams[strtolower($pl->getName())])){
-				unset($this->teams[strtolower($pl->getName())]);
-			}
-		}
-
-		if(isset($this->spectators[strtolower($pl->getName())])){
-			unset($this->spectators[strtolower($pl->getName())]);
-		}
+		unset($this->players[strtolower($pl->getName())]);
+		unset($this->teams[strtolower($pl->getName())]);
+		unset($this->spectators[strtolower($pl->getName())]);
 	}
 
 	/**
@@ -299,8 +294,27 @@ class PlayerManager {
 		$this->players = [];
 		$this->teams = [];
 		$this->kills = [];
+		$this->winners = [];
 
 		return $data;
+	}
+
+	public function updateWinners(){
+		$sort = $this->kills;
+		arsort($sort);
+
+		$i = 0;
+		foreach($sort as $player => $kills){
+			$this->winners[$i] = [$player, $kills];
+			$i++;
+		}
+
+		$i = $this->arena->getMaxPlayer() - 1;
+		while($i >= 0){
+			if(!isset($this->winners[$i])) $this->winners[$i] = ["§7...", 0];
+
+			$i--;
+		}
 	}
 
 	public function addKills(string $target): void{
@@ -323,5 +337,28 @@ class PlayerManager {
 		foreach($this->getAllPlayers() as $player){
 			$player->sendTitle($title, $subtitle, $fadeIn, $stay, $fadeOut);
 		}
+	}
+
+	public function getRanking(string $playerName){
+		return $this->ranking[$playerName] ?? "Not Ranked";
+	}
+
+	public function getTopPlayer(){
+		return $this->winners[0][0] ?? "No data";
+	}
+
+	public function getTopKills(){
+		return $this->winners[0][1] ?? "No data";
+	}
+
+	public function getWinners(): array{
+		return $this->winners;
+	}
+
+	public function getTeamColor(Player $pl): ?string{
+		$color = $this->teams[strtolower($pl->getName())] ?? null;
+		if($color === null) return null;
+
+		return ColorBlockMetaHelper::getColorFromMeta($color);
 	}
 }

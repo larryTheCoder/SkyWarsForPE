@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
  * Copyright (c) 2015-2020 larryTheCoder and contributors
@@ -26,29 +26,14 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\api;
+declare(strict_types = 1);
 
+namespace larryTheCoder\arena\api\impl;
 
-interface ArenaState {
+interface ShutdownSequence {
 
-	// Arena modes
-	const MODE_SOLO = 0;
-	const MODE_TEAM = 1;
-
-	// Arena states
-	const STATE_WAITING = 0;       // Arena is idling...
-	const STATE_SLOPE_WAITING = 1; // Arena is begin to start
-	const STATE_ARENA_RUNNING = 2;
-	const STATE_ARENA_CELEBRATING = 3;
-	const STATE_ARENA_INSETUP = 4;
-
-	// Player states
-	const PLAYER_UNSET = 0;
-	const PLAYER_ALIVE = 1;
-	const PLAYER_SPECTATE = 2;
-	const PLAYER_SPECIAL = 3;
-
-	// World edit states.
-	const STARTING = 0;
-	const FINISHED = 1;
+	/**
+	 * Shutdown this sequence immediately.
+	 */
+	public function shutdown(): void;
 }

@@ -29,18 +29,19 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arenaRewrite;
+namespace larryTheCoder\arena;
 
-use larryTheCoder\arenaRewrite\api\Arena;
-use larryTheCoder\arenaRewrite\api\CageManager;
-use larryTheCoder\arenaRewrite\api\impl\ArenaListener;
-use larryTheCoder\arenaRewrite\api\impl\ArenaState;
-use larryTheCoder\arenaRewrite\api\SignManager;
-use larryTheCoder\arenaRewrite\api\task\ArenaTickTask;
-use larryTheCoder\arenaRewrite\task\SkyWarsTask;
+use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\CageManager;
+use larryTheCoder\arena\api\impl\ArenaListener;
+use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\api\SignManager;
+use larryTheCoder\arena\api\task\ArenaTickTask;
+use larryTheCoder\arena\task\SkyWarsTask;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use pocketmine\block\BlockFactory;
+use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -48,7 +49,7 @@ class ArenaImpl extends Arena {
 	use ArenaData;
 
 	// Allow invincible period on this arena.
-	const ARENA_INVINCIBLE_PERIOD = 0x3;
+	const ARENA_INVINCIBLE_PERIOD = 0x4;
 
 	/** @var EventListener */
 	private $eventListener;
@@ -68,6 +69,12 @@ class ArenaImpl extends Arena {
 		$this->cageManager = new CageManager($this->spawnPedestals);
 
 		parent::__construct($plugin);
+	}
+
+	public function setConfig(array $arenaData): void{
+		$this->arenaMode = $arenaData;
+
+		$this->parseData();
 	}
 
 	public function getArenaData(): array{
@@ -118,8 +125,6 @@ class ArenaImpl extends Arena {
 		parent::joinToArena($player);
 
 		$player->setGamemode(Player::ADVENTURE);
-
-		// TODO: Give player items
 	}
 
 	public function stopArena(): void{
@@ -134,7 +139,15 @@ class ArenaImpl extends Arena {
 	}
 
 	public function playerSpectate(Player $player): void{
-		// TODO: Give spectator items to players.
+		$pm = $this->getPlayerManager();
+
+		$player->setGamemode(Player::ADVENTURE);
+		$player->setAllowFlight(true);
+		$player->sendMessage(SkyWarsPE::getInstance()->getMsg($player, 'player-spectate'));
+
+		foreach($pm->getAllPlayers() as $p2) $p2->hidePlayer($player);
+
+		$player->teleport(Position::fromObject($this->arenaSpecPos, $this->getLevel()));
 	}
 
 	public function unsetPlayer(Player $player, bool $isSpectator = false){
@@ -160,7 +173,11 @@ class ArenaImpl extends Arena {
 			$pm->broadcastToPlayers("{$player->getName()} has disconnected.");
 		}else{
 			$pm->broadcastToPlayers("{$player->getName()} has left the game.");
+
+			$player->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
 		}
+
+		parent::leaveArena($player, $force);
 	}
 
 	public function getMinPlayer(): int{
@@ -169,6 +186,14 @@ class ArenaImpl extends Arena {
 
 	public function getMaxPlayer(): int{
 		return $this->maximumPlayers;
+	}
+
+	public function getMapName(): string{
+		return $this->arenaName;
+	}
+
+	public function getMode(): int{
+		return $this->arenaMode;
 	}
 
 	public function getEventListener(): ArenaListener{

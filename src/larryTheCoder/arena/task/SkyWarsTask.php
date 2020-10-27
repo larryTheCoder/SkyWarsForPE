@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
  * Copyright (c) 2015-2020 larryTheCoder and contributors
@@ -26,31 +26,33 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena;
+declare(strict_types = 1);
 
-use pocketmine\plugin\PluginBase;
-use pocketmine\scheduler\Task;
+namespace larryTheCoder\arena\task;
 
-trait ArenaTask {
+use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\task\ArenaTickTask;
+use larryTheCoder\arena\ArenaImpl;
 
-	/** @var api\ArenaTask[] */
-	private $taskRunning = [];
+class SkyWarsTask extends ArenaTickTask {
 
-	public function scheduleTask(api\ArenaTask $task, int $period): void{
-		if($this->getPlugin() === null && !($task instanceof Task)){
-			throw new \RuntimeException("Attempting to schedule task with unfulfilled conditions.");
-		}
-
-		$this->getPlugin()->getScheduler()->scheduleRepeatingTask($task, $period);
+	public function __construct(ArenaImpl $arena){
+		parent::__construct($arena);
 	}
 
-	public function getPlugin(): ?PluginBase{
-		return null;
+	// For some reason, SW maximum time is not specified
+	public function getMaxTime(): int{
+		return PHP_INT_MAX;
 	}
 
-	public function clearTasks(): void{
-		foreach($this->taskRunning as $task) $task->shutdown();
+	public function gameTick(): void{
+		// TODO: game tick
+	}
 
-		$this->taskRunning = [];
+	/**
+	 * @return ArenaImpl|Arena
+	 */
+	public function getArena(): Arena{
+		return parent::getArena();
 	}
 }

@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
  * Copyright (c) 2015-2020 larryTheCoder and contributors
@@ -28,12 +28,36 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arena\api;
+namespace larryTheCoder\arena\api\impl;
 
-interface ArenaTask {
+
+use pocketmine\Player;
+
+interface Scoreboard {
 
 	/**
-	 * Shutdown this arena task immediately.
+	 * Ticks scoreboard, this function will be called to
+	 * update all player's scoreboard.
 	 */
-	public function shutdown(): void;
+	public function tickScoreboard(): void;
+
+	/**
+	 * Reset all player's scoreboard, this indicates that the arena
+	 * has finished and all player's scoreboard must be unset.
+	 */
+	public function resetScoreboard(): void;
+
+	/**
+	 * Removes a player from this scoreboard.
+	 *
+	 * @param Player $pl
+	 */
+	public function removePlayer(Player $pl): void;
+
+	/**
+	 * Add a player into this scoreboard.
+	 *
+	 * @param Player $pl
+	 */
+	public function addPlayer(Player $pl): void;
 }

@@ -28,14 +28,18 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arenaRewrite\api;
+namespace larryTheCoder\arena\api;
 
-use larryTheCoder\arenaRewrite\api\impl\ArenaListener;
-use larryTheCoder\arenaRewrite\api\impl\ArenaState;
-use larryTheCoder\arenaRewrite\api\impl\ShutdownSequence;
-use larryTheCoder\arenaRewrite\api\task\ArenaTickTask;
-use larryTheCoder\arenaRewrite\api\task\AsyncDirectoryDelete;
-use larryTheCoder\arenaRewrite\api\task\CompressionAsyncTask;
+use larryTheCoder\arena\api\impl\ArenaListener;
+use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\api\impl\Scoreboard;
+use larryTheCoder\arena\api\impl\ShutdownSequence;
+use larryTheCoder\arena\api\task\ArenaTickTask;
+use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
+use larryTheCoder\arena\api\task\CompressionAsyncTask;
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\Player;
@@ -56,13 +60,18 @@ abstract class Arena implements ShutdownSequence {
 	// for arena flags in setFlags() and hasFlags()
 	public const WORLD_ATTEMPT_LOAD = 0x1;
 	public const ARENA_OFFLINE_MODE = 0x2;
+	public const ARENA_IN_SETUP_MODE = 0x3;
 
 	/** @var CageManager */
 	protected $cageManager;
+	/** @var Scoreboard */
+	protected $scoreboard;
+
 	/** @var string|null */
 	protected $lobbyName = null;
 	/** @var string */
 	protected $arenaName;
+
 	/** @var int */
 	private $arenaStatus = ArenaState::STATE_WAITING;
 	/** @var PlayerManager */
@@ -129,6 +138,8 @@ abstract class Arena implements ShutdownSequence {
 	public abstract function getMinPlayer(): int;
 
 	public abstract function getMaxPlayer(): int;
+
+	public abstract function getMapName(): string;
 
 	public abstract function getArenaTask(): ArenaTickTask;
 
@@ -306,6 +317,10 @@ abstract class Arena implements ShutdownSequence {
 		return $this->arenaStatus;
 	}
 
+	public function getMode(): int{
+		return ArenaState::MODE_SOLO;
+	}
+
 	/**
 	 * Called when a player joins into the arena, this will only be called
 	 * by a function and this function will be called when a player joined as a contestant
@@ -324,6 +339,8 @@ abstract class Arena implements ShutdownSequence {
 
 		$player->getInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();
+
+		$player->getInventory()->setItem(8, self::getLeaveItem());
 	}
 
 	/**
@@ -376,5 +393,13 @@ abstract class Arena implements ShutdownSequence {
 		foreach($this->shutdownSequence as $shutdown){
 			$shutdown->shutdown();
 		}
+	}
+
+	public static function getLeaveItem(): Item{
+		return ItemFactory::get(ItemIds::BED, 14)->setCustomName("§r§cLeave game.");
+	}
+
+	public function getScoreboard(): Scoreboard{
+		return $this->scoreboard;
 	}
 }

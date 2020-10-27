@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
  * Copyright (c) 2015-2020 larryTheCoder and contributors
@@ -26,64 +26,29 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\arena\runtime;
+namespace larryTheCoder\arena\api\impl;
 
-use pocketmine\math\Vector3;
-use pocketmine\Player;
 
-class CageHandler {
+interface ArenaState {
 
-	/** @var Vector3[] */
-	private $cages;
+	// Arena modes
+	const MODE_SOLO = 0;
+	const MODE_TEAM = 1;
 
-	/** @var Vector3[] */
-	private $claimedCages = [];
+	// Arena states
+	const STATE_WAITING = 0;        // Arena is idling...
+	const STATE_STARTING = 1;        // Arena is begin to start
+	const STATE_ARENA_RUNNING = 2;
+	const STATE_ARENA_CELEBRATING = 3;
+	const STATE_ARENA_INSETUP = 4;
 
-	public function __construct(array $cages){
-		$this->cages = $cages;
-	}
+	// Player states
+	const PLAYER_UNSET = 0;
+	const PLAYER_ALIVE = 1;
+	const PLAYER_SPECTATE = 2;
+	const PLAYER_SPECIAL = 3;
 
-	/**
-	 * Retrieves the next available cages that will be used in the game.
-	 * This method is to allocate cages after the player left.
-	 *
-	 * @param Player $player
-	 * @return Vector3|null
-	 */
-	public function nextCage(Player $player): ?Vector3{
-		if(empty($this->cages)) return null; // Cages are full.
-
-		return $this->claimedCages[$player->getName()] = array_pop($this->cages);
-	}
-
-	/**
-	 * Remove the owned cage from the given player.
-	 *
-	 * @param Player $player
-	 */
-	public function removeCage(Player $player): void{
-		if(!isset($this->claimedCages[$player->getName()])) return;
-
-		$this->cages[] = $this->claimedCages[$player->getName()];
-
-		unset($this->claimedCages[$player->getName()]);
-	}
-
-	/**
-	 * @param Player $player
-	 * @return Vector3|null
-	 */
-	public function getCage(Player $player): ?Vector3{
-		if(!isset($this->claimedCages[$player->getName()])) return null;
-
-		return $this->claimedCages[$player->getName()];
-	}
-
-	/**
-	 * self-explanatory
-	 */
-	public function resetAll(){
-		foreach($this->claimedCages as $vec) $this->cages[] = $vec;
-		$this->claimedCages = [];
-	}
+	// World edit states.
+	const STARTING = 0;
+	const FINISHED = 1;
 }

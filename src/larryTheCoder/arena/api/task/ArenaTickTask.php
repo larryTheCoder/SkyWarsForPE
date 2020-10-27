@@ -28,12 +28,12 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arenaRewrite\api\task;
+namespace larryTheCoder\arena\api\task;
 
 
-use larryTheCoder\arenaRewrite\api\Arena;
-use larryTheCoder\arenaRewrite\api\impl\ArenaState;
-use larryTheCoder\arenaRewrite\api\impl\ShutdownSequence;
+use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\api\impl\ShutdownSequence;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\scheduler\Task;
 
@@ -60,6 +60,11 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
 	final public function onRun(int $currentTick): void{
 		$arena = $this->getArena();
+
+		// Do nothing since the arena is in setup mode.
+		if($arena->hasFlags(Arena::ARENA_IN_SETUP_MODE)){
+			return;
+		}
 
 		$state = $arena->getStatus();
 		$pm = $arena->getPlayerManager();
@@ -126,6 +131,8 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 					$this->overtimeTick();
 				}
 
+				$pm->updateWinners();
+
 				$this->timeElapsed++;
 				break;
 			case ArenaState::STATE_ARENA_CELEBRATING:
@@ -183,7 +190,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 	}
 
 	public function tickPreScoreboard(): void{
-
+		$this->getArena()->getScoreboard()->tickScoreboard();
 	}
 
 	/**
