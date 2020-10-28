@@ -34,8 +34,7 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 /**
- * Class CageManager
- * @package larryTheCoder\arenaRewrite\api
+ * Manages player cages/spawn pedestals.
  */
 class CageManager {
 

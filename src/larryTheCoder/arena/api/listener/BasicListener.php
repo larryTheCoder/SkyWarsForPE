@@ -33,12 +33,13 @@ namespace larryTheCoder\arena\api\listener;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\impl\ArenaListener;
 use larryTheCoder\arena\api\impl\ArenaState;
-use larryTheCoder\arena\ArenaImpl;
+use larryTheCoder\arena\api\impl\ShutdownSequence;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -53,10 +54,8 @@ use pocketmine\Player;
  * A very basic listener for the arena.
  * This concept is basically to handle player as-it-should be handled
  * by the arena itself.
- *
- * @package larryTheCoder\arenaRewrite\api\listener
  */
-class BasicListener implements Listener {
+class BasicListener implements Listener, ShutdownSequence {
 
 	/**@var Arena */
 	private $arena;
@@ -343,8 +342,11 @@ class BasicListener implements Listener {
 		if($this->arena->getPlayerManager()->isInArena($p)){
 			$this->listener->onPlayerInteractEvent($e);
 
-			if($e->getItem() === ArenaImpl::getLeaveItem()){
-				$this->arena->leaveArena($p);
+			$status = $this->arena->getStatus();
+			if($status === ArenaState::STATE_WAITING || $status === ArenaState::STATE_STARTING){
+				if($p->getInventory()->getItemInHand()->equals(Arena::getLeaveItem())){
+					$this->arena->leaveArena($p);
+				}
 			}
 
 			return;
@@ -354,5 +356,9 @@ class BasicListener implements Listener {
 		if($signManager === null) return;
 
 		$signManager->onInteract($e);
+	}
+
+	public function shutdown(): void{
+		HandlerList::unregisterAll($this);
 	}
 }

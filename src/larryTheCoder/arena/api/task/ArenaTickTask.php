@@ -45,8 +45,6 @@ use Throwable;
  * reducing the amount of debugging needed to test the code.
  *
  * <p> This code documentation are still to be written.
- *
- * @package larryTheCoder\arenaRewrite\api\task
  */
 abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
@@ -64,7 +62,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 		$this->getArena()->getSignManager()->processSign();
 
 		// Arena has encountered an unrecoverable error.
-		if($this->getArena()->hasFlags(Arena::ARENA_CRASHED)){
+		if($this->getArena()->hasFlags(Arena::ARENA_CRASHED) || $this->getArena()->hasFlags(Arena::ARENA_DISABLED)){
 			return;
 		}
 
@@ -95,8 +93,6 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 		if($arena->hasFlags(Arena::ARENA_OFFLINE_MODE)){
 			return;
 		}
-
-		$arena->checkAlive();
 
 		switch($state){
 			case ArenaState::STATE_WAITING:
@@ -144,6 +140,8 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				$this->timeElapsed++;
 				break;
 			case ArenaState::STATE_ARENA_RUNNING:
+				$arena->checkAlive();
+
 				if($this->timeElapsed < $this->getMaxTime()){
 					$this->gameTick();
 				}elseif($this->timeElapsed >= $this->getMaxTime()){

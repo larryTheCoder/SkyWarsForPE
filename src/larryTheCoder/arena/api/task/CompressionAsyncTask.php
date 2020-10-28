@@ -38,8 +38,6 @@ use ZipArchive;
 /**
  * Using a thread to compress files is dumb, they do not often being used
  * for heavy tasks and it will be a waste of resources.
- *
- * @package larryTheCoder\arenaRewrite\api\task
  */
 class CompressionAsyncTask extends AsyncTask {
 

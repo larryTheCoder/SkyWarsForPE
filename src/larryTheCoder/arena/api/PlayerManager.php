@@ -88,6 +88,10 @@ class PlayerManager {
 		return isset($this->playerQueue[$player->getName()]);
 	}
 
+	public function hasQueue(): bool{
+		return !empty($this->playerQueue);
+	}
+
 	/**
 	 * @return Player[]
 	 * @internal

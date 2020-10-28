@@ -34,7 +34,6 @@ namespace larryTheCoder\arena;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\CageManager;
 use larryTheCoder\arena\api\impl\ArenaListener;
-use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\scoreboard\Internal;
 use larryTheCoder\arena\api\SignManager;
 use larryTheCoder\arena\api\task\ArenaTickTask;
@@ -63,21 +62,27 @@ class ArenaImpl extends Arena {
 	private $startedTime = -1;
 
 	public function __construct(SkyWarsPE $plugin, array $arenaData){
-		$this->arenaData = $arenaData;
-		$this->parseData();
+		$this->setConfig($arenaData);
 
 		$this->eventListener = new EventListener($this);
 		$this->signManager = new SignManager($this, $this->getSignPosition());
 		$this->cageManager = new CageManager($this->spawnPedestals);
 		$this->scoreboard = new Internal($this, Utils::getScoreboardConfig());
 
+		$this->signManager->setTemplate([$this->statusLine1, $this->statusLine2, $this->statusLine3, $this->statusLine4]);
+
 		parent::__construct($plugin);
 	}
 
 	public function setConfig(array $arenaData): void{
-		$this->arenaMode = $arenaData;
+		$this->arenaData = $arenaData;
 
 		$this->parseData();
+
+		$this->setFlags(Arena::ARENA_DISABLED, $this->arenaEnable);
+		if($this->signManager !== null){
+			$this->signManager->setTemplate([$this->statusLine1, $this->statusLine2, $this->statusLine3, $this->statusLine4]);
+		}
 	}
 
 	public function getArenaData(): array{
@@ -166,11 +171,6 @@ class ArenaImpl extends Arena {
 
 	public function leaveArena(Player $player, bool $onQuit = false): void{
 		$pm = $this->getPlayerManager();
-		$isSpectator = $pm->isSpectator($player->getName());
-
-		// Do nothing if the player itself is a spectator or the arena
-		// is not running.
-		if($isSpectator || $this->getStatus() !== ArenaState::STATE_ARENA_RUNNING) return;
 
 		if($onQuit){
 			$pm->broadcastToPlayers("{$player->getName()} has disconnected.");

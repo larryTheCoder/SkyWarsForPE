@@ -36,10 +36,7 @@ use pocketmine\math\Vector3;
 use pocketmine\Server;
 
 /**
- * Stores everything about the arena config
- * file into a set of variables.
- *
- * @package larryTheCoder\arenaRewrite
+ * Stores everything about the arena config file into a set of variables.
  */
 trait ArenaData {
 

@@ -72,9 +72,19 @@ class Internal implements Scoreboard {
 		StandardScoreboard::setScore($pl, $this->config->get("display-name", "§e§lSKYWARS"), 1);
 
 		$this->updateScoreboard($pl);
-	} // Stores player scoreboard cache.
+	}
 
 	private function updateScoreboard(Player $pl){
+		if(!isset($this->scoreboards[$pl->getName()])){
+			$this->addPlayer($pl);
+
+			return;
+		}elseif(!$pl->isOnline()){
+			$this->removePlayer($pl);
+
+			return;
+		}
+
 		switch($this->arena->getStatus()){
 			case ArenaState::STATE_STARTING: // Evaluate if we do need another custom scoreboard for this
 			case ArenaState::STATE_WAITING:
@@ -83,7 +93,7 @@ class Internal implements Scoreboard {
 			case ArenaState::STATE_ARENA_RUNNING:
 				if($this->arena->getPlayerManager()->isSpectator($pl->getName())){
 					$data = $this->config->get("spectate-scoreboard", [""]);
-				} else {
+				}else{
 					$data = $this->config->get("in-game-arena", [""]);
 				}
 				break;
@@ -92,12 +102,6 @@ class Internal implements Scoreboard {
 				break;
 			default:
 				$data = null;
-		}
-
-		if(!$pl->isOnline()){
-			unset($this->scoreboards[$pl->getName()]);
-
-			return;
 		}
 
 		foreach($data as $scLine => $message){
@@ -163,7 +167,7 @@ class Internal implements Scoreboard {
 			array_push($replace, $data[0]);
 		}
 
-		return " " . str_replace($search, $replace, $message) . " ";
+		return str_replace($search, $replace, $message);
 	}
 
 	public function tickScoreboard(): void{

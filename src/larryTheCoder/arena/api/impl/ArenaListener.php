@@ -43,24 +43,42 @@ use pocketmine\Player;
  * Arena listener class, you may want to extends this class in order to work properly.
  * This package is considered to be used within the game API. In the other hand, all other
  * internal listener will be handled in other class.
- *
- * @package larryTheCoder\arenaRewrite\runtime\listener
  */
-interface ArenaListener {
+class ArenaListener {
 
-	public function onPlayerMove(PlayerMoveEvent $event): void;
+	public function onPlayerMove(PlayerMoveEvent $event): void{
+		// NOOP
+	}
 
-	public function onBlockPlaceEvent(BlockPlaceEvent $event): void;
+	public function onBlockPlaceEvent(BlockPlaceEvent $event): void{
+		// NOOP
+	}
 
-	public function onBlockBreakEvent(BlockBreakEvent $event): void;
+	public function onBlockBreakEvent(BlockBreakEvent $event): void{
+		// NOOP
+	}
 
-	public function onPlayerHitEvent(EntityDamageEvent $event): void;
+	public function onPlayerHitEvent(EntityDamageEvent $event): void{
+		// NOOP
+	}
 
-	public function onPlayerQuitEvent(PlayerQuitEvent $event): void;
+	public function onPlayerQuitEvent(PlayerQuitEvent $event): void{
+		// NOOP
+	}
 
-	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void;
+	public function onInventoryOpenEvent(){
 
-	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $ev): void;
+	}
 
-	public function onPlayerInteractEvent(PlayerInteractEvent $e): void;
+	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void{
+		// NOOP
+	}
+
+	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $ev): void{
+		// NOOP
+	}
+
+	public function onPlayerInteractEvent(PlayerInteractEvent $e): void{
+		// NOOP
+	}
 }

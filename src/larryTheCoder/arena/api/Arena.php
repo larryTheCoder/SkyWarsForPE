@@ -34,6 +34,7 @@ use larryTheCoder\arena\api\impl\ArenaListener;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\Scoreboard;
 use larryTheCoder\arena\api\impl\ShutdownSequence;
+use larryTheCoder\arena\api\listener\BasicListener;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
 use larryTheCoder\arena\api\task\CompressionAsyncTask;
@@ -51,8 +52,6 @@ use pocketmine\Server;
  * arena data, explicitly, the given function are the skeleton for every operation in a gamemode.
  * <p>
  * This is a very basic arena listener.
- *
- * @package larryTheCoder\arenaRewrite\api
  */
 abstract class Arena implements ShutdownSequence {
 
@@ -61,7 +60,8 @@ abstract class Arena implements ShutdownSequence {
 	public const WORLD_ATTEMPT_LOAD = 0x1;
 	public const ARENA_OFFLINE_MODE = 0x2;
 	public const ARENA_IN_SETUP_MODE = 0x3;
-	public const ARENA_CRASHED = 0x4;
+	public const ARENA_DISABLED = 0x4;
+	public const ARENA_CRASHED = 0x5;
 
 	/** @var CageManager */
 	protected $cageManager;
@@ -90,7 +90,7 @@ abstract class Arena implements ShutdownSequence {
 	protected $shutdownSequence = [];
 
 	public function getLevel(): ?Level{
-		if($this->lobbyLevel !== null){
+		if($this->lobbyLevel === null){
 			return $this->level;
 		}else{
 			return $this->lobbyLevel;
@@ -102,9 +102,18 @@ abstract class Arena implements ShutdownSequence {
 		$this->playerData = new PlayerManager($this);
 
 		$task = $this->getArenaTask();
+		$listener = new BasicListener($this);
+		$signListener = $this->getSignManager();
+
 		$plugin->getScheduler()->scheduleRepeatingTask($task, 20);
+		$plugin->getServer()->getPluginManager()->registerEvents($listener, $plugin);
+		$plugin->getServer()->getPluginManager()->registerEvents($signListener, $plugin);
 
 		$this->shutdownSequence[] = $task;
+		$this->shutdownSequence[] = $listener;
+		$this->shutdownSequence[] = $signListener;
+
+		$this->setFlags(Arena::ARENA_OFFLINE_MODE, true);
 	}
 
 	/**
@@ -158,6 +167,7 @@ abstract class Arena implements ShutdownSequence {
 		$this->unsetPlayer($player, $this->getPlayerManager()->isSpectator($player->getName()));
 
 		$this->getPlayerManager()->removePlayer($player);
+		$this->getScoreboard()->removePlayer($player);
 		$this->getCageManager()->removeCage($player);
 	}
 
@@ -180,28 +190,33 @@ abstract class Arena implements ShutdownSequence {
 	 */
 	public function processQueue(): void{
 		// Wait until the async task has successfully deletes it file, then we can add more queue.
-		if($this->deleteTimeout >= 30){
+		if($this->deleteTimeout > 30){
 			return;
 		}
 
 		$pm = $this->getPlayerManager();
-		$queue = $pm->getQueue();
 
 		// Attempt to load the level while the level is offline.
-		if($this->hasFlags(self::ARENA_OFFLINE_MODE) && !$this->hasFlags(self::WORLD_ATTEMPT_LOAD)){
-			$this->loadWorld();
+		if($this->hasFlags(self::ARENA_OFFLINE_MODE)){
+			// Only load world when the queue is not empty-
+			if(!$this->hasFlags(self::WORLD_ATTEMPT_LOAD) && $pm->hasQueue()){
+				$this->loadWorld();
+			}
 
 			return;
 		}
+		$queue = $pm->getQueue();
 
 		// Process queue for players attempting to join as a "contestant" when the arena is not running and
 		// the player alive size is below max player.
-		if(!($this->getStatus() === ArenaState::STATE_WAITING || $this->getStatus() === ArenaState::STATE_STARTING)){
-			foreach($queue as $player){
+		if($this->getStatus() !== ArenaState::STATE_ARENA_RUNNING || $this->getStatus() !== ArenaState::STATE_ARENA_CELEBRATING){
+			foreach($queue as $id => $player){
 				if(count($pm->getAlivePlayers()) < $this->getMaxPlayer()){
 					$pm->addPlayer($player);
 
 					$this->joinToArena($player);
+
+					unset($queue[$id]);
 				}else{
 					break;
 				}
@@ -210,17 +225,19 @@ abstract class Arena implements ShutdownSequence {
 
 		// Otherwise use up the leftover queue for spectators
 		if(!empty($queue)){
-			foreach($queue as $player){
+			foreach($queue as $id => $player){
 				$pm->setSpectator($player);
 				$this->playerSpectate($player);
+
+				unset($queue[$id]);
 			}
 		}
 
 		// Attempt to reset the world when there is no players in the arena,
 		// this is to avoid unnecessary ticks on this world.
-		if(!$this->hasFlags(self::ARENA_OFFLINE_MODE) && count($pm->getAlivePlayers()) === 0){
+		if(!$this->hasFlags(self::ARENA_OFFLINE_MODE) && $pm->getPlayersCount() === 0){
 			if($this->deleteTimeout >= 30 && !$this->level->isClosed()){
-				Server::getInstance()->unloadLevel($this->level, true);
+				Server::getInstance()->unloadLevel($this->getLevel(), true);
 
 				$loadedLevel = [];
 				if($this->lobbyName !== null){
@@ -247,6 +264,8 @@ abstract class Arena implements ShutdownSequence {
 	}
 
 	final public function loadWorld(bool $onStart = true){
+		print "Loading world..." . PHP_EOL;
+
 		// Lobby/Arena pre loading.
 		if($onStart){
 			if($this->lobbyName === null){
@@ -290,6 +309,9 @@ abstract class Arena implements ShutdownSequence {
 			$this->setFlags(self::WORLD_ATTEMPT_LOAD, false);
 
 			$this->initArena($level, $isLobby);
+
+			// Process queue immediately...
+			$this->processQueue();
 		});
 
 		Server::getInstance()->getAsyncPool()->submitTask($task);
@@ -332,6 +354,7 @@ abstract class Arena implements ShutdownSequence {
 	 */
 	public function joinToArena(Player $player): void{
 		$this->getPlayerManager()->addPlayer($player);
+		$this->getScoreboard()->addPlayer($player);
 
 		$cage = $this->getCageManager()->setCage($player);
 		if($this->lobbyName !== null){
@@ -355,9 +378,13 @@ abstract class Arena implements ShutdownSequence {
 		$pm = $this->getPlayerManager()->resetPlayers();
 		foreach($pm as $type => $player){
 			if($type === "player"){
-				$this->unsetPlayer($player);
+				foreach($player as $pl){
+					$this->unsetPlayer($pl);
+				}
 			}else{
-				$this->unsetPlayer($player, true);
+				foreach($player as $pl){
+					$this->unsetPlayer($pl, true);
+				}
 			}
 		}
 

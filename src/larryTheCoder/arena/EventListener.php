@@ -34,39 +34,19 @@ namespace larryTheCoder\arena;
 use larryTheCoder\arena\api\impl\ArenaListener;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\utils\Utils;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
-use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-class EventListener implements ArenaListener {
+class EventListener extends ArenaListener {
 
 	/** @var ArenaImpl */
 	private $arena;
 
 	public function __construct(ArenaImpl $arena){
 		$this->arena = $arena;
-	}
-
-	public function onPlayerMove(PlayerMoveEvent $event): void{
-		// NOOP
-	}
-
-	public function onBlockPlaceEvent(BlockPlaceEvent $event): void{
-		// NOOP
-	}
-
-	public function onBlockBreakEvent(BlockBreakEvent $event): void{
-		// NOOP
-	}
-
-	public function onPlayerInteractEvent(PlayerInteractEvent $e): void{
-		// NOOP
 	}
 
 	public function onPlayerQuitEvent(PlayerQuitEvent $event): void{
