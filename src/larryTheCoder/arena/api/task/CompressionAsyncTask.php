@@ -72,7 +72,7 @@ class CompressionAsyncTask extends AsyncTask {
 		$zip->open($toPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
 		// Create recursive directory iterator
-		/** @var SplFileInfo[] $files */
+		/* @var SplFileInfo[] $files */
 		$files = new RecursiveIteratorIterator(
 			new RecursiveDirectoryIterator($rootPath),
 			RecursiveIteratorIterator::LEAVES_ONLY
