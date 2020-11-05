@@ -176,7 +176,6 @@ class SkyWarsPE extends PluginBase implements Listener {
 	private function loadHumans(){
 		$cfg = new Config($this->getDataFolder() . "npc.yml", Config::YAML);
 
-		$levelName = $cfg->get("level", "");
 		$npc1E = $cfg->get("npc-1", []);
 		$npc2E = $cfg->get("npc-2", []);
 		$npc3E = $cfg->get("npc-3", []);
@@ -187,6 +186,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 			return;
 		}
+		$levelName = $npc1E[3];
 
 		Utils::loadFirst($levelName);
 

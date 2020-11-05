@@ -28,9 +28,6 @@
 
 namespace larryTheCoder\utils;
 
-use larryTheCoder\arena\api\Arena;
-use larryTheCoder\arena\api\impl\ArenaState;
-use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\entity\FireworksRocket;
 use larryTheCoder\utils\fireworks\Fireworks;
@@ -41,7 +38,7 @@ use pocketmine\{network\mcpe\protocol\AddActorPacket,
 	utils\Random,
 	utils\TextFormat,
 	utils\TextFormat as VS};
-use pocketmine\block\{Block, BlockIds, StainedGlass};
+use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item, ItemIds};
 use pocketmine\level\{Level, Location, particle\PortalParticle, Position};
@@ -105,27 +102,6 @@ class Utils {
 		}
 
 		return null;
-	}
-
-	public static function getBlockStatus(ArenaImpl $arena){
-		if(!$arena->arenaEnable || $arena->hasFlags(Arena::ARENA_IN_SETUP_MODE)){
-			return new StainedGlass(14);
-		}
-
-		if($arena->getStatus() <= ArenaState::STATE_STARTING){
-			return new StainedGlass(13);
-		}
-		if($arena->getPlayerManager()->getPlayersCount() >= $arena->minimumPlayers){
-			return new StainedGlass(4);
-		}
-		if($arena->getStatus() === ArenaState::STATE_ARENA_RUNNING){
-			return new StainedGlass(6);
-		}
-		if($arena->getStatus() === ArenaState::STATE_ARENA_CELEBRATING){
-			return new StainedGlass(11);
-		}
-
-		return new StainedGlass(0);
 	}
 
 	function centerText(array $lines): string{

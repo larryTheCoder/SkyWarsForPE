@@ -33,20 +33,80 @@ namespace larryTheCoder\arena\task;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\ArenaImpl;
+use pocketmine\command\ConsoleCommandSender;
+use pocketmine\Server;
+use pocketmine\utils\TextFormat;
 
 class SkyWarsTask extends ArenaTickTask {
 
+	/** @var int[] */
+	private $refillAverage;
+	/** @var int */
+	private $nextRefill = -1;
+
 	public function __construct(ArenaImpl $arena){
 		parent::__construct($arena);
+
+		$this->refillAverage = $arena->refillAverage;
 	}
 
-	// For some reason, SW maximum time is not specified
 	public function getMaxTime(): int{
-		return PHP_INT_MAX;
+		return $this->getArena()->arenaMatchTime;
 	}
 
 	public function gameTick(): void{
-		// TODO: game tick
+		$pm = $this->getArena()->getPlayerManager();
+
+		if($this->timeElapsed === 0){
+			$this->getArena()->refillChests();
+		}elseif($this->timeElapsed === 15){
+			$this->getArena()->setFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD, false);
+
+			$pm->broadcastToPlayers(TextFormat::RED . "You are no longer invincible.", false);
+		}elseif($this->timeElapsed % $this->getRefillTime()){
+			$this->getArena()->refillChests();
+		}
+	}
+
+	public function overtimeTick(): void{
+		$arena = $this->getArena();
+		$pm = $arena->getPlayerManager();
+		if(count($pm->getAlivePlayers()) === 0){
+			$this->endTick();
+
+			return;
+		}
+
+		$winners = $pm->getWinners();
+		if($this->timeElapsed === 0){
+			foreach($pm->getAlivePlayers() as $player){
+				$player->sendMessage("Congratulations! You have won the match.");
+
+				$this->getArena()->unsetPlayer($player);
+			}
+		}elseif($this->timeElapsed === 5){
+			$this->endTick();
+
+			// Execute various commands, this will be ran outside arena match.
+			foreach($winners as $rank => $winner){
+				$command = $this->getArena()->winnersCommand[$rank];
+				if(!is_array($command)){
+					Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), $command);
+				}else{
+					foreach($command as $cmd){
+						Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), $cmd);
+					}
+				}
+			}
+		}
+	}
+
+	private function getRefillTime(bool $reset = false){
+		if($this->nextRefill === -1 || $reset){
+			return $this->nextRefill = $this->refillAverage[array_rand($this->refillAverage)];
+		}else{
+			return $this->nextRefill;
+		}
 	}
 
 	/**

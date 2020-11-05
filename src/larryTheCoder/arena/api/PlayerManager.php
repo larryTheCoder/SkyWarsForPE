@@ -63,9 +63,8 @@ class PlayerManager {
 	private $teams = []; // "Player" => "Team color"
 	/** @var Arena */
 	private $arena;
-
-	/** @var string[] */
-	private $winners = [];
+	/** @var int[] */
+	private $ranking = [];
 
 	/** @var Player[] */
 	private $playerQueue = [];
@@ -121,6 +120,7 @@ class PlayerManager {
 
 		$this->players[strtolower($pl->getName())] = $pl;
 		$this->kills[strtolower($pl->getName())] = 0;
+		$this->ranking[] = strtolower($pl->getName());
 
 		// Check if the arena is in team mode.
 		if($this->teamMode){
@@ -300,6 +300,13 @@ class PlayerManager {
 		$this->kills = [];
 		$this->winners = [];
 
+		$i = $this->arena->getMaxPlayer() - 1;
+		while($i >= 0){
+			if(!isset($this->winners[$i])) $this->winners[$i] = 0;
+
+			$i--;
+		}
+
 		return $data;
 	}
 
@@ -309,15 +316,13 @@ class PlayerManager {
 
 		$i = 0;
 		foreach($sort as $player => $kills){
-			$this->winners[$i] = [$player, $kills];
+			if(($oldPlayer = $this->ranking[$i]) !== $player){
+				$rank = $this->getRanking($player);
+
+				$this->ranking[$i] = $player;
+				$this->ranking[$rank] = $oldPlayer;
+			}
 			$i++;
-		}
-
-		$i = $this->arena->getMaxPlayer() - 1;
-		while($i >= 0){
-			if(!isset($this->winners[$i])) $this->winners[$i] = ["§7...", 0];
-
-			$i--;
 		}
 	}
 
@@ -344,19 +349,24 @@ class PlayerManager {
 	}
 
 	public function getRanking(string $playerName){
-		return $this->ranking[$playerName] ?? "Not Ranked";
+		return array_keys($this->ranking, $playerName, true)[0] ?? -1;
 	}
 
 	public function getTopPlayer(){
-		return $this->winners[0][0] ?? "No data";
+		return array_keys($this->kills, max($this->kills))[0] ?? "N/A";
 	}
 
 	public function getTopKills(){
-		return $this->winners[0][1] ?? "No data";
+		return max($this->kills);
 	}
 
 	public function getWinners(): array{
-		return $this->winners;
+		$winners = [];
+		foreach($this->ranking as $rank => $playerName){
+			$winners[$rank] = [$playerName, $this->kills[$playerName] ?? 0];
+		}
+
+		return $winners;
 	}
 
 	public function getTeamColor(Player $pl): ?string{

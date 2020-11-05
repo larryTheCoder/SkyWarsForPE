@@ -60,4 +60,11 @@ interface Scoreboard {
 	 * @param Player $pl
 	 */
 	public function addPlayer(Player $pl): void;
+
+	/**
+	 * Set current event/status of an arena.
+	 *
+	 * @param string $status
+	 */
+	public function setStatus(string $status): void;
 }

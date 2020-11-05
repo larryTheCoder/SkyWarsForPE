@@ -54,11 +54,24 @@ class Internal implements Scoreboard {
 	private $arena;
 	/** @var string[][] */
 	private $networkBound = [];
+	/** @var string */
+	private $status = TextFormat::GREEN . "Waiting...";
+	/** @var int */
+	private $timeLeft = 0;
 
 	public function __construct(Arena $arena, Config $defaultConf){
 		$this->arena = $arena;
 
 		$this->config = $defaultConf;
+	}
+
+	/**
+	 * Set current event/status of an arena.
+	 *
+	 * @param string $status
+	 */
+	public function setStatus(string $status): void{
+		$this->status = $status;
 	}
 
 	/**
@@ -113,6 +126,8 @@ class Internal implements Scoreboard {
 				continue;
 			}
 
+			print "Sending scoreboard packet $scLine" . PHP_EOL;
+
 			$pl->batchDataPacket(StandardScoreboard::setScoreLine($pl, $line, $msg));
 
 			$this->networkBound[$pl->getName()][$line] = $msg;
@@ -129,6 +144,7 @@ class Internal implements Scoreboard {
 
 		$topPlayer = $pm->getOriginName($pm->getTopPlayer());
 		$search = [
+			"{arena_status}",
 			"{arena_mode}",
 			"{arena_map}",
 			"{top_player}",
@@ -141,9 +157,11 @@ class Internal implements Scoreboard {
 			"{player_name}",
 			"&",
 			"{team_colour}",
+			"{time_left}",
 		];
 
 		$replace = [
+			$this->status,
 			$this->arena->getMode() === ArenaState::MODE_SOLO ? "SOLO" : "TEAM",
 			$this->arena->getMapName(),
 			$topPlayer,
@@ -156,6 +174,7 @@ class Internal implements Scoreboard {
 			$pl->getName(),
 			TextFormat::ESCAPE,
 			$pm->getTeamColor($pl),
+			$this->timeLeft,
 		];
 
 		foreach($pm->getWinners() as $rank => $data){

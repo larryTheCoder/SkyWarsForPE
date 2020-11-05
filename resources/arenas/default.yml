@@ -168,6 +168,8 @@ arena:
   min-players: 2
   # Starting time (seconds)
   starting-time: 60
+  # Match time (seconds)
+  match-time: 320
   # Spawn positions in arena
   spawn-positions:
     pos-1: "127:56:128"

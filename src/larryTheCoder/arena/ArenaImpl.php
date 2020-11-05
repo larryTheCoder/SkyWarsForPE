@@ -42,15 +42,19 @@ use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\BlockFactory;
+use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\tile\Chest;
 
 class ArenaImpl extends Arena {
 	use ArenaData;
 
 	// Allow invincible period on this arena.
-	const ARENA_INVINCIBLE_PERIOD = 0x4;
+	const ARENA_INVINCIBLE_PERIOD = 0x12;
 
 	/** @var EventListener */
 	private $eventListener;
@@ -79,7 +83,7 @@ class ArenaImpl extends Arena {
 
 		$this->parseData();
 
-		$this->setFlags(Arena::ARENA_DISABLED, $this->arenaEnable);
+		$this->setFlags(Arena::ARENA_DISABLED, !$this->arenaEnable);
 		if($this->signManager !== null){
 			$this->signManager->setTemplate([$this->statusLine1, $this->statusLine2, $this->statusLine3, $this->statusLine4]);
 		}
@@ -181,6 +185,42 @@ class ArenaImpl extends Arena {
 		}
 
 		parent::leaveArena($player, $onQuit);
+	}
+
+	public function refillChests(): void{
+		$contents = Utils::getChestContents();
+		foreach($this->getLevel()->getTiles() as $tile){
+			if($tile instanceof Chest){
+				//CLEARS CHESTS
+				$tile->getInventory()->clearAll();
+				//SET CONTENTS
+				if(empty($contents)) $contents = Utils::getChestContents();
+				foreach(array_shift($contents) as $key => $val){
+					$item = Item::get($val[0], 0, $val[1]);
+					if($item->getId() == Item::IRON_SWORD ||
+						$item->getId() == Item::DIAMOND_SWORD){
+						$enchantment = Enchantment::getEnchantment(Enchantment::SHARPNESS);
+						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
+					}elseif($item->getId() == Item::LEATHER_TUNIC ||
+						$item->getId() == Item::CHAIN_CHESTPLATE ||
+						$item->getId() == Item::IRON_CHESTPLATE ||
+						$item->getId() == Item::GOLD_CHESTPLATE ||
+						$item->getId() == Item::DIAMOND_CHESTPLATE ||
+						$item->getId() == Item::DIAMOND_LEGGINGS ||
+						$item->getId() == Item::DIAMOND_HELMET){
+						$enchantment = Enchantment::getEnchantment(Enchantment::PROTECTION);
+						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
+					}elseif($item->getId() == Item::BOW){
+						$enchantment = Enchantment::getEnchantment(Enchantment::POWER);
+						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
+					}
+
+					$tile->getInventory()->addItem($item);
+				}
+			}
+		}
+
+		unset($contents, $tile);
 	}
 
 	public function getMinPlayer(): int{

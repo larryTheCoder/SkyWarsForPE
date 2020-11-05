@@ -47,6 +47,10 @@ final class SkyWarsCommand {
 	public function onCommand(CommandSender $sender, Command $cmd, array $args): bool{
 		if(strtolower($cmd->getName()) === "sw" && isset($args[0])){
 			switch(strtolower($args[0])){
+				case "def":
+					/** @var $sender Player */
+					$sender->teleport($sender->getLevel()->getSpawnLocation());
+					break;
 				case "lobby":
 				case "leave":
 					if(!$sender->hasPermission('sw.command.lobby')){

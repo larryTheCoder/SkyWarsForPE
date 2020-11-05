@@ -43,6 +43,11 @@ class ScoreHUD implements Scoreboard {
 		// TODO: Figure out how to gain dominance in this haha.
 	}
 
+	public function setStatus(string $status): void{
+		// TODO: Implement tickScoreboard() method.
+	}
+
+
 	public function tickScoreboard(): void{
 		// TODO: Implement tickScoreboard() method.
 	}

@@ -32,6 +32,7 @@ use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\PlayerData;
 use pocketmine\entity\Human;
 use pocketmine\entity\Skin;
+use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\level\Level;
 use pocketmine\level\particle\FloatingTextParticle;
 use pocketmine\nbt\BigEndianNBTStream;
@@ -47,8 +48,10 @@ use pocketmine\Server;
  */
 class FakeHuman extends Human {
 
-	/** @var FloatingTextParticle[] */
-	private $networkCache = [];
+	/** @var FloatingTextParticle|null */
+	private $particleCache = null;
+	/** @var string */
+	private $messageCache = "";
 	/** @var int */
 	private $levelPedestal;
 
@@ -77,6 +80,14 @@ class FakeHuman extends Human {
 		$this->setNameTagAlwaysVisible(false);
 
 		$this->levelPedestal = $pedestalLevel;
+
+		$this->fetchData();
+	}
+
+	private $isFetching = false;
+
+	public function attack(EntityDamageEvent $source): void{
+		$source->setCancelled();
 	}
 
 	public function onUpdate(int $currentTick): bool{
@@ -93,58 +104,70 @@ class FakeHuman extends Human {
 				}
 			}
 		}elseif($currentTick % 200 === 0){
-			SkyWarsPE::getInstance()->getDatabase()->getPlayers(function(array $players){
-				/** @var PlayerData[] $players */
-				// Avoid nulls and other consequences
-				$player = []; // PlayerName => Kills
-				$player["Example-1"] = 0;
-				$player["Example-2"] = 0;
-				$player["Example-3"] = 0;
-				foreach($players as $value){
-					$player[$value->player] = $value->wins;
-				}
-
-				arsort($player);
-
-				// Limit them to 3
-				$limit = 0;
-				foreach($player as $playerName => $wins){
-					$limit++;
-					if($limit !== $this->levelPedestal){
-						continue;
-					}
-
-					// Send the skin (Only use the .dat skin data)
-					if(file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($playerName) . ".dat")){
-						$nbt = Server::getInstance()->getOfflinePlayerData($playerName);
-						$skin = $nbt->getCompoundTag("Skin");
-						if($skin !== null){
-							$skin = new Skin(
-								$skin->getString("Name"),
-								$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
-								$skin->getByteArray("CapeData", ""),
-								$skin->getString("GeometryName", ""),
-								$skin->getByteArray("GeometryData", "")
-							);
-							try{
-								$skin->validate();
-								$this->setSkin($skin);
-							}catch(\Exception $ignored){
-							}
-						}
-					}
-
-					// The text packets
-					$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-1', false));
-					$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-2', false));
-					$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
-					$array = [$msg1, $msg2, $msg3];
-					$this->sendText($array);
-				}
-			});
+			$this->fetchData();
 		}
 
 		return true;
+	}
+
+	private function fetchData(): void{
+		if($this->isFetching){
+			return;
+		}
+
+		SkyWarsPE::getInstance()->getDatabase()->getPlayers(function(array $players){
+			$this->isFetching = false;
+
+			/** @var PlayerData[] $players */
+			// Avoid nulls and other consequences
+			$player = []; // PlayerName => Kills
+			$player["Example-1"] = 0;
+			$player["Example-2"] = 0;
+			$player["Example-3"] = 0;
+			foreach($players as $value){
+				$player[$value->player] = $value->wins;
+			}
+
+			arsort($player);
+
+			// Limit them to 3
+			$limit = 0;
+			foreach($player as $playerName => $wins){
+				$limit++;
+				if($limit !== $this->levelPedestal){
+					continue;
+				}
+
+				// Send the skin (Only use the .dat skin data)
+				if(file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($playerName) . ".dat")){
+					$nbt = Server::getInstance()->getOfflinePlayerData($playerName);
+					$skin = $nbt->getCompoundTag("Skin");
+					if($skin !== null){
+						$skin = new Skin(
+							$skin->getString("Name"),
+							$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
+							$skin->getByteArray("CapeData", ""),
+							$skin->getString("GeometryName", ""),
+							$skin->getByteArray("GeometryData", "")
+						);
+						try{
+							$skin->validate();
+							$this->setSkin($skin);
+						}catch(\Exception $ignored){
+						}
+					}
+				}
+
+				// The text packets
+				$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-1', false));
+				$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-2', false));
+				$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
+				$array = [$msg1, $msg2, $msg3];
+				$this->sendText($array);
+			}
+		});
+
+		$this->isFetching = true;
 	}
 
 	/**
@@ -205,11 +228,12 @@ class FakeHuman extends Human {
 	 */
 	public function despawnText(array $player){
 		$pk = [];
-		foreach($this->networkCache as $particle){
-			$particle->setInvisible(true);
 
-			$pk = array_merge($pk, $particle->encode());
-		}
+		$this->particleCache->setInvisible(true);
+
+		$pk = array_merge($pk, $this->particleCache->encode());
+
+		$this->particleCache->setInvisible(false);
 
 		Server::getInstance()->batchPackets($player, $pk);
 	}
@@ -217,43 +241,37 @@ class FakeHuman extends Human {
 	public function sendText(array $messages, bool $resend = false, ?Player $player = null){
 		$pk = [];
 
-		if($resend){
-			foreach($this->networkCache as $particle){
-				if(is_null($player)){
-					$this->getLevel()->addParticle($particle);
-				}else{
-					$packet = $particle->encode();
-					if(!is_array($packet)){
-						$pk[] = $packet;
-					}else{
-						$pk = array_merge($pk, $packet);
-					}
-				}
-			}
+		if($resend && $this->particleCache !== null){
+			$pk = array_merge($pk, $this->particleCache->encode());
 		}else{
-			$y = 2.15;
-			$objects = 0;
-			foreach($messages as $value){
-				if(isset($this->networkCache[$objects])){
-					$particle = $this->networkCache[$objects];
-					$particle->setTitle($value);
-				}else{
-					$particle = new FloatingTextParticle($this->add(0, $y), "", $value);
-					$this->networkCache[$objects] = $particle;
-				}
+			if($this->particleCache === null){
+				$this->particleCache = $particle = new FloatingTextParticle($this->getOffsetPosition($this), $msg = implode("\n", $messages));
 				$pk = array_merge($pk, $particle->encode());
 
-				$y -= 0.3;
-				$objects++;
+				$this->messageCache = $msg;
+			}else{
+				$msg = implode("\n", $messages);
+				if($this->messageCache === $msg){
+					return;
+				}
+
+				$this->messageCache = $msg;
+
+				$this->particleCache->setText($msg);
+				$pk = array_merge($pk, $this->particleCache->encode());
 			}
 		}
 
-		if($player !== null){
-			foreach($pk as $packet){
-				$player->batchDataPacket($packet);
+		if(!empty($pk)){
+			print "Sending packets" . PHP_EOL;
+
+			if($player !== null){
+				foreach($pk as $packet){
+					$player->batchDataPacket($packet);
+				}
+			}else{
+				Server::getInstance()->batchPackets($this->getViewers(), $pk);
 			}
-		}else{
-			Server::getInstance()->batchPackets($this->getViewers(), $pk);
 		}
 	}
 }

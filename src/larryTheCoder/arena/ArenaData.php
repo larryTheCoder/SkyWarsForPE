@@ -75,6 +75,7 @@ trait ArenaData {
 
 	// Arena section.
 	public $arenaTime = 0;
+	public $arenaMatchTime = 0;
 	public $arenaWorld = "";
 	public $arenaSpecPos = null;
 	public $spawnPedestals = [];
@@ -152,6 +153,7 @@ trait ArenaData {
 			$this->maximumPlayers = intval($arena['max-players']);
 			$this->minimumPlayers = intval($arena['min-players']);
 			$this->arenaStartingTime = intval($arena['starting-time']);
+			$this->arenaMatchTime = $arena['match-time'] ?? 300;
 
 			$this->spawnPedestals = []; // Reset spawn pedestals.
 			foreach($arena['spawn-positions'] as $val => $pos){

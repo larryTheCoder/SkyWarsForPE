@@ -237,20 +237,7 @@ abstract class Arena implements ShutdownSequence {
 		// this is to avoid unnecessary ticks on this world.
 		if(!$this->hasFlags(self::ARENA_OFFLINE_MODE) && $pm->getPlayersCount() === 0){
 			if($this->deleteTimeout >= 30 && !$this->level->isClosed()){
-				Server::getInstance()->unloadLevel($this->getLevel(), true);
-
-				$loadedLevel = [];
-				if($this->lobbyName !== null){
-					$loadedLevel[] = $this->lobbyName;
-				}
-				$loadedLevel[] = $this->level->getFolderName();
-
-				$task = new AsyncDirectoryDelete($loadedLevel, function(){
-					$this->setFlags(self::ARENA_OFFLINE_MODE, true);
-
-					$this->deleteTimeout = 0;
-				});
-				Server::getInstance()->getAsyncPool()->submitTask($task);
+				$this->resetWorld();
 			}
 
 			$this->deleteTimeout++;
@@ -263,9 +250,27 @@ abstract class Arena implements ShutdownSequence {
 		return (($this->gameFlags >> $flagId) & 1) === 1;
 	}
 
-	final public function loadWorld(bool $onStart = true){
-		print "Loading world..." . PHP_EOL;
+	final public function resetWorld(){
+		// The sequence of deleting the arena.
+		Server::getInstance()->unloadLevel($this->getLevel(), true);
 
+		$loadedLevel = [];
+		if($this->lobbyName !== null){
+			$loadedLevel[] = $this->lobbyName;
+		}
+		$loadedLevel[] = $this->level->getFolderName();
+
+		$task = new AsyncDirectoryDelete($loadedLevel, function(){
+			$this->setFlags(self::ARENA_OFFLINE_MODE, true);
+
+			$this->deleteTimeout = 0;
+		});
+		Server::getInstance()->getAsyncPool()->submitTask($task);
+
+		$this->deleteTimeout = 30;
+	}
+
+	final public function loadWorld(bool $onStart = true){
 		// Lobby/Arena pre loading.
 		if($onStart){
 			if($this->lobbyName === null){
@@ -389,6 +394,7 @@ abstract class Arena implements ShutdownSequence {
 		}
 
 		$this->getCageManager()->resetAll();
+		$this->resetWorld();
 
 		$this->setStatus(ArenaState::STATE_WAITING);
 	}

@@ -33,6 +33,7 @@ namespace larryTheCoder\arena\api;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\ShutdownSequence;
 use larryTheCoder\SkyWarsPE;
+use pocketmine\block\StainedGlass;
 use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -110,9 +111,14 @@ class SignManager implements Listener, ShutdownSequence {
 		$p = $e->getPlayer();
 		$pm = $this->arena->getPlayerManager();
 
+		if($b->equals($this->signTile)){
+			$e->setCancelled();
+		}
+
 		// Improved queue method.
 		if($b->equals($this->signTile) && !$pm->inQueue($p) && $e->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK
 			&& ($this->delay[$p->getName()] ?? 0) !== time()){
+
 			$this->delay[$p->getName()] = time();
 
 			if($this->arena->hasFlags(Arena::ARENA_CRASHED)){
@@ -128,7 +134,7 @@ class SignManager implements Listener, ShutdownSequence {
 			}
 
 			$pm->addQueue($p);
-			$p->sendMessage(TextFormat::GOLD . "You are now queuing for the arena, please wait.");
+			$p->sendMessage(TextFormat::GOLD . "You are now queuing for {$this->arena->getMapName()}, please wait.");
 		}
 	}
 
@@ -159,6 +165,36 @@ class SignManager implements Listener, ShutdownSequence {
 
 				$this->cache[$line] = $text;
 			}
+		}
+
+		// Block statuses.
+
+		$level = $this->signTile->getLevel();
+
+		$block = $this->getBlockStatus();
+		$sign = $this->signTile->getBlock();
+		$vec = $sign->getSide($sign->getDamage() ^ 0x01);
+		if($level->getBlock($vec)->getId() === $block->getId() && $level->getBlock($vec)->getDamage() === $block->getDamage()){
+			return;
+		}
+
+		$level->setBlock($vec, $block);
+	}
+
+	private function getBlockStatus(): StainedGlass{
+		$arena = $this->arena;
+		if($arena->hasFlags(Arena::ARENA_DISABLED) || $arena->hasFlags(Arena::ARENA_CRASHED) || $arena->hasFlags(Arena::ARENA_IN_SETUP_MODE)){
+			return new StainedGlass(14);
+		}elseif($arena->getStatus() === ArenaState::STATE_WAITING){
+			return new StainedGlass(13);
+		}elseif($arena->getStatus() === ArenaState::STATE_STARTING){
+			return new StainedGlass(4);
+		}elseif($arena->getStatus() === ArenaState::STATE_ARENA_RUNNING){
+			return new StainedGlass(6);
+		}elseif($arena->getStatus() === ArenaState::STATE_ARENA_CELEBRATING){
+			return new StainedGlass(11);
+		}else{
+			return new StainedGlass(0);
 		}
 	}
 

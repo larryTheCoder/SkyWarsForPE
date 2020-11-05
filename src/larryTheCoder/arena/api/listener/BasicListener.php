@@ -93,7 +93,6 @@ class BasicListener implements Listener, ShutdownSequence {
 			$newVec = $p->floor();
 			if($newVec->distance($cage) >= 3){
 				$p->teleport($cage->add(new Vector3(0.5, 0, 0.5)));
-				$e->setCancelled();
 			}
 
 			return;
@@ -342,10 +341,16 @@ class BasicListener implements Listener, ShutdownSequence {
 		if($this->arena->getPlayerManager()->isInArena($p)){
 			$this->listener->onPlayerInteractEvent($e);
 
+			if($e->isCancelled()){
+				return;
+			}
+
 			$status = $this->arena->getStatus();
 			if($status === ArenaState::STATE_WAITING || $status === ArenaState::STATE_STARTING){
 				if($p->getInventory()->getItemInHand()->equals(Arena::getLeaveItem())){
 					$this->arena->leaveArena($p);
+
+					$e->setCancelled();
 				}
 			}
 

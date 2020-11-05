@@ -37,6 +37,7 @@ use larryTheCoder\arena\api\impl\ShutdownSequence;
 use pocketmine\level\sound\ClickSound;
 use pocketmine\scheduler\Task;
 use pocketmine\utils\MainLogger;
+use pocketmine\utils\TextFormat;
 use Throwable;
 
 /**
@@ -164,6 +165,8 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 		}else{
 			$this->tickGameScoreboard();
 		}
+
+		$this->getArena()->getScoreboard()->tickScoreboard();
 	}
 
 	public function getArena(): Arena{
@@ -207,7 +210,15 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 	}
 
 	public function tickPreScoreboard(): void{
-		$this->getArena()->getScoreboard()->tickScoreboard();
+		$arena = $this->getArena();
+		switch($arena->getStatus()){
+			case ArenaState::STATE_WAITING:
+				$arena->getScoreboard()->setStatus(TextFormat::GREEN . "Waiting...");
+				break;
+			case ArenaState::STATE_STARTING:
+				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "Starting in " . (30 - $this->timeElapsed) . "s");
+				break;
+		}
 	}
 
 	/**
