@@ -11,7 +11,7 @@ class StepSlider extends Dropdown {
 	}
 
 	/**
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public function serializeElementData(): array{
 		return [

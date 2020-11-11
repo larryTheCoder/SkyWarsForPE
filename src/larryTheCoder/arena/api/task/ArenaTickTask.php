@@ -98,7 +98,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 		switch($state){
 			case ArenaState::STATE_WAITING:
 				if(count($pm->getAlivePlayers()) >= $arena->getMinPlayer()){
-					$pm->broadcastToPlayers("Game starting in 30 seconds.");
+					$pm->broadcastToPlayers(TextFormat::GOLD . "Game starting in 30 seconds.", false);
 
 					$arena->setStatus(ArenaState::STATE_STARTING);
 				}
@@ -107,7 +107,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				break;
 			case ArenaState::STATE_STARTING:
 				if(count($pm->getAlivePlayers()) < $arena->getMinPlayer()){
-					$pm->broadcastTitle("Not enough players, countdown cancelled.");
+					$pm->broadcastTitle(TextFormat::RED . "Not enough players", TextFormat::RED . "Countdown has been cancelled.");
 
 					$arena->setStatus(ArenaState::STATE_WAITING);
 					break;

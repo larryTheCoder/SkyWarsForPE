@@ -31,6 +31,7 @@ namespace larryTheCoder;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\ArenaImpl;
+use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\entity\Entity;
 use pocketmine\Player;
@@ -52,9 +53,13 @@ final class ArenaManager {
 	}
 
 	// Check and passed.
-	public function checkArenas(){
-		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§6Locating arena files...");
-		foreach(glob($this->pl->getDataFolder() . "arenas/*.yml") as $file){
+	public function checkArenas(): void{
+		$this->pl->getServer()->getLogger()->info(Settings::$prefix . "§6Locating arena files...");
+
+		$folder = glob($this->pl->getDataFolder() . "arenas/*.yml");
+		if($folder === false) throw new \RuntimeException("Unexpected error has occurred while indexing arenas files.");
+
+		foreach($folder as $file){
 			$arena = new Config($file, Config::YAML);
 			$arenaName = $arena->get("arena-name", null);
 			$baseName = basename($file, ".yml");
@@ -81,9 +86,9 @@ final class ArenaManager {
 		}
 	}
 
-	public function reloadArena($arenaF): bool{
+	public function reloadArena(string $arenaF): bool{
 		$arenaName = $this->getRealArenaName($arenaF);
-		$this->pl->getServer()->getLogger()->info($this->pl->getPrefix() . "§aReloading arena§e $arenaName");
+		$this->pl->getServer()->getLogger()->info(Settings::$prefix . "§aReloading arena§e $arenaName");
 		if(!$this->arenaExist($arenaName)){
 			Utils::sendDebug("[reloadArena] Arena $arenaName doesn't exists.");
 
@@ -105,7 +110,7 @@ final class ArenaManager {
 	}
 
 	// Checked and passed
-	public function getRealArenaName($lowerCasedArena){
+	public function getRealArenaName(string $lowerCasedArena): string{
 		if(!isset($this->arenaRealName[strtolower($lowerCasedArena)])){
 			return $lowerCasedArena;
 		}
@@ -114,7 +119,7 @@ final class ArenaManager {
 	}
 
 	// Checked and passed
-	public function setArenaData(Config $config, $arenaName){
+	public function setArenaData(Config $config, string $arenaName): void{
 		$arena = $this->getArena($arenaName);
 		if($arena === null){
 			$this->arenaRealName[strtolower($arenaName)] = $arenaName;
@@ -126,7 +131,7 @@ final class ArenaManager {
 				unset($this->arenaRealName[strtolower($arenaName)]);
 				unset($this->arenaConfig[strtolower($arenaName)]);
 
-				return null;
+				return;
 			}
 
 			$arena = $this->arenas[strtolower($arenaName)] = $baseArena;
@@ -136,7 +141,7 @@ final class ArenaManager {
 	}
 
 	// Checked and passed
-	public function getArena($arena): ?ArenaImpl{
+	public function getArena(string $arena): ?ArenaImpl{
 		if(!$this->arenaExist($arena)){
 			Utils::sendDebug("getArena($arena): Not found");
 
@@ -151,7 +156,7 @@ final class ArenaManager {
 		return isset($this->arenas[strtolower($arena)]);
 	}
 
-	public function deleteArena($arena){
+	public function deleteArena(string $arena): void{
 		if($this->arenaExist($arena)){
 			$this->getArena($arena)->shutdown();
 			unset($this->arenas[strtolower($arena)]);
@@ -169,7 +174,7 @@ final class ArenaManager {
 		return null;
 	}
 
-	public function getArenaConfig($arenaName): ?Config{
+	public function getArenaConfig(string $arenaName): ?Config{
 		if(!isset($this->arenaConfig[strtolower($arenaName)])){
 			return null;
 		}
@@ -204,7 +209,10 @@ final class ArenaManager {
 		return $arenas[mt_rand(0, count($arenas) - 1)];
 	}
 
-	public function getArenas(){
+	/**
+	 * @return ArenaImpl[]
+	 */
+	public function getArenas(): array{
 		return $this->arenas;
 	}
 
@@ -228,7 +236,7 @@ final class ArenaManager {
 		return false;
 	}
 
-	public function invalidate(){
+	public function invalidate(): void{
 		$this->arenaRealName = [];
 		$this->arenas = [];
 		$this->arenaConfig = [];

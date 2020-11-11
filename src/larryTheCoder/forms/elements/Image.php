@@ -36,6 +36,9 @@ class Image implements JsonSerializable {
 		return $this->data;
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function jsonSerialize(): array{
 		return [
 			"type" => $this->type,

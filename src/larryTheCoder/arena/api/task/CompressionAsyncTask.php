@@ -44,6 +44,11 @@ class CompressionAsyncTask extends AsyncTask {
 	/** @var string */
 	private $data;
 
+	/**
+	 * CompressionAsyncTask constructor.
+	 * @param array<int, string|bool> $data
+	 * @param callable $result
+	 */
 	public function __construct(array $data, callable $result){
 		$this->data = serialize($data);
 
@@ -56,14 +61,14 @@ class CompressionAsyncTask extends AsyncTask {
 
 		if($compress){
 			// "folder" "target.zip"
-			$this->compressFile($fromPath, $toPath); // Overwrites the whole zip file.
+			self::compressFile($fromPath, $toPath); // Overwrites the whole zip file.
 		}else{
 			// "target.zip" "folder"
-			$this->decompressFile($fromPath, $toPath); // Overwrite the whole folder path.
+			self::decompressFile($fromPath, $toPath); // Overwrite the whole folder path.
 		}
 	}
 
-	function compressFile(string $source, string $toPath){
+	public static function compressFile(string $source, string $toPath): void{
 		// Get real path for our folder
 		$rootPath = realpath($source);
 
@@ -95,7 +100,7 @@ class CompressionAsyncTask extends AsyncTask {
 		$zip->close();
 	}
 
-	function decompressFile($fromPath, $toPath){
+	public static function decompressFile(string $fromPath, string $toPath): void{
 		// get the absolute path to $file
 		$zip = new ZipArchive;
 		$res = $zip->open($fromPath);
@@ -109,7 +114,7 @@ class CompressionAsyncTask extends AsyncTask {
 		$zip->close();
 	}
 
-	public function onCompletion(Server $server){
+	public function onCompletion(Server $server): void{
 		$call = $this->fetchLocal();
 		$call();
 	}

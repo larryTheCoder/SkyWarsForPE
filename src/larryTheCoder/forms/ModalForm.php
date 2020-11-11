@@ -83,7 +83,7 @@ class ModalForm extends Form {
 	}
 
 	/**
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	protected function serializeFormData(): array{
 		return [

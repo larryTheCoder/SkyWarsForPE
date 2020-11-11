@@ -30,12 +30,12 @@ abstract class Element implements JsonSerializable {
 	/**
 	 * @param mixed $value
 	 */
-	public function setValue($value){
+	public function setValue($value): void{
 		$this->value = $value;
 	}
 
 	/**
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	final public function jsonSerialize(): array{
 		$array = ["text" => $this->getText()];
@@ -59,7 +59,7 @@ abstract class Element implements JsonSerializable {
 	abstract public function getType(): ?string;
 
 	/**
-	 * @return array
+	 * @return string[]
 	 */
 	abstract public function serializeElementData(): array;
 

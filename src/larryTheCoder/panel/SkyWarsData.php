@@ -32,17 +32,29 @@ namespace larryTheCoder\panel;
 use larryTheCoder\arena\ArenaImpl;
 
 class SkyWarsData {
+	/** @var string */
 	public $arenaName = "";
+	/** @var string */
 	public $arenaLevel = "";
+	/** @var int */
 	public $maxPlayer = 12;
+	/** @var int */
 	public $minPlayer = 4;
+	/** @var bool */
 	public $spectator = false;
+	/** @var bool */
 	public $startWhenFull = false;
+	/** @var int */
 	public $graceTimer = 10;
+	/** @var bool */
 	public $enabled = false;
+	/** @var string */
 	public $line1 = "";
+	/** @var string */
 	public $line2 = "";
+	/** @var string */
 	public $line3 = "";
+	/** @var string */
 	public $line4 = "";
 	/** @var ArenaImpl */
 	public $arena;

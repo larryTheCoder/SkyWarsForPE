@@ -89,7 +89,7 @@ class Slider extends Element {
 	}
 
 	/**
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public function serializeElementData(): array{
 		return [

@@ -28,8 +28,6 @@
 
 namespace larryTheCoder\utils;
 
-
-use larryTheCoder\SkyWarsPE;
 use pocketmine\item\Item;
 use pocketmine\Server;
 use pocketmine\utils\{Config, TextFormat};
@@ -86,12 +84,12 @@ class Settings {
 	public static $enableDoubleTap = false;
 	/** @var int */
 	public static $doubleTapInterval = 0;
-	/** @var array */
+	/** @var mixed[] */
 	public static $items = [];
 
 	# ============== ITEM CONFIG ==============
 
-	public final static function init(Config $config){
+	public final static function init(Config $config): void{
 		# ============ GENERALS CONFIG ============
 
 		$general = $config->get("general");
@@ -130,7 +128,7 @@ class Settings {
 			# Which its is important
 			if(isset($item[$key]['item-id']) && !isset(self::$items[$key])){
 				$data = explode(":", $item[$key]['item-id']);
-				$toItem = Item::get($data[0], $data[1]);
+				$toItem = Item::get((int)$data[0], (int)$data[1]);
 				$toItem->setCustomName(str_replace("&", "§", "&r" . $item[$key]['item-name']) . "\n§e(Right Click)");
 				$placeAt = !isset($item[$key]['item-place']) ? 0 : $item[$key]['item-place'];
 				$itemCmd = !isset($item[$key]['item-cmd']) ? "" : $item[$key]['item-cmd'];
@@ -149,7 +147,7 @@ class Settings {
 
 		# ============== ITEM CONFIG ==============
 
-		Server::getInstance()->getLogger()->info(SkyWarsPE::getInstance()->getPrefix() . "§aLoaded SkyWars configuration into system.");
+		Server::getInstance()->getLogger()->info(Settings::$prefix . "§aLoaded SkyWars configuration into system.");
 	}
 
 }

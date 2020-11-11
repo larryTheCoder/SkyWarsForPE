@@ -57,7 +57,7 @@ class StandardScoreboard {
 	public const SLOT_SIDEBAR = "sidebar";
 	/** @var string */
 	public const SLOT_BELOW_NAME = "belowname";
-	/** @var array */
+	/** @var array<string, string> */
 	private static $scoreboards = [];
 
 	/**
@@ -105,7 +105,7 @@ class StandardScoreboard {
 	/**
 	 * Returns an array consisting of a list of the players using scoreboard.
 	 *
-	 * @return array
+	 * @return array<string, string>
 	 */
 	public static function getScoreboards(): array{
 		return self::$scoreboards;
@@ -127,19 +127,18 @@ class StandardScoreboard {
 	 * @param Player $player
 	 * @param int $line
 	 * @param string $message
-	 * @return SetScorePacket|null
 	 */
-	public static function setScoreLine(Player $player, int $line, string $message): ?SetScorePacket{
+	public static function setScoreLine(Player $player, int $line, string $message): void{
 		if(!isset(self::$scoreboards[$player->getName()])){
 			Server::getInstance()->getLogger()->error("Cannot set a score to a player with no scoreboard");
 
-			return null;
+			return;
 		}
 		if($line < self::MIN_LINES || $line > self::MAX_LINES){
 			Server::getInstance()->getLogger()->error("Score must be between the value of " . self::MIN_LINES . " to " . self::MAX_LINES . ".");
 			Server::getInstance()->getLogger()->error($line . " is out of range");
 
-			return null;
+			return;
 		}
 
 		$entry = new ScorePacketEntry();
@@ -150,9 +149,13 @@ class StandardScoreboard {
 		$entry->scoreboardId = $line;
 
 		$pk = new SetScorePacket();
-		$pk->type = $pk::TYPE_CHANGE;
+		$pk->type = SetScorePacket::TYPE_REMOVE;
 		$pk->entries[] = $entry;
+		$player->sendDataPacket($pk);
 
-		return $pk;
+		$pk = new SetScorePacket();
+		$pk->type = SetScorePacket::TYPE_CHANGE;
+		$pk->entries[] = $entry;
+		$player->sendDataPacket($pk);
 	}
 }

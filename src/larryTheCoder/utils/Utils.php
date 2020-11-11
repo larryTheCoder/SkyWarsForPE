@@ -31,16 +31,10 @@ namespace larryTheCoder\utils;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\entity\FireworksRocket;
 use larryTheCoder\utils\fireworks\Fireworks;
-use pocketmine\{network\mcpe\protocol\AddActorPacket,
-	Player,
-	Server,
-	utils\MainLogger,
-	utils\Random,
-	utils\TextFormat,
-	utils\TextFormat as VS};
+use pocketmine\{network\mcpe\protocol\AddActorPacket, Player, Server, utils\MainLogger, utils\Random, utils\TextFormat};
 use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
-use pocketmine\item\{Item, ItemIds};
+use pocketmine\item\{Item};
 use pocketmine\level\{Level, Location, particle\PortalParticle, Position};
 use pocketmine\math\Vector3;
 use pocketmine\utils\Config;
@@ -53,26 +47,26 @@ use pocketmine\utils\Config;
  */
 class Utils {
 
-	/** @var integer[] */
+	/** @var int[] */
 	public static $particleTimer = [];
-	/** @var integer[][] */
+	/** @var int[][] */
 	public static $helixMathMap = [];
 	/** @var Config */
 	private static $scoreboard;
 
-	public static function sendDebug(string $log){
+	public static function sendDebug(string $log): void{
 		MainLogger::getLogger()->debug("SW-DEBUG: " . $log);
 	}
 
-	public static function send(string $string){
+	public static function send(string $string): void{
 		MainLogger::getLogger()->info(Settings::$prefix . TextFormat::GRAY . $string);
 	}
 
-	public static function getParticleTimer(int $id){
+	public static function getParticleTimer(int $id): int{
 		return Utils::$particleTimer[$id];
 	}
 
-	public static function setParticleTimer(int $id, int $i){
+	public static function setParticleTimer(int $id, int $i): void{
 		Utils::$particleTimer[$id] = $i;
 	}
 
@@ -92,9 +86,9 @@ class Utils {
 
 	/**
 	 * @param int $id
-	 * @return array|null
+	 * @return int[]|null
 	 */
-	public static function helixMath(int $id){
+	public static function helixMath(int $id): ?array{
 		try{
 			return Utils::$helixMathMap[$id];
 		}catch(\Exception $exception){
@@ -104,46 +98,16 @@ class Utils {
 		return null;
 	}
 
-	function centerText(array $lines): string{
-		// First step, clone lines without colors
-		$maximumLines = [];
-		foreach($lines as $primaryLine){
-			$maximumLines[] = strlen(VS::clean($primaryLine));
-		}
-
-		// Now find the maximum lines in the array.
-		$stickWith = max($maximumLines);
-		$output = "";
-
-		// Check how many lines has been processed
-		$currentOutput = 0;
-		foreach($lines as $line){
-			$currentOutput++;
-			$diff = round(($stickWith - strlen(VS::clean($line))) / 2);
-			if($diff !== 0){
-				$line = str_repeat(" ", intval($diff)) . $line;
-			}
-
-			if($currentOutput === count($lines)){
-				$output .= "{$line}";
-			}else{
-				$output .= "{$line}\n";
-			}
-		}
-
-		return $output;
-	}
-
 	/**
 	 * @param int $id
 	 * @param int $rotation
 	 * @param int $up
 	 */
-	public static function setHelixMath(int $id, int $rotation, int $up){
+	public static function setHelixMath(int $id, int $rotation, int $up): void{
 		Utils::$helixMathMap[$id] = [$rotation, $up];
 	}
 
-	public static function addFireworks(Position $pos){
+	public static function addFireworks(Position $pos): void{
 		$data = new Fireworks();
 		$data->addExplosion(Fireworks::TYPE_BURST, rand(1, 15), 1, 1);
 
@@ -156,7 +120,7 @@ class Utils {
 	/**
 	 * @param Player $p
 	 */
-	public static function strikeLightning(Player $p){
+	public static function strikeLightning(Player $p): void{
 		$level = $p->getLevel();
 
 		$light = new AddActorPacket();
@@ -175,7 +139,7 @@ class Utils {
 		Server::getInstance()->broadcastPacket($level->getPlayers(), $light);
 	}
 
-	public static function unloadGame(){
+	public static function unloadGame(): void{
 		foreach(SkyWarsPE::getInstance()->getArenaManager()->getArenas() as $name => $arena){
 			$arena->shutdown();
 		}
@@ -183,93 +147,17 @@ class Utils {
 		SkyWarsPE::getInstance()->getArenaManager()->invalidate();
 	}
 
-	public static function loadFirst(string $levelName, bool $load = true){
+	public static function loadFirst(string $levelName, bool $load = true): void{
 		if(empty($levelName)) return;
 
 		Server::getInstance()->generateLevel($levelName);
 		if($load) Server::getInstance()->loadLevel($levelName);
 	}
 
-	public static function ensureDirectory(string $directory = ""){
+	public static function ensureDirectory(string $directory = ""): void{
 		if(!file_exists(SkyWarsPE::getInstance()->getDataFolder() . $directory)){
 			@mkdir(SkyWarsPE::getInstance()->getDataFolder() . $directory, 0755);
 		}
-	}
-
-	public static function copyResourceTo($source, $destination){
-		// Check for symlinks
-		if(is_link($source)){
-			return symlink(readlink($source), $destination);
-		}
-
-		// Simple copy for a file
-		if(is_file($source)){
-			return copy($source, $destination);
-		}
-
-		// Make destination directory
-		if(!is_dir($destination)){
-			mkdir($destination);
-		}
-
-		// Loop through the folder
-		$dir = dir($source);
-		while(false !== $entry = $dir->read()){
-			// Skip pointers
-			if($entry == '.' || $entry == '..'){
-				continue;
-			}
-
-			// Deep copy directories
-			self::copyResourceTo("$source/$entry", "$destination/$entry");
-		}
-
-		// Clean up
-		$dir->close();
-
-		return true;
-	}
-
-	public static function writeLog($message){
-		// FORMAT           : [DATE] Message
-		// FORMAT FOR ARENA : [DATE] [ARENA]  Message
-		// OTHER FORMATS    : [DATE] [TYPE] Message
-
-		Utils::ensureDirectory("logs/");
-		$logFile = SkyWarsPE::getInstance()->getDataFolder() . "/logs/logData.txt";
-
-		$timestamp = date("H:i:s");
-
-		$logResource = \fopen($logFile, "ab");
-		if(!\is_resource($logResource)){
-			throw new \RuntimeException("Couldn't open log file");
-		}
-
-		fwrite($logResource, "[$timestamp]" . $message . PHP_EOL);
-		\fclose($logResource);
-	}
-
-	public static function deleteDirectory($dir){
-		if(!file_exists($dir)){
-			return true;
-		}
-
-		if(!is_dir($dir)){
-			return unlink($dir);
-		}
-
-		foreach(scandir($dir) as $item){
-			if($item == '.' || $item == '..'){
-				continue;
-			}
-
-			if(!self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)){
-				return false;
-			}
-
-		}
-
-		return rmdir($dir);
 	}
 
 	/**
@@ -301,41 +189,11 @@ class Utils {
 	}
 
 	/**
-	 * Convert the item from string to item class
-	 * This also checks the Block class
-	 *
-	 * @param string $str
-	 * @return Item
-	 */
-	public static function convertToItem(string $str): Item{
-		$b = explode(":", str_replace([" ", "minecraft:"], ["_", ""], trim($str)));
-		if(!isset($b[1])){
-			$meta = 0;
-		}elseif(is_numeric($b[1])){
-			$meta = intval($b[1]) & 0xFFFF;
-		}else{
-			throw new \InvalidArgumentException("Unable to parse \"" . $b[1] . "\" from \"" . $str . "\" as a valid meta value");
-		}
-
-		if(is_numeric($b[0])){
-			$item = Item::get(((int)$b[0]) & 0xFFFF, $meta);
-		}elseif(defined(ItemIds::class . "::" . strtoupper($b[0]))){
-			$item = Item::get(constant(ItemIds::class . "::" . strtoupper($b[0])), $meta);
-		}elseif(defined(BlockIds::class . "::" . strtoupper($b[0]))){
-			$item = Item::get(constant(BlockIds::class . "::" . strtoupper($b[0])), $meta);
-		}else{
-			throw new \InvalidArgumentException("Unable to resolve \"" . $str . "\" to a valid item");
-		}
-
-		return $item;
-	}
-
-	/**
 	 * Get the chest contents
 	 *
-	 * @return array<int, array<int, null>> $templates
+	 * @return array<int, array<int, array<int, int>>> $templates
 	 */
-	public static function getChestContents(){
+	public static function getChestContents(): array{
 		$items = ['armor'     => [[Item::LEATHER_CAP, Item::LEATHER_TUNIC, Item::LEATHER_PANTS, Item::LEATHER_BOOTS], [Item::GOLD_HELMET, Item::GOLD_CHESTPLATE, Item::GOLD_LEGGINGS, Item::GOLD_BOOTS], [Item::CHAIN_HELMET, Item::CHAIN_CHESTPLATE, Item::CHAIN_LEGGINGS, Item::CHAIN_BOOTS], [Item::IRON_HELMET, Item::IRON_CHESTPLATE, Item::IRON_LEGGINGS, Item::IRON_BOOTS], [Item::DIAMOND_HELMET, Item::DIAMOND_CHESTPLATE, Item::DIAMOND_LEGGINGS, Item::DIAMOND_BOOTS]], //WEAPONS
 				  'weapon'    => [[Item::WOODEN_SWORD, Item::WOODEN_AXE,], [Item::GOLD_SWORD, Item::GOLD_AXE], [Item::STONE_SWORD, Item::STONE_AXE], [Item::IRON_SWORD, Item::IRON_AXE], [Item::DIAMOND_SWORD, Item::DIAMOND_AXE]], //FOOD
 				  'food'      => [[Item::RAW_PORKCHOP, Item::RAW_CHICKEN, Item::MELON_SLICE, Item::COOKIE], [Item::RAW_BEEF, Item::CARROT], [Item::APPLE, Item::GOLDEN_APPLE], [Item::BEETROOT_SOUP, Item::BREAD, Item::BAKED_POTATO], [Item::MUSHROOM_STEW, Item::COOKED_CHICKEN], [Item::COOKED_PORKCHOP, Item::STEAK, Item::PUMPKIN_PIE],], //THROWABLE
@@ -404,11 +262,11 @@ class Utils {
 	 * @param Item[] $contents
 	 * @return Item[]
 	 */
-	public static function shuffle(array $contents){
+	public static function shuffle(array $contents): array{
 		return [mt_rand(1, 2) => array_shift($contents), mt_rand(3, 5) => array_shift($contents), mt_rand(6, 10) => array_shift($contents), mt_rand(11, 15) => array_shift($contents), mt_rand(16, 17) => array_shift($contents), mt_rand(18, 20) => array_shift($contents), mt_rand(21, 25) => array_shift($contents), mt_rand(26, 27) => array_shift($contents)];
 	}
 
-	public static function addParticles(Level $level, Vector3 $pos1, $count = 5){
+	public static function addParticles(Level $level, Vector3 $pos1, int $count = 5): void{
 		$particle1 = new PortalParticle($pos1);
 		$random = new Random((int)(microtime(true) * 1000) + mt_rand());
 		for($i = 0; $i < $count; ++$i){
@@ -417,7 +275,7 @@ class Utils {
 		}
 	}
 
-	public static function getScoreboardConfig(){
+	public static function getScoreboardConfig(): Config{
 		if(isset(self::$scoreboard)) return self::$scoreboard;
 
 		$scoreboard = new Config(SkyWarsPE::getInstance()->getDataFolder() . "scoreboard.yml");
@@ -438,7 +296,7 @@ class Utils {
 	 * @param int $number
 	 * @return string
 	 */
-	public static function addPrefix(int $number){
+	public static function addPrefix(int $number): string{
 		if($number === 1){
 			return $number . "st";
 		}elseif($number === 2){

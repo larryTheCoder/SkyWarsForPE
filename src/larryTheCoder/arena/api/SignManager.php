@@ -32,12 +32,12 @@ namespace larryTheCoder\arena\api;
 
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\ShutdownSequence;
-use larryTheCoder\SkyWarsPE;
 use pocketmine\block\StainedGlass;
 use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\level\Position;
+use pocketmine\Server;
 use pocketmine\tile\Sign;
 use pocketmine\utils\TextFormat;
 
@@ -50,6 +50,8 @@ class SignManager implements Listener, ShutdownSequence {
 	private $signTile;
 	/** @var Arena */
 	private $arena;
+	/** @var string */
+	private $prefix;
 
 	/** @var string[] */
 	private $cache = [];
@@ -58,19 +60,24 @@ class SignManager implements Listener, ShutdownSequence {
 
 	/** @var string[] */
 	private $signTemplate = [];
+	/** @var int[] */
+	private $delay = [];
 
-	public function __construct(Arena $arena, Position $tilePosition){
+	public function __construct(Arena $arena, Position $tilePosition, string $prefix = ""){
 		$this->arena = $arena;
+		$this->prefix = $prefix;
 
 		$tile = $tilePosition->getLevel()->getTile($tilePosition);
 		if(!($tile instanceof Sign)){
-			throw new \RuntimeException("The position given are not a valid sign");
+			Server::getInstance()->getLogger()->warning("The position given for arena {$arena->getMapName()}'s sign is invalid.");
+
+			return;
 		}
 
 		$this->signTile = $tile;
 	}
 
-	private static function toReadable(Arena $arena){
+	private static function toReadable(Arena $arena): string{
 		switch(true){
 			case $arena->hasFlags(Arena::ARENA_IN_SETUP_MODE):
 				return TextFormat::ESCAPE . "eIn setup";
@@ -78,9 +85,9 @@ class SignManager implements Listener, ShutdownSequence {
 				return TextFormat::ESCAPE . "cDisabled";
 			case $arena->hasFlags(Arena::ARENA_CRASHED):
 				return TextFormat::ESCAPE . "cCrashed";
-			case $arena->getStatus() <= ArenaState::STATE_WAITING:
+			case $arena->getStatus() === ArenaState::STATE_WAITING:
 				return TextFormat::ESCAPE . "6Click to join!";
-			case $arena->getStatus() >= ArenaState::STATE_STARTING:
+			case $arena->getStatus() === ArenaState::STATE_STARTING:
 				return TextFormat::ESCAPE . "6Starting";
 			case $arena->getStatus() === ArenaState::STATE_ARENA_RUNNING:
 				return TextFormat::ESCAPE . "cRunning";
@@ -91,32 +98,36 @@ class SignManager implements Listener, ShutdownSequence {
 		return TextFormat::ESCAPE . "eUnknown";
 	}
 
-	public function setTemplate(array $template){
+	/**
+	 * @param string[] $template
+	 */
+	public function setTemplate(array $template): void{
 		$this->signTemplate = $template;
 	}
 
-	public function setAllText(array $text){
+	/**
+	 * @param string[] $text
+	 */
+	public function setAllText(array $text): void{
 		$this->updatedSign = $text;
 	}
 
-	public function setLine(int $line = 0, string $text = ""){
+	public function setLine(int $line = 0, string $text = ""): void{
 		$this->updatedSign[$line] = $text;
 	}
 
-	/** @var string[] */
-	private $delay = [];
-
-	public function onInteract(PlayerInteractEvent $e){
+	public function onInteract(PlayerInteractEvent $e): void{
 		$b = $e->getBlock();
 		$p = $e->getPlayer();
-		$pm = $this->arena->getPlayerManager();
+
+		$qm = $this->arena->getQueueManager();
 
 		if($b->equals($this->signTile)){
 			$e->setCancelled();
 		}
 
 		// Improved queue method.
-		if($b->equals($this->signTile) && !$pm->inQueue($p) && $e->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK
+		if($b->equals($this->signTile) && !$qm->inQueue($p) && $e->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK
 			&& ($this->delay[$p->getName()] ?? 0) !== time()){
 
 			$this->delay[$p->getName()] = time();
@@ -133,12 +144,15 @@ class SignManager implements Listener, ShutdownSequence {
 				return;
 			}
 
-			$pm->addQueue($p);
+			$qm->addQueue($p);
 			$p->sendMessage(TextFormat::GOLD . "You are now queuing for {$this->arena->getMapName()}, please wait.");
 		}
 	}
 
-	public function processSign(){
+	public function processSign(): void{
+		// Do not perform anything if the tile is null
+		if($this->signTile === null) return;
+
 		if(!empty($this->signTemplate)){
 			$names = ['%alive', '%status', '%max', '%min', '&', '%world', '%prefix', '%name'];
 			$replace = [
@@ -148,7 +162,7 @@ class SignManager implements Listener, ShutdownSequence {
 				$this->arena->getMinPlayer(),
 				TextFormat::ESCAPE,
 				$this->arena->getLevelName(),
-				SkyWarsPE::getInstance()->getPrefix(),
+				$this->prefix,
 				$this->arena->getMapName(),
 			];
 

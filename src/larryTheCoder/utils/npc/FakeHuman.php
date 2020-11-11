@@ -84,6 +84,7 @@ class FakeHuman extends Human {
 		$this->fetchData();
 	}
 
+	/** @var bool */
 	private $isFetching = false;
 
 	public function attack(EntityDamageEvent $source): void{
@@ -190,7 +191,7 @@ class FakeHuman extends Human {
 		$this->updateMovementInto($target);
 	}
 
-	private function updateMovementInto(Player $player){
+	private function updateMovementInto(Player $player): void{
 		// (byte)((pkg.x == -1 ? 1 : 0) | (pkg.x == 1 ? 2 : 0) | (pkg.y == -1 ? 4 : 0) | (pkg.y == 1 ? 8 : 0) | (pkg.pckp ? 16 : 0) | (pkg.thrw ? 32 : 0) | (pkg.jmp ? 64 : 0))
 		$pk = new MoveActorAbsolutePacket();
 
@@ -226,7 +227,7 @@ class FakeHuman extends Human {
 	/**
 	 * @param Player[] $player
 	 */
-	public function despawnText(array $player){
+	public function despawnText(array $player): void{
 		$pk = [];
 
 		$this->particleCache->setInvisible(true);
@@ -238,7 +239,14 @@ class FakeHuman extends Human {
 		Server::getInstance()->batchPackets($player, $pk);
 	}
 
-	public function sendText(array $messages, bool $resend = false, ?Player $player = null){
+	// TODO: Use entity default spawn
+
+	/**
+	 * @param string[] $messages
+	 * @param bool $resend
+	 * @param Player|null $player
+	 */
+	public function sendText(array $messages, bool $resend = false, ?Player $player = null): void{
 		$pk = [];
 
 		if($resend && $this->particleCache !== null){

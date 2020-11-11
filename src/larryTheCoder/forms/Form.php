@@ -32,7 +32,7 @@ abstract class Form implements \pocketmine\form\Form {
 	}
 
 	/**
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	final public function jsonSerialize(): array{
 		if($this->onCreate !== null){
@@ -68,7 +68,7 @@ abstract class Form implements \pocketmine\form\Form {
 	abstract public function getType(): string;
 
 	/**
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	abstract protected function serializeFormData(): array;
 

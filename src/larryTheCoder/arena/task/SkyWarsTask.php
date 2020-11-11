@@ -63,7 +63,7 @@ class SkyWarsTask extends ArenaTickTask {
 			$this->getArena()->setFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD, false);
 
 			$pm->broadcastToPlayers(TextFormat::RED . "You are no longer invincible.", false);
-		}elseif($this->timeElapsed % $this->getRefillTime()){
+		}elseif($this->timeElapsed % $this->getRefillTime() === 0){
 			$this->getArena()->refillChests();
 		}
 	}
@@ -82,26 +82,22 @@ class SkyWarsTask extends ArenaTickTask {
 			foreach($pm->getAlivePlayers() as $player){
 				$player->sendMessage("Congratulations! You have won the match.");
 
-				$this->getArena()->unsetPlayer($player);
+				$arena->unsetPlayer($player);
 			}
 		}elseif($this->timeElapsed === 5){
 			$this->endTick();
 
 			// Execute various commands, this will be ran outside arena match.
 			foreach($winners as $rank => $winner){
-				$command = $this->getArena()->winnersCommand[$rank];
-				if(!is_array($command)){
-					Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), $command);
-				}else{
-					foreach($command as $cmd){
-						Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), $cmd);
-					}
+				$command = $arena->winnersCommand[$rank] ?? [];
+				foreach($command as $cmd){
+					Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), $cmd);
 				}
 			}
 		}
 	}
 
-	private function getRefillTime(bool $reset = false){
+	private function getRefillTime(bool $reset = false): int{
 		if($this->nextRefill === -1 || $reset){
 			return $this->nextRefill = $this->refillAverage[array_rand($this->refillAverage)];
 		}else{
@@ -110,9 +106,12 @@ class SkyWarsTask extends ArenaTickTask {
 	}
 
 	/**
-	 * @return ArenaImpl|Arena
+	 * @return ArenaImpl
 	 */
 	public function getArena(): Arena{
-		return parent::getArena();
+		/** @var ArenaImpl $arena */
+		$arena = parent::getArena();
+
+		return $arena;
 	}
 }

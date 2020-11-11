@@ -127,7 +127,7 @@ class CustomForm extends Form {
 	}
 
 	/**
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	protected function serializeFormData(): array{
 		return ["content" => $this->elements];

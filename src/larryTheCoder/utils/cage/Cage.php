@@ -42,16 +42,18 @@ class Cage {
 
 	/** @var Block[] */
 	private $parts;
+	/** @var string */
 	private $cageName;
+	/** @var int */
 	private $value;
 
 	/**
 	 * Cage constructor.
-	 * @param String $name
+	 * @param string $name
 	 * @param int $value
 	 * @param Block[] $parts
 	 */
-	public function __construct(String $name, int $value, array $parts){
+	public function __construct(string $name, int $value, array $parts){
 		$this->parts = $parts;
 		$this->cageName = $name;
 		$this->value = $value;
@@ -99,7 +101,7 @@ class Cage {
 		return $list;
 	}
 
-	public function clearObstacle(Position $loc){
+	public function clearObstacle(Position $loc): void{
 		$loc->y = $loc->y - 1;
 		for($y = 0; $y < 6; ++$y){
 			for($z = -2; $z < 2; $z++){
@@ -111,9 +113,9 @@ class Cage {
 	}
 
 	/**
-	 * @return String
+	 * @return string
 	 */
-	public function getCageName(): String{
+	public function getCageName(): string{
 		return $this->cageName;
 	}
 

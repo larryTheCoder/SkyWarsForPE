@@ -12,5 +12,6 @@ nbproject/*
 *.tar
 *.tar.gz
 *.sworld
+*.txt
 
 lib/*

@@ -36,19 +36,18 @@ use larryTheCoder\utils\cage\ArenaCage;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
-use pocketmine\event\{Listener, player\PlayerJoinEvent};
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\{PluginBase};
 use pocketmine\utils\{Config, MainLogger, TextFormat};
 
 /**
- * The main class for SkyWars plugin
- * Was a build for Alair069.
+ * The main class for SkyWarsForPE infrastructure, originally written for Alair069.
+ * However due to some futile decision, this project is open sourced again.
  *
  * @package larryTheCoder
  */
-class SkyWarsPE extends PluginBase implements Listener {
+class SkyWarsPE extends PluginBase {
 
 	const CONFIG_VERSION = 2;
 
@@ -63,7 +62,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 	/** @var EconomyAPI|null */
 	public $economy;
 
-	/** @var array */
+	/** @var Config[] */
 	private $translation = [];
 	/** @var ArenaManager */
 	private $arenaManager;
@@ -89,7 +88,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->initConfig();
 	}
 
-	public function initConfig(){
+	public function initConfig(): void{
 		Utils::ensureDirectory();
 		Utils::ensureDirectory("image/");
 		Utils::ensureDirectory("language/");
@@ -109,29 +108,30 @@ class SkyWarsPE extends PluginBase implements Listener {
 			$this->saveResource("config.yml");
 		}
 		Settings::init(new Config($this->getDataFolder() . "config.yml", Config::YAML));
-		foreach(glob($this->getDataFolder() . "language/*.yml") as $file){
+
+		$folder = glob($this->getDataFolder() . "language/*.yml");
+		if($folder === false) throw new \RuntimeException("Unexpected error has occurred while indexing arenas files.");
+
+		foreach($folder as $file){
 			$locale = new Config($file, Config::YAML);
 			$localeCode = basename($file, ".yml");
 			if($locale->get("config-version") < 4){
-				$this->getServer()->getLogger()->info($this->getPrefix() . "§cLanguage '" . $localeCode . "' is old, using new one");
+				$this->getServer()->getLogger()->info(Settings::$prefix . "§cLanguage '" . $localeCode . "' is old, using new one");
 				$this->saveResource("language/" . $localeCode . ".yml", true);
 			}
 			$this->translation[strtolower($localeCode)] = $locale;
 		}
 
 		if(empty($this->translation)){
-			$this->getServer()->getLogger()->error($this->getPrefix() . "§cNo locales been found, this is discouraged.");
+			$this->getServer()->getLogger()->error(Settings::$prefix . "§cNo locales been found, this is discouraged.");
 			$this->getServer()->getPluginManager()->disablePlugin($this);
 			$this->disabled = true;
 			self::$instance = null;
 
 			return;
 		}
-		$this->getServer()->getLogger()->info($this->getPrefix() . "§aTracked and flashed §e" . count($this->translation) . "§a locales");
-	}
 
-	public function getPrefix(){
-		return Settings::$prefix;
+		$this->getServer()->getLogger()->info(Settings::$prefix . "§aTracked and flashed §e" . count($this->translation) . "§a locales");
 	}
 
 	/** @var bool */
@@ -150,11 +150,11 @@ class SkyWarsPE extends PluginBase implements Listener {
 		}
 		if($this->disabled) return;
 
-		$this->getServer()->getLogger()->info($this->getPrefix() . "§eStarting SkyWarsForPE modules...");
+		$this->getServer()->getLogger()->info(Settings::$prefix . "§eStarting SkyWarsForPE modules...");
 
 		$this->checkPlugins();
 
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 
 		$this->database = new AsyncLibDatabase($this, $this->getConfig()->get("database"));
 		$this->cmd = new SkyWarsCommand($this);
@@ -170,10 +170,10 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		$this->crashed = false;
 
-		$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::GREEN . "SkyWarsForPE has been enabled");
+		$this->getServer()->getLogger()->info(Settings::$prefix . TextFormat::GREEN . "SkyWarsForPE has been enabled");
 	}
 
-	private function loadHumans(){
+	private function loadHumans(): void{
 		$cfg = new Config($this->getDataFolder() . "npc.yml", Config::YAML);
 
 		$npc1E = $cfg->get("npc-1", []);
@@ -181,8 +181,8 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$npc3E = $cfg->get("npc-3", []);
 
 		if(count($npc1E) < 1 || count($npc2E) < 1 || count($npc3E) < 1){
-			$this->getServer()->getLogger()->info($this->getPrefix() . "§7No TopWinners spawn location were found.");
-			$this->getServer()->getLogger()->info($this->getPrefix() . "§7Please reconfigure TopWinners spawn locations");
+			$this->getServer()->getLogger()->info(Settings::$prefix . "§7No TopWinners spawn location were found.");
+			$this->getServer()->getLogger()->info(Settings::$prefix . "§7Please reconfigure TopWinners spawn locations");
 
 			return;
 		}
@@ -199,7 +199,7 @@ class SkyWarsPE extends PluginBase implements Listener {
 		$this->pedestalManager = new PedestalManager($vectors, $level);
 	}
 
-	private function checkPlugins(){
+	private function checkPlugins(): void{
 		$ins = $this->getServer()->getPluginManager()->getPlugin("EconomyAPI");
 		if($ins instanceof EconomyAPI){
 			$this->economy = $ins;
@@ -216,6 +216,10 @@ class SkyWarsPE extends PluginBase implements Listener {
 		return $this->database;
 	}
 
+	public function getCage(): ArenaCage{
+		return $this->cage;
+	}
+
 	public function onDisable(){
 		try{
 			if($this->crashed) return;
@@ -223,16 +227,13 @@ class SkyWarsPE extends PluginBase implements Listener {
 			Utils::unLoadGame();
 
 			$this->database->close();
+			$this->pedestalManager->closeAll();
 
-			if(!is_null($this->pedestalManager)){
-				$this->pedestalManager->closeAll();
-			}
-
-			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'SkyWarsForPE has disabled');
+			$this->getServer()->getLogger()->info(Settings::$prefix . TextFormat::RED . 'SkyWarsForPE has disabled');
 		}catch(\Throwable $error){
 			MainLogger::getLogger()->logException($error);
 
-			$this->getServer()->getLogger()->info($this->getPrefix() . TextFormat::RED . 'Failed to disable plugin accordingly.');
+			$this->getServer()->getLogger()->info(Settings::$prefix . TextFormat::RED . 'Failed to disable plugin accordingly.');
 		}
 	}
 
@@ -254,34 +255,18 @@ class SkyWarsPE extends PluginBase implements Listener {
 
 		if(!is_null($p) && $p instanceof Player){
 			if(isset($this->translation[strtolower($p->getLocale())])){
-				$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation[strtolower($p->getLocale())]->get($key));
+				$msg = str_replace(["&", "%prefix"], ["§", Settings::$prefix], $this->translation[strtolower($p->getLocale())]->get($key));
 			}elseif(isset($this->translation["en_us"])){
-				$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_us"]->get($key));
+				$msg = str_replace(["&", "%prefix"], ["§", Settings::$prefix], $this->translation["en_us"]->get($key));
 			}else{
-				$this->getServer()->getLogger()->error($this->getPrefix() . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
+				$this->getServer()->getLogger()->error(Settings::$prefix . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
 			}
 		}elseif(isset($this->translation["en_us"])){
-			$msg = str_replace(["&", "%prefix"], ["§", $this->getPrefix()], $this->translation["en_us"]->get($key));
+			$msg = str_replace(["&", "%prefix"], ["§", Settings::$prefix], $this->translation["en_us"]->get($key));
 		}else{
-			$this->getServer()->getLogger()->error($this->getPrefix() . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
+			$this->getServer()->getLogger()->error(Settings::$prefix . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
 		}
 
-		return ($prefix ? $this->getPrefix() : "") . $msg;
-	}
-
-	/**
-	 * @param PlayerJoinEvent $e
-	 *
-	 * @priority MONITOR
-	 */
-	public function onPlayerLogin(PlayerJoinEvent $e){
-		$this->getDatabase()->createNewData($e->getPlayer()->getName());
-	}
-
-	/**
-	 * @return null|ArenaCage
-	 */
-	public function getCage(): ?ArenaCage{
-		return $this->cage;
+		return ($prefix ? Settings::$prefix : "") . $msg;
 	}
 }

@@ -123,8 +123,10 @@ winners:
   # Here is for the player who is on the second place.
   # ~And so on.
   - command-execute:
-      - "givemoney %p 150"
-      - "addkarma %p 25"
+      - - "givemoney %p 150"
+        - "givemoney %p 500"
+      - - "givemoney %p 150"
+        - "givemoney %p 150"
 
 # The arena section
 arena:

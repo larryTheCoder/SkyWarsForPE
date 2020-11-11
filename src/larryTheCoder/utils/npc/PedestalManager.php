@@ -63,7 +63,7 @@ class PedestalManager implements Listener {
 		$this->level = $level;
 	}
 
-	public function closeAll(){
+	public function closeAll(): void{
 		foreach($this->npcLocations as $npc){
 			$npc->close();
 		}
@@ -73,7 +73,7 @@ class PedestalManager implements Listener {
 	 * @param EntityLevelChangeEvent $event
 	 * @priority HIGH
 	 */
-	public function onPlayerLevelChange(EntityLevelChangeEvent $event){
+	public function onPlayerLevelChange(EntityLevelChangeEvent $event): void{
 		$pl = $event->getEntity();
 
 		if($pl instanceof Player){
@@ -89,19 +89,19 @@ class PedestalManager implements Listener {
 	 * @param PlayerJoinEvent $event
 	 * @priority HIGH
 	 */
-	public function onPlayerJoinEvent(PlayerJoinEvent $event){
+	public function onPlayerJoinEvent(PlayerJoinEvent $event): void{
 		if($event->getPlayer()->getLevel()->getFolderName() === $this->level->getFolderName()){
 			$this->spawnTo($event->getPlayer());
 		}
 	}
 
-	private function spawnTo(Player $player){
+	private function spawnTo(Player $player): void{
 		foreach($this->npcLocations as $npc){
 			$npc->spawnTo($player);
 		}
 	}
 
-	private function despawnFrom(Player $player){
+	private function despawnFrom(Player $player): void{
 		foreach($this->npcLocations as $npc){
 			$npc->despawnFrom($player);
 		}

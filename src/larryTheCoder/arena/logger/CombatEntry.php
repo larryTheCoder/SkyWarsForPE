@@ -28,62 +28,37 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arena\api\task;
+namespace larryTheCoder\arena\logger;
 
-use pocketmine\scheduler\AsyncTask;
-use pocketmine\Server;
+use pocketmine\event\entity\EntityDamageEvent;
 
-class AsyncDirectoryDelete extends AsyncTask {
+class CombatEntry {
 
 	/** @var string */
-	private $worldTable;
+	public $playerName;
+	/** @var string|null */
+	public $attackFrom;
+	/** @var int */
+	public $lastAttack;
+	/** @var int */
+	public $attackId = EntityDamageEvent::CAUSE_MAGIC;
 
 	/**
-	 * AsyncDirectoryDelete constructor.
-	 * @param string[] $worldToDelete
-	 * @param callable|null $onComplete
+	 * Creates an entry of the last player being damaged, this entry will be used to determine the right player damager
+	 * that has attacked their target, providing consistency and reliability in matchmaking.
+	 *
+	 * @param string $target
+	 * @param int $attackId
+	 * @param string|null $from
+	 * @return CombatEntry
 	 */
-	public function __construct(array $worldToDelete, ?callable $onComplete = null){
-		$this->worldTable = serialize($worldToDelete);
+	public static function fromEntry(string $target, int $attackId = EntityDamageEvent::CAUSE_MAGIC, ?string $from = null): CombatEntry{
+		$entry = new CombatEntry();
+		$entry->playerName = $target;
+		$entry->attackFrom = $from;
+		$entry->attackId = $attackId;
+		$entry->lastAttack = time();
 
-		$this->storeLocal($onComplete);
-	}
-
-	public function onRun(): void{
-		$worldToDelete = unserialize($this->worldTable);
-
-		foreach($worldToDelete as $level){
-			self::deleteDirectory($level);
-		}
-	}
-
-	public static function deleteDirectory(string $dir): bool{
-		if(!file_exists($dir)){
-			return true;
-		}
-
-		if(!is_dir($dir)){
-			return unlink($dir);
-		}
-
-		foreach(scandir($dir) as $item){
-			if($item == '.' || $item == '..'){
-				continue;
-			}
-
-			if(!self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)){
-				return false;
-			}
-
-		}
-
-		return rmdir($dir);
-	}
-
-	public function onCompletion(Server $server): void{
-		$call = $this->fetchLocal();
-		if($call === null) return;
-
-		$call();
+		return $entry;
 	}
 }

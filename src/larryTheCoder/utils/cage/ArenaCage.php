@@ -30,14 +30,15 @@ namespace larryTheCoder\utils\cage;
 
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\PlayerData;
+use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use onebone\economyapi\EconomyAPI;
-use pocketmine\{Player, Server};
-use pocketmine\item\Item;
+use pocketmine\{block\BlockFactory, Player, Server};
 use pocketmine\utils\Config;
 
 class ArenaCage {
 
+	/** @var Cage[] */
 	public $cage = [];
 	/** @var SkyWarsPE */
 	private $plugin;
@@ -51,11 +52,11 @@ class ArenaCage {
 		$this->loadCage();
 	}
 
-	public function loadCage(){
+	public function loadCage(): void{
 		$this->plugin->saveResource("cages.yml");
 		$cfg = new Config($this->plugin->getDataFolder() . "cages.yml", Config::YAML);
 		if($cfg->get('version-id') < 1){
-			Server::getInstance()->getLogger()->info($this->plugin->getPrefix() . "Old cage config detected. Renaming to cages.yml.old");
+			Server::getInstance()->getLogger()->info(Settings::$prefix . "Old cage config detected. Renaming to cages.yml.old");
 			rename($this->plugin->getDataFolder() . "cages.yml", $this->plugin->getDataFolder() . "cages.yml.old");
 			$this->plugin->saveResource("cages.yml");
 		}
@@ -81,7 +82,7 @@ class ArenaCage {
 			# Preload the default cage
 			$array2 = [];
 			for($j = 0; $j < 4; ++$j){
-				$array2[$j] = Item::get(20);
+				$array2[$j] = BlockFactory::get(20);
 			}
 			$this->defaultCage = new Cage("Default Cage", 0, $array2);
 			$this->cage[strtolower("Default Cage")] = $this->defaultCage;
@@ -94,7 +95,7 @@ class ArenaCage {
 	 * @param Player $player
 	 * @param Cage $cage
 	 */
-	public function setPlayerCage(Player $player, Cage $cage){
+	public function setPlayerCage(Player $player, Cage $cage): void{
 		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player, $cage){
 			if(!in_array(strtolower($cage->getCageName()), $pd->cages)){
 				$this->buyCage($player, $cage);
@@ -103,11 +104,11 @@ class ArenaCage {
 			}
 
 			$this->playerCages[$player->getName()] = $cage;
-			$player->sendMessage($this->plugin->getPrefix() . "§aChosen cage §7" . $cage->getCageName());
+			$player->sendMessage(Settings::$prefix . "§aChosen cage §7" . $cage->getCageName());
 		});
 	}
 
-	public function buyCage(Player $p, Cage $cage){
+	public function buyCage(Player $p, Cage $cage): void{
 		$this->plugin->getDatabase()->getPlayerData($p->getName(), function(PlayerData $playerData) use ($p, $cage){
 			if(in_array(strtolower($cage->getCageName()), $playerData->cages)){
 				$p->sendMessage("You already bought this cage");
@@ -158,7 +159,7 @@ class ArenaCage {
 	 * @param Player $p
 	 * @return Cage
 	 */
-	public function getPlayerCage(Player $p){
+	public function getPlayerCage(Player $p): Cage{
 		$cage = isset($this->playerCages[$p->getName()]) ? $this->playerCages[$p->getName()] : $this->defaultCage;
 		Utils::sendDebug("Getting player cage information: " . $cage->getCageName());
 

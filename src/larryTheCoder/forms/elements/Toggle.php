@@ -44,7 +44,7 @@ class Toggle extends Element {
 	}
 
 	/**
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public function serializeElementData(): array{
 		return [

@@ -47,29 +47,37 @@ use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\Player;
+use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\tile\Chest;
 
-class ArenaImpl extends Arena {
-	use ArenaData;
+class ArenaImpl extends ArenaData {
 
 	// Allow invincible period on this arena.
 	const ARENA_INVINCIBLE_PERIOD = 0x12;
 
 	/** @var EventListener */
 	private $eventListener;
-	/** @var array */
+	/** @var array<mixed> */
 	private $arenaData;
 	/** @var SignManager */
 	private $signManager;
 	/** @var float */
 	private $startedTime = -1;
 
+	/** @var Position[][] */
+	private $toRemove = [];
+
+	/**
+	 * ArenaImpl constructor.
+	 * @param SkyWarsPE $plugin
+	 * @param array<mixed> $arenaData
+	 */
 	public function __construct(SkyWarsPE $plugin, array $arenaData){
 		$this->setConfig($arenaData);
 
 		$this->eventListener = new EventListener($this);
-		$this->signManager = new SignManager($this, $this->getSignPosition());
+		$this->signManager = new SignManager($this, $this->getSignPosition(), Settings::$prefix);
 		$this->cageManager = new CageManager($this->spawnPedestals);
 		$this->scoreboard = new Internal($this, Utils::getScoreboardConfig());
 
@@ -78,17 +86,26 @@ class ArenaImpl extends Arena {
 		parent::__construct($plugin);
 	}
 
+	/**
+	 * @param array<mixed> $arenaData
+	 */
 	public function setConfig(array $arenaData): void{
 		$this->arenaData = $arenaData;
 
 		$this->parseData();
 
 		$this->setFlags(Arena::ARENA_DISABLED, !$this->arenaEnable);
-		if($this->signManager !== null){
-			$this->signManager->setTemplate([$this->statusLine1, $this->statusLine2, $this->statusLine3, $this->statusLine4]);
-		}
+
+		$this->signManager = new SignManager($this, $this->getSignPosition(), Settings::$prefix);
+		$this->cageManager = new CageManager($this->spawnPedestals);
+		$this->scoreboard = new Internal($this, Utils::getScoreboardConfig());
+
+		$this->signManager->setTemplate([$this->statusLine1, $this->statusLine2, $this->statusLine3, $this->statusLine4]);
 	}
 
+	/**
+	 * @return array<mixed>
+	 */
 	public function getArenaData(): array{
 		return $this->arenaData;
 	}
@@ -99,7 +116,6 @@ class ArenaImpl extends Arena {
 
 	public function startArena(): void{
 		$pm = $this->getPlayerManager();
-		$cm = $this->getCageManager();
 
 		foreach($pm->getAlivePlayers() as $player){
 			// Set the player gamemode first
@@ -116,13 +132,16 @@ class ArenaImpl extends Arena {
 				$player->setHealth(Settings::$joinHealth);
 				$player->setFood(20);
 			}
+		}
 
-			// Cage factory reset.
-			$pos = $cm->getCage($player);
-			foreach($pos as $block){
-				$this->getLevel()->setBlock(BlockFactory::get(0), $block);
+		// Cage factory reset.
+		foreach($this->toRemove as $data){
+			foreach($data as $pos){
+				$this->getLevel()->setBlock($pos, BlockFactory::get(0));
 			}
 		}
+
+		$this->toRemove = [];
 
 		$this->startedTime = microtime(true);
 
@@ -137,6 +156,12 @@ class ArenaImpl extends Arena {
 		parent::joinToArena($player);
 
 		$player->setGamemode(Player::ADVENTURE);
+
+		// Build up the cage object.
+		$cage = $this->getPlugin()->getCage()->getPlayerCage($player);
+		$spawnLoc = $this->getCageManager()->getCage($player);
+
+		$this->toRemove[$player->getName()] = $cage->build(Position::fromObject($spawnLoc, $this->getLevel()));
 	}
 
 	public function stopArena(): void{
@@ -147,30 +172,42 @@ class ArenaImpl extends Arena {
 
 		$this->startedTime = -1;
 
+		$this->eventListener->resetEntry();
+
 		$this->setFlags(self::ARENA_INVINCIBLE_PERIOD, false);
 	}
 
-	public function playerSpectate(Player $player): void{
-		$pm = $this->getPlayerManager();
+	public function setSpectator(Player $player): void{
+		parent::setSpectator($player);
+
+		$player->setHealth(20);
+		$player->setFood(20);
 
 		$player->setGamemode(Player::ADVENTURE);
 		$player->setAllowFlight(true);
 		$player->sendMessage(SkyWarsPE::getInstance()->getMsg($player, 'player-spectate'));
 
-		foreach($pm->getAllPlayers() as $p2) $p2->hidePlayer($player);
-
 		$player->teleport(Position::fromObject($this->arenaSpecPos, $this->getLevel()));
 	}
 
-	public function unsetPlayer(Player $player, bool $isSpectator = false){
+	public function unsetPlayer(Player $player, bool $isSpectator = false): void{
 		$player->setGamemode(0);
 
 		if($isSpectator){
 			$player->setAllowFlight(false);
+
+			foreach(Server::getInstance()->getOnlinePlayers() as $pl){
+				if(!$pl->canSee($player)){
+					$pl->showPlayer($player);
+				}
+			}
 		}else{
 			$player->getInventory()->clearAll();
 			$player->getArmorInventory()->clearAll();
 		}
+
+		$player->setHealth(20);
+		$player->setFood(20);
 	}
 
 	public function leaveArena(Player $player, bool $onQuit = false): void{
@@ -182,6 +219,14 @@ class ArenaImpl extends Arena {
 			$pm->broadcastToPlayers("{$player->getName()} has left the game.");
 
 			$player->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
+		}
+
+		if(isset($this->toRemove[$player->getName()])){
+			foreach($this->toRemove[$player->getName()] as $pos){
+				$this->getLevel()->setBlock($pos, BlockFactory::get(0));
+			}
+
+			unset($this->toRemove[$player->getName()]);
 		}
 
 		parent::leaveArena($player, $onQuit);
@@ -253,5 +298,16 @@ class ArenaImpl extends Arena {
 
 	public function getArenaTask(): ArenaTickTask{
 		return new SkyWarsTask($this);
+	}
+
+	/**
+	 * @return SkyWarsPE
+	 */
+	public function getPlugin(): Plugin
+	{
+		/** @var SkyWarsPE $plugin */
+		$plugin = parent::getPlugin();
+
+		return $plugin;
 	}
 }

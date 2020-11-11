@@ -59,6 +59,9 @@ class Internal implements Scoreboard {
 	/** @var int */
 	private $timeLeft = 0;
 
+	/** @var int */
+	private $lastState = -1;
+
 	public function __construct(Arena $arena, Config $defaultConf){
 		$this->arena = $arena;
 
@@ -87,7 +90,7 @@ class Internal implements Scoreboard {
 		$this->updateScoreboard($pl);
 	}
 
-	private function updateScoreboard(Player $pl){
+	private function updateScoreboard(Player $pl): void{
 		if(!isset($this->scoreboards[$pl->getName()])){
 			$this->addPlayer($pl);
 
@@ -98,13 +101,21 @@ class Internal implements Scoreboard {
 			return;
 		}
 
-		switch($this->arena->getStatus()){
+		// Reset network cache if the state are no longer the same.
+		$status = $this->arena->getStatus();
+		if($this->lastState !== $status){
+			$this->networkBound = [];
+
+			$this->lastState = $status;
+		}
+
+		switch($status){
 			case ArenaState::STATE_STARTING: // Evaluate if we do need another custom scoreboard for this
 			case ArenaState::STATE_WAITING:
 				$data = $this->config->get("wait-arena", [""]);
 				break;
 			case ArenaState::STATE_ARENA_RUNNING:
-				if($this->arena->getPlayerManager()->isSpectator($pl->getName())){
+				if($this->arena->getPlayerManager()->isSpectator($pl)){
 					$data = $this->config->get("spectate-scoreboard", [""]);
 				}else{
 					$data = $this->config->get("in-game-arena", [""]);
@@ -128,7 +139,9 @@ class Internal implements Scoreboard {
 
 			print "Sending scoreboard packet $scLine" . PHP_EOL;
 
-			$pl->batchDataPacket(StandardScoreboard::setScoreLine($pl, $line, $msg));
+			StandardScoreboard::setScoreLine($pl, $line, $msg);
+
+			var_dump($msg);
 
 			$this->networkBound[$pl->getName()][$line] = $msg;
 		}
@@ -186,7 +199,7 @@ class Internal implements Scoreboard {
 			array_push($replace, $data[0]);
 		}
 
-		return str_replace($search, $replace, $message);
+		return str_replace($search, $replace, $message) . " ";
 	}
 
 	public function tickScoreboard(): void{
@@ -199,6 +212,8 @@ class Internal implements Scoreboard {
 		foreach($this->scoreboards as $player){
 			$this->removePlayer($player);
 		}
+
+		$this->networkBound = [];
 	}
 
 	public function removePlayer(Player $pl): void{

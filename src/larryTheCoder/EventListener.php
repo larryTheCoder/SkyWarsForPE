@@ -28,62 +28,64 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arena\api\task;
+namespace larryTheCoder;
 
-use pocketmine\scheduler\AsyncTask;
-use pocketmine\Server;
+use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\listener\BasicListener;
+use pocketmine\entity\Human;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\network\mcpe\protocol\LoginPacket;
+use pocketmine\utils\UUID;
 
-class AsyncDirectoryDelete extends AsyncTask {
+class EventListener extends BasicListener implements Listener {
 
-	/** @var string */
-	private $worldTable;
+	/** @var bool */
+	public static $isDebug = false;
+	/** @var int */
+	private static $nextPlayer = 0;
+
+	/** @var SkyWarsPE */
+	private $plugin;
+
+	public function __construct(SkyWarsPE $plugin){
+		$this->plugin = $plugin;
+
+		// My project environment.
+		self::$isDebug = getenv("Project") === "E:\ACD-HyruleServer\plugins";
+	}
 
 	/**
-	 * AsyncDirectoryDelete constructor.
-	 * @param string[] $worldToDelete
-	 * @param callable|null $onComplete
+	 * @param PlayerJoinEvent $e
+	 *
+	 * @priority MONITOR
 	 */
-	public function __construct(array $worldToDelete, ?callable $onComplete = null){
-		$this->worldTable = serialize($worldToDelete);
-
-		$this->storeLocal($onComplete);
+	public function onPlayerLogin(PlayerJoinEvent $e): void{
+		$this->plugin->getDatabase()->createNewData($e->getPlayer()->getName());
 	}
 
-	public function onRun(): void{
-		$worldToDelete = unserialize($this->worldTable);
+	public function loginEvent(DataPacketReceiveEvent $event): void{
+		// DEBUGGING PURPOSES
 
-		foreach($worldToDelete as $level){
-			self::deleteDirectory($level);
+		if(!self::$isDebug) return;
+
+		$packet = $event->getPacket();
+
+		if($packet instanceof LoginPacket){
+			$packet->username = "larryZ00" . self::$nextPlayer++;
+			$packet->clientUUID = UUID::fromRandom()->toString();
 		}
 	}
 
-	public static function deleteDirectory(string $dir): bool{
-		if(!file_exists($dir)){
-			return true;
-		}
-
-		if(!is_dir($dir)){
-			return unlink($dir);
-		}
-
-		foreach(scandir($dir) as $item){
-			if($item == '.' || $item == '..'){
-				continue;
+	public function getArena(Human $player): ?Arena{
+		$arenas = $this->plugin->getArenaManager()->getArenas();
+		foreach($arenas as $arena){
+			if($arena->getPlayerManager()->isInArena($player)){
+				return $arena;
 			}
-
-			if(!self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)){
-				return false;
-			}
-
 		}
 
-		return rmdir($dir);
-	}
-
-	public function onCompletion(Server $server): void{
-		$call = $this->fetchLocal();
-		if($call === null) return;
-
-		$call();
+		return null;
 	}
 }

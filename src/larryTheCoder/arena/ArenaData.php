@@ -29,6 +29,7 @@
 namespace larryTheCoder\arena;
 
 
+use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\utils\Utils;
 use pocketmine\level\Position;
@@ -38,65 +39,104 @@ use pocketmine\Server;
 /**
  * Stores everything about the arena config file into a set of variables.
  */
-trait ArenaData {
+abstract class ArenaData extends Arena {
 
+	/** @var int */
 	public $configVersion = 1;
+	/** @var string */
 	public $gameAPICodename = "Default API";
+	/** @var bool */
 	public $configChecked = false;
 
 	// The root of the config.
+	/** @var bool */
 	public $arenaEnable = false;
+	/** @var string */
 	public $arenaFileName = "";
+	/** @var int */
 	public $arenaMode = ArenaState::MODE_SOLO;
 
 	// Team settings
+	/** @var int */
 	public $playerPerTeam = 0;
+	/** @var int */
 	public $playerMinimum = 0;
+	/** @var int */
 	public $worldTeamMembers = 0;
+	/** @var bool */
 	public $monarchySystem = false;
+	/** @var bool */
 	public $interactiveSpawns = false;
 
 	// Winners section
+	/** @var string[][] */
 	public $winnersCommand = [];
 
 	// Signs section.
+	/** @var bool */
 	public $enableJoinSign = false;
+	/** @var Vector3 */
 	public $joinSignVec = null;
+	/** @var string */
 	public $statusLine1 = "";
+	/** @var string */
 	public $statusLine2 = "";
+	/** @var string */
 	public $statusLine3 = "";
+	/** @var string */
 	public $statusLine4 = "";
+	/** @var string */
 	public $joinSignWorld = "";
+	/** @var int */
 	public $statusLineUpdate = 2;
 
 	// Chest section.
+	/** @var bool */
 	public $refillChest = true;
+	/** @var int[] */
 	public $refillAverage = [240];
 
 	// Arena section.
+	/** @var int */
 	public $arenaTime = 0;
+	/** @var int */
 	public $arenaMatchTime = 0;
+	/** @var string */
 	public $arenaWorld = "";
+	/** @var Vector3 */
 	public $arenaSpecPos = null;
+	/** @var Vector3[] */
 	public $spawnPedestals = [];
+	/** @var int */
 	public $maximumPlayers = 0;
+	/** @var int */
 	public $minimumPlayers = 0;
+	/** @var int */
 	public $arenaGraceTime = 0;
+	/** @var bool */
 	public $enableSpectator = false;
+	/** @var bool */
 	public $arenaStartOnFull = false;
+	/** @var string[] */
 	public $arenaBroadcastTM = [];
+	/** @var int */
 	public $arenaMoneyReward = 0;
+	/** @var int */
 	public $arenaStartingTime = 0;
 
+	/** @var bool */
 	public $teamMode = false;
+	/** @var int */
 	public $maximumMembers = 0;
+	/** @var int */
 	public $maximumTeams = 0;
+	/** @var int */
 	public $minimumMembers = 0;
 
 	/**
 	 * Parses the data for the arena
 	 */
-	public function parseData(){
+	public function parseData(): void{
 		$data = $this->getArenaData();
 
 		try{
@@ -124,17 +164,9 @@ trait ArenaData {
 			$chest = $data['chest'];
 			$this->refillChest = boolval($chest['refill']);
 			$this->refillAverage = $chest['refill-average'];
-			$this->winnersCommand = [];
 
 			// Winner config
-			$winner = $data['winners'];
-			if(!is_array($winner)){
-				$this->winnersCommand[] = $winner["command-execute"];
-			}else{
-				foreach($winner as $id => $command){
-					$this->winnersCommand[] = $command;
-				}
-			}
+			$this->winnersCommand = $data['winners'];
 
 			// Arena config
 			$arena = $data['arena'];
@@ -143,9 +175,9 @@ trait ArenaData {
 			$this->arenaGraceTime = intval($arena['grace-time']);
 			$this->enableSpectator = boolval($arena['spectator-mode']);
 			if(is_int($arena['time'])){
-				$this->arenaTime = intval($arena['time']);
+				$this->arenaTime = (int)$arena['time'];
 			}else{
-				$this->arenaTime = str_replace(['true', 'day', 'night'], [-1, 6000, 18000], $arena['time']);
+				$this->arenaTime = (int)str_replace(['true', 'day', 'night'], [-1, 6000, 18000], $arena['time']);
 			}
 			$this->arenaMoneyReward = intval($arena['money-reward']);
 			$this->arenaBroadcastTM = explode(':', $arena['finish-msg-levels']);
@@ -194,9 +226,7 @@ trait ArenaData {
 	}
 
 	/**
-	 * Returns the data of the arena.
-	 *
-	 * @return array
+	 * @return array<mixed>
 	 */
 	public abstract function getArenaData(): array;
 

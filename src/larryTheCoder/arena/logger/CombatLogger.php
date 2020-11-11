@@ -28,77 +28,64 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arena\api;
+namespace larryTheCoder\arena\logger;
 
-use pocketmine\math\Vector3;
-use pocketmine\Player;
 
-/**
- * Manages player cages/spawn pedestals.
- */
-class CageManager {
+class CombatLogger {
 
-	/** @var Vector3[] */
-	protected $claimedCages = [];
-	/** @var Vector3[] */
-	private $cages;
+	public const MAX_ENTRY = 50;
+
+	/** @var CombatEntry[][] */
+	public $players = [];
 
 	/**
-	 * CageManager constructor.
-	 * @param Vector3[] $cages
-	 */
-	public function __construct(array $cages){
-		$this->cages = $cages;
-	}
-
-	/**
-	 * Retrieves the next available cages that will be used in the game.
-	 * This method is to allocate cages after the player left.
+	 * Combat logger entry, this entries will be pushed into an array and the data will be stored
+	 * until it has been garbage collected.
 	 *
-	 * @param Player $player
-	 * @return Vector3|null
+	 * @param CombatEntry $entry
 	 */
-	public function setCage(Player $player): ?Vector3{
-		if(empty($this->cages)) return null; // Cages are full.
+	public function addEntry(CombatEntry $entry): void{
+		$this->players[$entry->playerName][] = $entry;
 
-		return $this->claimedCages[$player->getName()] = array_pop($this->cages);
+		// Automatic garbage collection, providing consistence array size at all cost.
+		if(($entryCount = count($data = $this->players[$entry->playerName])) >= self::MAX_ENTRY){
+			$reverse = array_reverse($data, true);
+			foreach($reverse as $key => $entry){
+				unset($this->players[$entry->playerName][$key]);
+
+				if(--$entryCount < self::MAX_ENTRY) return;
+			}
+		}
 	}
 
 	/**
-	 * Remove the owned cage from the given player.
+	 * Retrieves combat entry from the latest entry array.
 	 *
-	 * @param Player $player
+	 * @param string $playerName
+	 * @param int $lastAttack The
+	 * @return CombatEntry|null
 	 */
-	public function removeCage(Player $player): void{
-		if(!isset($this->claimedCages[$player->getName()])) return;
+	public function getEntry(string $playerName, int $lastAttack = 3): ?CombatEntry{
+		$entry = $this->players[$playerName] ?? null;
 
-		$this->cages[] = $this->claimedCages[$player->getName()];
+		if($entry === null) return null;
 
-		unset($this->claimedCages[$player->getName()]);
+		/** @var CombatEntry|null $targetEntry */
+		$targetEntry = null;
+
+		$reverse = array_reverse($entry);
+		foreach($reverse as $key => $item){
+			if($item->lastAttack >= (time() - $lastAttack)){
+				if($targetEntry === null || $targetEntry->attackFrom === null){
+					$targetEntry = $item;
+				}
+			}
+		}
+
+		return $targetEntry;
 	}
 
-	/**
-	 * @param Player $player
-	 * @return Vector3|null
-	 */
-	public function getCage(Player $player): ?Vector3{
-		if(!isset($this->claimedCages[$player->getName()])) return null;
-
-		return $this->claimedCages[$player->getName()];
-	}
-
-	/**
-	 * Attempt to teleport all players to the cage.
-	 */
-	public function teleportToCages(): void{
-		// NOOP
-	}
-
-	/**
-	 * self-explanatory
-	 */
 	public function resetAll(): void{
-		foreach($this->claimedCages as $vec) $this->cages[] = $vec;
-		$this->claimedCages = [];
+		$this->players = [];
 	}
 }

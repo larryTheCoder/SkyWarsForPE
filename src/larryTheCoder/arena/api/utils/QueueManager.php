@@ -28,62 +28,44 @@
 
 declare(strict_types = 1);
 
-namespace larryTheCoder\arena\api\task;
+namespace larryTheCoder\arena\api\utils;
 
-use pocketmine\scheduler\AsyncTask;
-use pocketmine\Server;
 
-class AsyncDirectoryDelete extends AsyncTask {
+use pocketmine\Player;
 
-	/** @var string */
-	private $worldTable;
+class QueueManager {
+
+	/** @var Player[] */
+	private $playerQueue = [];
 
 	/**
-	 * AsyncDirectoryDelete constructor.
-	 * @param string[] $worldToDelete
-	 * @param callable|null $onComplete
+	 * Attempt to add player into the arena queue. This holds the player queue until the next tick.
+	 * This queue will be processed in ArenaTickTask.
+	 *
+	 * @param Player $player
 	 */
-	public function __construct(array $worldToDelete, ?callable $onComplete = null){
-		$this->worldTable = serialize($worldToDelete);
-
-		$this->storeLocal($onComplete);
+	public function addQueue(Player $player): void{
+		$this->playerQueue[$player->getName()] = $player;
 	}
 
-	public function onRun(): void{
-		$worldToDelete = unserialize($this->worldTable);
-
-		foreach($worldToDelete as $level){
-			self::deleteDirectory($level);
-		}
+	public function inQueue(Player $player): bool{
+		return isset($this->playerQueue[$player->getName()]);
 	}
 
-	public static function deleteDirectory(string $dir): bool{
-		if(!file_exists($dir)){
-			return true;
-		}
-
-		if(!is_dir($dir)){
-			return unlink($dir);
-		}
-
-		foreach(scandir($dir) as $item){
-			if($item == '.' || $item == '..'){
-				continue;
-			}
-
-			if(!self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)){
-				return false;
-			}
-
-		}
-
-		return rmdir($dir);
+	public function hasQueue(): bool{
+		return !empty($this->playerQueue);
 	}
 
-	public function onCompletion(Server $server): void{
-		$call = $this->fetchLocal();
-		if($call === null) return;
+	/**
+	 * @return Player[]
+	 * @internal
+	 */
+	public function getQueue(): array{
+		if(!empty($queue = $this->playerQueue)){
+			$this->playerQueue = [];
+		}
 
-		$call();
+		return $queue;
 	}
+
 }

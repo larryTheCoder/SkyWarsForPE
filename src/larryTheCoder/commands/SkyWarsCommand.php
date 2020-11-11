@@ -38,19 +38,22 @@ use pocketmine\utils\TextFormat;
 
 final class SkyWarsCommand {
 
+	/** @var SkyWarsPE */
 	private $plugin;
 
 	public function __construct(SkyWarsPE $e){
 		$this->plugin = $e;
 	}
 
+	/**
+	 * @param CommandSender $sender
+	 * @param Command $cmd
+	 * @param string[] $args
+	 * @return bool
+	 */
 	public function onCommand(CommandSender $sender, Command $cmd, array $args): bool{
 		if(strtolower($cmd->getName()) === "sw" && isset($args[0])){
 			switch(strtolower($args[0])){
-				case "def":
-					/** @var $sender Player */
-					$sender->teleport($sender->getLevel()->getSpawnLocation());
-					break;
 				case "lobby":
 				case "leave":
 					if(!$sender->hasPermission('sw.command.lobby')){
@@ -198,13 +201,14 @@ final class SkyWarsCommand {
 						$sender->sendMessage("§cNo available arena, please try again later");
 						break;
 					}
+
 					if($arena->hasFlags(Arena::ARENA_CRASHED)){
 						$sender->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
 
 						break;
 					}
 
-					$arena->getPlayerManager()->addQueue($sender);
+					$arena->getQueueManager()->addQueue($sender);
 					break;
 				case "reload":
 					if(!$sender->hasPermission("sw.command.reload")){
@@ -239,18 +243,18 @@ final class SkyWarsCommand {
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
 						break;
 					}
-					$pm = $this->plugin->getArenaManager()->getArena($args[1])->getPlayerManager();
+					$pm = ($arena = $this->plugin->getArenaManager()->getArena($args[1]))->getPlayerManager();
 					if($pm->isInArena($sender)){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-running'));
 						break;
 					}
-					if($this->plugin->getArenaManager()->getArena($args[1])->hasFlags(Arena::ARENA_CRASHED)){
+					if($arena->hasFlags(Arena::ARENA_CRASHED)){
 						$sender->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
 
 						break;
 					}
 
-					$pm->addQueue($sender);
+					$arena->getQueueManager()->addQueue($sender);
 					break;
 				case "setlobby":
 					if(!$sender->hasPermission('sw.command.setlobby')){
@@ -286,7 +290,7 @@ final class SkyWarsCommand {
 		return true;
 	}
 
-	private function consoleSender(CommandSender $p){
+	private function consoleSender(CommandSender $p): void{
 		$p->sendMessage("run command only in-game");
 	}
 

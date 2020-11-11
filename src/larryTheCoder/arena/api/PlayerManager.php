@@ -63,47 +63,14 @@ class PlayerManager {
 	private $teams = []; // "Player" => "Team color"
 	/** @var Arena */
 	private $arena;
-	/** @var int[] */
+	/** @var string[] */
 	private $ranking = [];
-
-	/** @var Player[] */
-	private $playerQueue = [];
 
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
 	}
 
-	/**
-	 * Attempt to add player into the arena queue. This holds the player queue until the next tick.
-	 * This queue will be processed in ArenaTickTask.
-	 *
-	 * @param Player $player
-	 */
-	public function addQueue(Player $player): void{
-		$this->playerQueue[$player->getName()] = $player;
-	}
-
-	public function inQueue(Player $player): bool{
-		return isset($this->playerQueue[$player->getName()]);
-	}
-
-	public function hasQueue(): bool{
-		return !empty($this->playerQueue);
-	}
-
-	/**
-	 * @return Player[]
-	 * @internal
-	 */
-	public function getQueue(): array{
-		if(!empty($queue = $this->playerQueue)){
-			$this->playerQueue = [];
-		}
-
-		return $queue;
-	}
-
-	public function addPlayer(Player $pl, int $team = -1){
+	public function addPlayer(Player $pl, int $team = -1): void{
 		# Set the player gamemode first
 		$pl->setGamemode(0);
 		$pl->getInventory()->clearAll();
@@ -145,7 +112,7 @@ class PlayerManager {
 	 * @param Player $pl
 	 * @param int $team
 	 */
-	public function setPlayerTeam(Player $pl, int $team){
+	public function setPlayerTeam(Player $pl, int $team): void{
 		if(!$this->teamMode){
 			return;
 		}
@@ -153,7 +120,13 @@ class PlayerManager {
 		$this->teams[strtolower($pl->getName())] = $team;
 	}
 
-	public function broadcastToPlayers(string $msg, $popup = true, $toReplace = [], $replacement = []): void{
+	/**
+	 * @param string $msg
+	 * @param bool $popup
+	 * @param string[] $toReplace
+	 * @param string[] $replacement
+	 */
+	public function broadcastToPlayers(string $msg, bool $popup = true, array $toReplace = [], array $replacement = []): void{
 		$inGame = array_merge($this->getAlivePlayers(), $this->getSpectators());
 		/** @var Player $p */
 		foreach($inGame as $p){
@@ -270,24 +243,22 @@ class PlayerManager {
 		return $this->teams;
 	}
 
-	public function getPlayerState($sender): int{
-		if($sender instanceof Player){
-			if(isset($this->players[strtolower($sender->getName())])){
-				return ArenaState::PLAYER_ALIVE;
-			}elseif(isset($this->spectators[strtolower($sender->getName())])){
-				return ArenaState::PLAYER_SPECTATE;
-			}elseif($this->arenaLevel !== null && strtolower($sender->getLevel()->getName()) === strtolower($this->arenaLevel->getName())){
-				return ArenaState::PLAYER_SPECIAL;
-			}
+	public function getPlayerState(Player $sender): int{
+		if(isset($this->players[strtolower($sender->getName())])){
+			return ArenaState::PLAYER_ALIVE;
+		}elseif(isset($this->spectators[strtolower($sender->getName())])){
+			return ArenaState::PLAYER_SPECTATE;
+		}elseif($this->arenaLevel !== null && strtolower($sender->getLevel()->getName()) === strtolower($this->arenaLevel->getName())){
+			return ArenaState::PLAYER_SPECIAL;
+		} else {
+			return ArenaState::PLAYER_UNSET;
 		}
-
-		return ArenaState::PLAYER_UNSET;
 	}
 
 	/**
 	 * Reset players data and return the players object.
 	 *
-	 * @return Player[]
+	 * @return Player[][]
 	 */
 	public function resetPlayers(): array{
 		$data = [];
@@ -298,19 +269,11 @@ class PlayerManager {
 		$this->players = [];
 		$this->teams = [];
 		$this->kills = [];
-		$this->winners = [];
-
-		$i = $this->arena->getMaxPlayer() - 1;
-		while($i >= 0){
-			if(!isset($this->winners[$i])) $this->winners[$i] = 0;
-
-			$i--;
-		}
 
 		return $data;
 	}
 
-	public function updateWinners(){
+	public function updateWinners(): void{
 		$sort = $this->kills;
 		arsort($sort);
 
@@ -338,28 +301,31 @@ class PlayerManager {
 		return !$this->teamMode;
 	}
 
-	public function isSpectator(string $player){
+	public function isSpectator(Player $player): bool{
 		return in_array($player, $this->spectators, true);
 	}
 
-	public function broadcastTitle(string $title, string $subtitle = "", int $fadeIn = -1, int $stay = -1, int $fadeOut = -1){
+	public function broadcastTitle(string $title, string $subtitle = "", int $fadeIn = -1, int $stay = -1, int $fadeOut = -1): void{
 		foreach($this->getAllPlayers() as $player){
 			$player->sendTitle($title, $subtitle, $fadeIn, $stay, $fadeOut);
 		}
 	}
 
-	public function getRanking(string $playerName){
+	public function getRanking(string $playerName): int{
 		return array_keys($this->ranking, $playerName, true)[0] ?? -1;
 	}
 
-	public function getTopPlayer(){
-		return array_keys($this->kills, max($this->kills))[0] ?? "N/A";
+	public function getTopPlayer(): string{
+		return (string)array_keys($this->kills, max($this->kills))[0] ?? "N/A";
 	}
 
-	public function getTopKills(){
-		return max($this->kills);
+	public function getTopKills(): int{
+		return ($max = max($this->kills)) === false ? 0 : $max;
 	}
 
+	/**
+	 * @return array<int, array<int, string|int>>
+	 */
 	public function getWinners(): array{
 		$winners = [];
 		foreach($this->ranking as $rank => $playerName){

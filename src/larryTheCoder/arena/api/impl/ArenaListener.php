@@ -33,7 +33,10 @@ namespace larryTheCoder\arena\api\impl;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\inventory\InventoryCloseEvent;
+use pocketmine\event\inventory\InventoryOpenEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -66,11 +69,19 @@ class ArenaListener {
 		// NOOP
 	}
 
-	public function onInventoryOpenEvent(){
+	public function onPlayerExhaust(PlayerExhaustEvent $event): void{
 
 	}
 
-	public function onPlayerDeath(Player $targetPlayer, $deathFrom): void{
+	public function onInventoryOpenEvent(InventoryOpenEvent $event): void{
+
+	}
+
+	public function onInventoryCloseEvent(InventoryCloseEvent $event): void{
+
+	}
+
+	public function onPlayerDeath(Player $player, int $deathFrom = EntityDamageEvent::CAUSE_SUICIDE): void{
 		// NOOP
 	}
 

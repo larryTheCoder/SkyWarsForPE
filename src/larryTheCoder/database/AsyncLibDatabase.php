@@ -70,6 +70,11 @@ class AsyncLibDatabase {
 	/** @var DataConnector */
 	private $database;
 
+	/**
+	 * AsyncLibDatabase constructor.
+	 * @param SkyWarsPE $plugin
+	 * @param mixed[] $config
+	 */
 	public function __construct(SkyWarsPE $plugin, array $config){
 		$this->database = libasynql::create($plugin, $config, [
 			"sqlite" => "scripts/sqlite.sql",
@@ -229,6 +234,10 @@ class AsyncLibDatabase {
 			});
 	}
 
+	/**
+	 * @param mixed[] $rows
+	 * @return PlayerData
+	 */
 	private static function parsePlayerRow(array $rows): PlayerData{
 		$data = new PlayerData();
 		$data->player = $rows['playerName'];

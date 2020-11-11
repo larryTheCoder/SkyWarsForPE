@@ -33,10 +33,16 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\arena\api\impl\ArenaListener;
 use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\logger\CombatEntry;
+use larryTheCoder\arena\logger\CombatLogger;
+use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\item\Item;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
@@ -44,9 +50,26 @@ class EventListener extends ArenaListener {
 
 	/** @var ArenaImpl */
 	private $arena;
+	/** @var CombatLogger */
+	private $logger;
 
 	public function __construct(ArenaImpl $arena){
 		$this->arena = $arena;
+		$this->logger = new CombatLogger();
+	}
+
+	public function resetEntry(): void{
+		$this->logger->resetAll();
+	}
+
+	public function onPlayerExhaust(PlayerExhaustEvent $event): void{
+		$pm = $this->arena->getPlayerManager();
+		$player = $event->getPlayer();
+
+		// Do not exhaust spectators.
+		if($player instanceof Player && $pm->isSpectator($player)){
+			$event->setCancelled();
+		}
 	}
 
 	public function onPlayerQuitEvent(PlayerQuitEvent $event): void{
@@ -56,16 +79,90 @@ class EventListener extends ArenaListener {
 	}
 
 	public function onPlayerHitEvent(EntityDamageEvent $event): void{
+		/** @var Player $player */
+		$player = $event->getEntity();
 		if($this->arena->hasFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD)){
 			$event->setCancelled();
+
+			return;
+		}
+
+		$pm = $this->arena->getPlayerManager();
+
+		// In order to remove "death" loading screen. Immediate respawn.
+		$health = $player->getHealth() - $event->getFinalDamage();
+		if($health <= 0){
+			$event->setCancelled();
+
+			$entry = $this->logger->getEntry($player->getName());
+			if($entry !== null && $entry->attackFrom !== null){
+				// TODO: Custom death message.
+
+				$pm->broadcastToPlayers(SkyWarsPE::getInstance()->getMsg($player, 'death-message', false), false, ["{PLAYER}", "{KILLER}"], [$player->getName(), $entry->attackFrom]);
+			}else{
+				$pm->broadcastToPlayers(SkyWarsPE::getInstance()->getMsg($player, self::getDeathMessageById($event->getCause()), false), false, ["{PLAYER}"], [$player->getName()]);
+			}
+
+			$this->onPlayerDeath($player, $event->getCause());
+		}else{
+			$cause = $event->getCause();
+
+			if($event instanceof EntityDamageByEntityEvent && ($damager = $event->getDamager()) instanceof Player){
+				/** @var Player $damager */
+				$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause, $damager->getName()));
+
+				return;
+			}
+
+			$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause));
 		}
 	}
 
-	public function onPlayerDeath(Player $player, $deathFrom): void{
+	public static function getDeathMessageById(int $id): string{
+		switch($id){
+			case EntityDamageEvent::CAUSE_VOID:
+				return "death-message-void";
+			case EntityDamageEvent::CAUSE_SUICIDE:
+				return "death-message-suicide";
+			case EntityDamageEvent::CAUSE_SUFFOCATION:
+				return "death-message-suffocated";
+			case EntityDamageEvent::CAUSE_FIRE:
+				return "death-message-burned";
+			case EntityDamageEvent::CAUSE_CONTACT:
+				return "death-message-catused";
+			case EntityDamageEvent::CAUSE_FALL:
+				return "death-message-fall";
+			case EntityDamageEvent::CAUSE_LAVA:
+				return "death-message-toasted";
+			case EntityDamageEvent::CAUSE_DROWNING:
+				return "death-message-drowned";
+			case EntityDamageEvent::CAUSE_STARVATION:
+				return "death-message-nature";
+			case EntityDamageEvent::CAUSE_BLOCK_EXPLOSION:
+			case EntityDamageEvent::CAUSE_ENTITY_EXPLOSION:
+				return "death-message-explode";
+			case EntityDamageEvent::CAUSE_CUSTOM:
+				return "death-message-magic";
+		}
+
+		return "death-message-unknown";
+	}
+
+	public function onPlayerDeath(Player $player, int $deathFrom = EntityDamageEvent::CAUSE_SUICIDE): void{
 		Utils::strikeLightning($player);
 
-		$this->arena->getPlayerManager()->setSpectator($player);
-		$this->arena->playerSpectate($player);
+		$dropItems = $deathFrom === EntityDamageEvent::CAUSE_LAVA || $deathFrom === EntityDamageEvent::CAUSE_VOID;
+
+		if($dropItems){
+			$items = array_merge([$player->getInventory()->getContents(), $player->getArmorInventory()->getContents()]);
+
+			/** @var Item $item */
+			foreach($items as $item){
+				$player->getLevel()->dropItem($player, $item);
+			}
+		}
+
+		$this->arena->setSpectator($player);
 	}
 
 	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $event): void{

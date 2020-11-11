@@ -38,7 +38,7 @@ use larryTheCoder\forms\elements\{Button, Dropdown, Input, Label, Slider, Toggle
 use larryTheCoder\forms\MenuForm;
 use larryTheCoder\forms\ModalForm;
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\{ConfigManager, Utils};
+use larryTheCoder\utils\{ConfigManager, Settings, Utils};
 use larryTheCoder\utils\PlayerData;
 use pocketmine\{block\Slab, level\Level, Player, Server, utils\TextFormat};
 use pocketmine\event\block\BlockBreakEvent;
@@ -60,11 +60,11 @@ class FormPanel implements Listener {
 	private $plugin;
 	/** @var SkyWarsData[] */
 	private $temporaryData = [];
-	/** @var array */
+	/** @var string[][] */
 	private $actions = [];
 	/** @var int[] */
 	private $mode = [];
-	/** @var array */
+	/** @var array<string, array<int|Item>> */
 	private $lastHoldIndex = [];
 
 	public function __construct(SkyWarsPE $plugin){
@@ -81,7 +81,7 @@ class FormPanel implements Listener {
 	 * @param Player $player
 	 * @param ArenaImpl $arena
 	 */
-	public function showSpectatorPanel(Player $player, ArenaImpl $arena){
+	public function showSpectatorPanel(Player $player, ArenaImpl $arena): void{
 		$form = new MenuForm(TextFormat::BLUE . "Select Player Name");
 
 		foreach($arena->getPlayerManager()->getAlivePlayers() as $inGame){
@@ -119,7 +119,7 @@ class FormPanel implements Listener {
 	 *
 	 * @param Player $player
 	 */
-	public function showStatsPanel(Player $player){
+	public function showStatsPanel(Player $player): void{
 		// Checked and worked.
 		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $result) use ($player){
 			$form = new CustomForm("§a{$result->player}'s stats",
@@ -145,7 +145,7 @@ class FormPanel implements Listener {
 	 *
 	 * @param Player $player
 	 */
-	public function setupArena(Player $player){
+	public function setupArena(Player $player): void{
 		// Checked and worked.
 		$form = new CustomForm("§5SkyWars Setup.");
 
@@ -216,7 +216,7 @@ class FormPanel implements Listener {
 			$a->startOnFull($data->startWhenFull);
 			$a->applyFullChanges();
 
-			$form = new ModalForm("", "§aYou may need to setup the spawn position so system could enable the arena mode faster.",
+			$form = new ModalForm("", "§aYou may need to setup arena's spawn position so system could enable the arena much faster.",
 				function(Player $player, bool $response) use ($data): void{
 					if($response) $this->setupSpawn($player, $data);
 				}, "Setup arena spawn.", "§cSetup later.");
@@ -230,7 +230,7 @@ class FormPanel implements Listener {
 		$player->sendForm($form);
 	}
 
-	private function setupSpawn(Player $player, SkyWarsData $arena = null){
+	private function setupSpawn(Player $player, SkyWarsData $arena = null): void{
 		Utils::loadFirst($arena->arenaLevel);
 
 		$arenaConfig = new ConfigManager($arena->arenaName, $this->plugin);
@@ -245,7 +245,7 @@ class FormPanel implements Listener {
 		$this->setMagicWand($player);
 	}
 
-	private function setMagicWand(Player $p){
+	private function setMagicWand(Player $p): void{
 		$this->lastHoldIndex[$p->getName()] = [$p->getInventory()->getHeldItemIndex(), $p->getInventory()->getHotbarSlotItem(0)];
 
 		$p->setGamemode(1);
@@ -253,7 +253,7 @@ class FormPanel implements Listener {
 		$p->getInventory()->setItemInHand(new BlazeRod());
 	}
 
-	private function cleanupArray(Player $player){
+	private function cleanupArray(Player $player): void{
 		if(isset($this->temporaryData[$player->getName()])){
 			$this->plugin->getArenaManager()->reloadArena($this->temporaryData[$player->getName()]->arenaName);
 			unset($this->temporaryData[$player->getName()]);
@@ -274,7 +274,7 @@ class FormPanel implements Listener {
 	 *
 	 * @param Player $player
 	 */
-	public function showSettingPanel(Player $player){
+	public function showSettingPanel(Player $player): void{
 		$form = new MenuForm("§aChoose your arena first.");
 		foreach($this->plugin->getArenaManager()->getArenas() as $arena){
 			$form->append(ucwords($arena->getMapName()));
@@ -349,7 +349,7 @@ class FormPanel implements Listener {
 		return $data;
 	}
 
-	private function setupSpectate(Player $player, SkyWarsData $arena){
+	private function setupSpectate(Player $player, SkyWarsData $arena): void{
 		Utils::loadFirst($arena->arenaLevel);
 
 		$arenaConfig = new ConfigManager($arena->arenaName, $this->plugin);
@@ -364,7 +364,7 @@ class FormPanel implements Listener {
 		$this->setMagicWand($player);
 	}
 
-	private function arenaBehaviour(Player $player, SkyWarsData $arena){
+	private function arenaBehaviour(Player $player, SkyWarsData $arena): void{
 		// (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
 		$form = new CustomForm("Arena settings.",
 			function(Player $player, CustomFormResponse $response) use ($arena): void{
@@ -401,7 +401,7 @@ class FormPanel implements Listener {
 		$player->sendForm($form);
 	}
 
-	private function joinSignBehaviour(Player $p, SkyWarsData $data){
+	private function joinSignBehaviour(Player $p, SkyWarsData $data): void{
 		$form = new CustomForm("§eForm Behaviour Setup");
 
 		$form->setTitle("§eForm Behaviour Setup");
@@ -437,7 +437,7 @@ class FormPanel implements Listener {
 	 *
 	 * @param Player $player
 	 */
-	public function showChooseCage(Player $player){
+	public function showChooseCage(Player $player): void{
 		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player){
 			$form = new MenuForm("§cChoose Your Cage");
 			$form->setText("§aVarieties of cages available!");
@@ -460,7 +460,7 @@ class FormPanel implements Listener {
 		});
 	}
 
-	private function joinSignSetup(Player $player, SkyWarsData $data){
+	private function joinSignSetup(Player $player, SkyWarsData $data): void{
 		Utils::loadFirst($data->arenaLevel);
 
 		$this->temporaryData[$player->getName()] = $data;
@@ -469,7 +469,7 @@ class FormPanel implements Listener {
 		$this->setMagicWand($player);
 	}
 
-	private function teleportWorld(Player $p, SkyWarsData $arena){
+	private function teleportWorld(Player $p, SkyWarsData $arena): void{
 		$p->setGamemode(1);
 
 		$this->temporaryData[$p->getName()] = $arena;
@@ -504,8 +504,8 @@ class FormPanel implements Listener {
 		Server::getInstance()->getAsyncPool()->submitTask($task);
 	}
 
-	private function deleteSure(Player $p, SkyWarsData $data){
-		$form = new ModalForm("", "§cAre you sure that you want to delete this arena? While you deleting this arena, your world wont be effected.",
+	private function deleteSure(Player $p, SkyWarsData $data): void{
+		$form = new ModalForm("", "§cAre you sure to perform this action? Deleting an arena will only deletes your arena setup but will not effect your world.",
 			function(Player $player, bool $response) use ($data): void{
 				if(!$response) return;
 
@@ -522,7 +522,7 @@ class FormPanel implements Listener {
 	 * @param BlockBreakEvent $e
 	 * @priority HIGH
 	 */
-	public function onBlockBreak(BlockBreakEvent $e){
+	public function onBlockBreak(BlockBreakEvent $e): void{
 		$p = $e->getPlayer();
 		if(isset($this->temporaryData[$p->getName()]) && isset($this->actions[strtolower($p->getName())]['type'])){
 			if($e->getItem()->getId() === Item::BLAZE_ROD){
@@ -559,7 +559,7 @@ class FormPanel implements Listener {
 					if($this->mode[strtolower($p->getName())] >= 1 && $this->mode[strtolower($p->getName())] <= $arena->arena->getNested('arena.max-players')){
 						$arena->setSpawnPosition([$b->getX(), $b->getY() + 1, $b->getZ()], $this->mode[strtolower($p->getName())]);
 
-						$p->sendMessage(str_replace("{COUNT}", $this->mode[strtolower($p->getName())], $this->plugin->getMsg($p, 'panel-spawn-pos')));
+						$p->sendMessage(str_replace("{COUNT}", (string)$this->mode[strtolower($p->getName())], $this->plugin->getMsg($p, 'panel-spawn-pos')));
 						$this->mode[strtolower($p->getName())]++;
 					}
 					if($this->mode[strtolower($p->getName())] === $arena->arena->getNested('arena.max-players') + 1){
@@ -589,7 +589,7 @@ class FormPanel implements Listener {
 					$y = 0.5;
 				}
 				$cfg->set("npc-{$this->mode[strtolower($p->getName())]}", [$b->getX() + 0.5, $b->getY() + $y, $b->getZ() + 0.5, $b->getLevel()->getName()]);
-				$p->sendMessage(str_replace("{COUNT}", $this->mode[strtolower($p->getName())], $this->plugin->getMsg($p, 'panel-spawn-pos')));
+				$p->sendMessage(str_replace("{COUNT}", (string)$this->mode[strtolower($p->getName())], $this->plugin->getMsg($p, 'panel-spawn-pos')));
 				$this->mode[strtolower($p->getName())]++;
 			}
 			if($this->mode[strtolower($p->getName())] === 4){
@@ -604,7 +604,7 @@ class FormPanel implements Listener {
 			&& $e->getItem()->getId() === Item::BLAZE_ROD){
 			$e->setCancelled(true);
 
-			$p->sendMessage($this->plugin->getPrefix() . "Teleporting you back to main world.");
+			$p->sendMessage(Settings::$prefix . "Teleporting you back to main world.");
 
 			$level = $p->getLevel();
 			$level->save(true);
@@ -612,14 +612,14 @@ class FormPanel implements Listener {
 			$spawn = $this->plugin->getServer()->getDefaultLevel()->getSafeSpawn();
 			$p->teleport($spawn, 0, 0);
 
-			$this->temporaryData[$p->getName()]->arena->performEdit(ArenaState::FINISHED);
+			//$this->temporaryData[$p->getName()]->arena->performEdit(ArenaState::FINISHED);
 
 			unset($this->actions[strtolower($p->getName())]['WORLD']);
 			$this->cleanupArray($p);
 		}
 	}
 
-	public function showNPCConfiguration(Player $p){
+	public function showNPCConfiguration(Player $p): void{
 		$p->setGamemode(1);
 
 		$this->actions[strtolower($p->getName())]['NPC'] = "SETUP-NPC";

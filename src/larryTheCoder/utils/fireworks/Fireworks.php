@@ -86,11 +86,11 @@ class Fireworks extends Item {
 		return $this->getNamedTag()->getCompoundTag("Fireworks") ?? new CompoundTag("Fireworks");
 	}
 
-	public function addExplosion(int $type, string $color, string $fade = "", int $flicker = 0, int $trail = 0): void{
+	public function addExplosion(int $type, int $color, int $fade = 0, int $flicker = 0, int $trail = 0): void{
 		$explosion = new CompoundTag();
 		$explosion->setByte("FireworkType", $type);
-		$explosion->setByteArray("FireworkColor", $color);
-		$explosion->setByteArray("FireworkFade", $fade);
+		$explosion->setByteArray("FireworkColor", (string)$color);
+		$explosion->setByteArray("FireworkFade", (string)$fade);
 		$explosion->setByte("FireworkFlicker", $flicker);
 		$explosion->setByte("FireworkTrail", $trail);
 		$tag = $this->getExplosionsTag();
