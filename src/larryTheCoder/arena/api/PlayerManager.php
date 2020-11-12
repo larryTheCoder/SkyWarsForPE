@@ -43,8 +43,6 @@ class PlayerManager {
 	// lowercase letters. Use the function given to access the right player name
 	//
 
-	/** @var int[] */
-	public $kills = [];
 	/** @var bool */
 	public $teamMode = false;
 	/** @var int */
@@ -63,8 +61,11 @@ class PlayerManager {
 	private $teams = []; // "Player" => "Team color"
 	/** @var Arena */
 	private $arena;
+
 	/** @var string[] */
 	private $ranking = [];
+	/** @var int[] */
+	public $kills = [];
 
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
@@ -87,7 +88,6 @@ class PlayerManager {
 
 		$this->players[strtolower($pl->getName())] = $pl;
 		$this->kills[strtolower($pl->getName())] = 0;
-		$this->ranking[] = strtolower($pl->getName());
 
 		// Check if the arena is in team mode.
 		if($this->teamMode){
@@ -160,11 +160,12 @@ class PlayerManager {
 	 *
 	 * @param string $name
 	 *
+	 * @param string|null $return
 	 * @return string The original name of this player.
 	 */
-	public function getOriginName(string $name): ?string{
+	public function getOriginName(string $name, ?string $return = null): ?string{
 		if(!$this->isInArena($name)){
-			return null;
+			return $return;
 		}
 
 		return $this->getOriginPlayer($name)->getName();
@@ -250,7 +251,7 @@ class PlayerManager {
 			return ArenaState::PLAYER_SPECTATE;
 		}elseif($this->arenaLevel !== null && strtolower($sender->getLevel()->getName()) === strtolower($this->arenaLevel->getName())){
 			return ArenaState::PLAYER_SPECIAL;
-		} else {
+		}else{
 			return ArenaState::PLAYER_UNSET;
 		}
 	}
@@ -274,27 +275,23 @@ class PlayerManager {
 	}
 
 	public function updateWinners(): void{
+		$this->ranking = [];
+
 		$sort = $this->kills;
 		arsort($sort);
 
 		$i = 0;
 		foreach($sort as $player => $kills){
-			if(($oldPlayer = $this->ranking[$i]) !== $player){
-				$rank = $this->getRanking($player);
-
-				$this->ranking[$i] = $player;
-				$this->ranking[$rank] = $oldPlayer;
-			}
-			$i++;
+			$this->ranking[$i++] = $player;
 		}
 	}
 
 	public function addKills(string $target): void{
-		$this->kills[$target] = $this->getKills($target) + 1;
+		$this->kills[strtolower($target)] = $this->getKills($target) + 1;
 	}
 
 	public function getKills(string $target): int{
-		return $this->kills[$target] ?? 0;
+		return $this->kills[strtolower($target)] ?? 0;
 	}
 
 	public function isSolo(): bool{
@@ -312,7 +309,7 @@ class PlayerManager {
 	}
 
 	public function getRanking(string $playerName): int{
-		return array_keys($this->ranking, $playerName, true)[0] ?? -1;
+		return array_keys($this->ranking, strtolower($playerName), true)[0] ?? -1;
 	}
 
 	public function getTopPlayer(): string{
@@ -320,16 +317,24 @@ class PlayerManager {
 	}
 
 	public function getTopKills(): int{
-		return ($max = max($this->kills)) === false ? 0 : $max;
+		return max($this->kills);
 	}
 
 	/**
 	 * @return array<int, array<int, string|int>>
 	 */
 	public function getWinners(): array{
+		$lastRank = 0;
+
 		$winners = [];
 		foreach($this->ranking as $rank => $playerName){
-			$winners[$rank] = [$playerName, $this->kills[$playerName] ?? 0];
+			$winners[$rank] = [$this->getOriginName($playerName, "N/A"), $this->kills[$playerName] ?? 0];
+
+			$lastRank = $rank;
+		}
+
+		while($lastRank < $this->arena->getMaxPlayer()){
+			$winners[++$lastRank] = ["N/A", 0];
 		}
 
 		return $winners;

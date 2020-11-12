@@ -126,9 +126,9 @@ class StandardScoreboard {
 	 *
 	 * @param Player $player
 	 * @param int $line
-	 * @param string $message
+	 * @param string|null $message
 	 */
-	public static function setScoreLine(Player $player, int $line, string $message): void{
+	public static function setScoreLine(Player $player, int $line, ?string $message): void{
 		if(!isset(self::$scoreboards[$player->getName()])){
 			Server::getInstance()->getLogger()->error("Cannot set a score to a player with no scoreboard");
 
@@ -144,7 +144,7 @@ class StandardScoreboard {
 		$entry = new ScorePacketEntry();
 		$entry->objectiveName = self::objectiveName;
 		$entry->type = $entry::TYPE_FAKE_PLAYER;
-		$entry->customName = $message;
+		$entry->customName = $message ?? "";
 		$entry->score = $line;
 		$entry->scoreboardId = $line;
 
@@ -153,9 +153,11 @@ class StandardScoreboard {
 		$pk->entries[] = $entry;
 		$player->sendDataPacket($pk);
 
-		$pk = new SetScorePacket();
-		$pk->type = SetScorePacket::TYPE_CHANGE;
-		$pk->entries[] = $entry;
-		$player->sendDataPacket($pk);
+		if($message !== null){
+			$pk = new SetScorePacket();
+			$pk->type = SetScorePacket::TYPE_CHANGE;
+			$pk->entries[] = $entry;
+			$player->sendDataPacket($pk);
+		}
 	}
 }

@@ -59,8 +59,8 @@ class Internal implements Scoreboard {
 	/** @var int */
 	private $timeLeft = 0;
 
-	/** @var int */
-	private $lastState = -1;
+	/** @var int[] */
+	private $lastState = [];
 
 	public function __construct(Arena $arena, Config $defaultConf){
 		$this->arena = $arena;
@@ -85,7 +85,7 @@ class Internal implements Scoreboard {
 	public function addPlayer(Player $pl): void{
 		$this->scoreboards[$pl->getName()] = $pl;
 
-		StandardScoreboard::setScore($pl, $this->config->get("display-name", "§e§lSKYWARS"), 1);
+		StandardScoreboard::setScore($pl, $this->config->get("display-name", "§e§lSKYWARS"), StandardScoreboard::SORT_ASCENDING);
 
 		$this->updateScoreboard($pl);
 	}
@@ -103,10 +103,13 @@ class Internal implements Scoreboard {
 
 		// Reset network cache if the state are no longer the same.
 		$status = $this->arena->getStatus();
-		if($this->lastState !== $status){
-			$this->networkBound = [];
+		if(($this->lastState[$pl->getName()] ?? -1) !== $status){
+			foreach(($this->networkBound[$pl->getName()] ?? []) as $line => $message){
+				StandardScoreboard::setScoreLine($pl, $line, null);
+			}
 
-			$this->lastState = $status;
+			$this->lastState[$pl->getName()] = $status;
+			unset($this->networkBound[$pl->getName()]);
 		}
 
 		switch($status){
@@ -137,11 +140,7 @@ class Internal implements Scoreboard {
 				continue;
 			}
 
-			print "Sending scoreboard packet $scLine" . PHP_EOL;
-
 			StandardScoreboard::setScoreLine($pl, $line, $msg);
-
-			var_dump($msg);
 
 			$this->networkBound[$pl->getName()][$line] = $msg;
 		}

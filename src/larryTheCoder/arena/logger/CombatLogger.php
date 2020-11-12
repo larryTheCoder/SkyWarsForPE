@@ -65,7 +65,7 @@ class CombatLogger {
 	 * @param int $lastAttack The
 	 * @return CombatEntry|null
 	 */
-	public function getEntry(string $playerName, int $lastAttack = 3): ?CombatEntry{
+	public function getEntry(string $playerName, int $lastAttack): ?CombatEntry{
 		$entry = $this->players[$playerName] ?? null;
 
 		if($entry === null) return null;

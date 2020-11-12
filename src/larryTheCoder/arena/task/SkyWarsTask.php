@@ -97,6 +97,14 @@ class SkyWarsTask extends ArenaTickTask {
 		}
 	}
 
+	public function endTick(): void{
+		if($this->timeElapsed === 5){
+			// TODO: Send player winner statistics
+		}elseif($this->timeElapsed === 10){
+			parent::endTick();
+		}
+	}
+
 	private function getRefillTime(bool $reset = false): int{
 		if($this->nextRefill === -1 || $reset){
 			return $this->nextRefill = $this->refillAverage[array_rand($this->refillAverage)];

@@ -50,6 +50,7 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\tile\Chest;
+use pocketmine\utils\TextFormat;
 
 class ArenaImpl extends ArenaData {
 
@@ -180,12 +181,15 @@ class ArenaImpl extends ArenaData {
 	public function setSpectator(Player $player): void{
 		parent::setSpectator($player);
 
+		// TODO: Add death stats.
+
 		$player->setHealth(20);
 		$player->setFood(20);
 
 		$player->setGamemode(Player::ADVENTURE);
 		$player->setAllowFlight(true);
-		$player->sendMessage(SkyWarsPE::getInstance()->getMsg($player, 'player-spectate'));
+
+		$player->sendTitle(TextFormat::RED . TextFormat::BOLD . "YOU DIED!", SkyWarsPE::getInstance()->getMsg($player, 'player-spectate', false));
 
 		$player->teleport(Position::fromObject($this->arenaSpecPos, $this->getLevel()));
 	}
@@ -303,8 +307,7 @@ class ArenaImpl extends ArenaData {
 	/**
 	 * @return SkyWarsPE
 	 */
-	public function getPlugin(): Plugin
-	{
+	public function getPlugin(): Plugin{
 		/** @var SkyWarsPE $plugin */
 		$plugin = parent::getPlugin();
 

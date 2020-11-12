@@ -191,7 +191,7 @@ class Utils {
 	/**
 	 * Get the chest contents
 	 *
-	 * @return array<int, array<int, array<int, int>>> $templates
+	 * @return mixed[]
 	 */
 	public static function getChestContents(): array{
 		$items = ['armor'     => [[Item::LEATHER_CAP, Item::LEATHER_TUNIC, Item::LEATHER_PANTS, Item::LEATHER_BOOTS], [Item::GOLD_HELMET, Item::GOLD_CHESTPLATE, Item::GOLD_LEGGINGS, Item::GOLD_BOOTS], [Item::CHAIN_HELMET, Item::CHAIN_CHESTPLATE, Item::CHAIN_LEGGINGS, Item::CHAIN_BOOTS], [Item::IRON_HELMET, Item::IRON_CHESTPLATE, Item::IRON_LEGGINGS, Item::IRON_BOOTS], [Item::DIAMOND_HELMET, Item::DIAMOND_CHESTPLATE, Item::DIAMOND_LEGGINGS, Item::DIAMOND_BOOTS]], //WEAPONS
@@ -200,7 +200,6 @@ class Utils {
 				  'throwable' => [[Item::BOW, Item::ARROW], [Item::SNOWBALL], [Item::EGG]], //BLOCKS
 				  'block'     => [Item::STONE, Item::WOODEN_PLANKS, Item::COBBLESTONE, Item::DIRT], //OTHER
 				  'other'     => [[Item::WOODEN_PICKAXE, Item::GOLD_PICKAXE, Item::STONE_PICKAXE, Item::IRON_PICKAXE, Item::DIAMOND_PICKAXE], [Item::STICK, Item::STRING]]];
-
 
 		$templates = [];
 		for($i = 0; $i < 25; $i++){
@@ -279,14 +278,14 @@ class Utils {
 		if(isset(self::$scoreboard)) return self::$scoreboard;
 
 		$scoreboard = new Config(SkyWarsPE::getInstance()->getDataFolder() . "scoreboard.yml");
-		if($scoreboard->get("version", 2) < 2){
+		if($scoreboard->get("version", 3) < 3){
 			$plug = SkyWarsPE::getInstance();
 
 			rename($plug->getDataFolder() . "scoreboard.yml", $plug->getDataFolder() . "scoreboard.yml.old");
 			$plug->saveResource("scoreboard.yml", true);
 			$scoreboard->reload();
 
-			Utils::send(TextFormat::YELLOW . "Updated scoreboard version to 2");
+			Utils::send(TextFormat::YELLOW . "Updated scoreboard version to 3");
 		}
 
 		return self::$scoreboard = $scoreboard;

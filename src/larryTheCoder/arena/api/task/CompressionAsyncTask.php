@@ -57,7 +57,6 @@ class CompressionAsyncTask extends AsyncTask {
 
 	public function onRun(){
 		[$fromPath, $toPath, $compress] = $data = unserialize($this->data);
-		var_dump($data);
 
 		if($compress){
 			// "folder" "target.zip"

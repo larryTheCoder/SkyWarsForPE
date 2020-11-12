@@ -54,6 +54,8 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
 	/** @var Arena */
 	private $arena;
+	/** @var bool */
+	private $hasEnded = false;
 
 	public function __construct(Arena $arena){
 		$this->arena = $arena;
@@ -95,6 +97,12 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 			return;
 		}
 
+		if($state === ArenaState::STATE_WAITING || $state === ArenaState::STATE_STARTING){
+			$this->tickPreScoreboard();
+		}else{
+			$this->tickGameScoreboard();
+		}
+
 		switch($state){
 			case ArenaState::STATE_WAITING:
 				if(count($pm->getAlivePlayers()) >= $arena->getMinPlayer()){
@@ -115,16 +123,20 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
 				// Game starting title.
 				if($this->timeElapsed === 20){
-					$pm->broadcastTitle("Starting in", "", 1, 25, 1);
+					$pm->broadcastTitle(TextFormat::GOLD . "Starting in", "", 1, 25, 1);
 				}elseif($this->timeElapsed > 20){
 					foreach($pm->getAllPlayers() as $player){
 						$player->getLevel()->addSound((new ClickSound($player)), [$player]);
 					}
 
-					if($this->timeElapsed < 29){
+					if($this->timeElapsed < 27){
 						$pm->broadcastTitle("§6" . (30 - $this->timeElapsed), "", 1, 25, 1);
 					}else{
-						$pm->broadcastTitle("§c" . (30 - $this->timeElapsed), "", 1, 25, 1);
+						if($this->timeElapsed === 30){
+							$pm->broadcastTitle("§cMatch started!", "", 1, 25, 1);
+						}else{
+							$pm->broadcastTitle("§c" . (30 - $this->timeElapsed), "", 1, 25, 1);
+						}
 					}
 				}
 
@@ -136,7 +148,10 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
 					$arena->startArena();
 					$arena->setStatus(ArenaState::STATE_ARENA_RUNNING);
+
+					return;
 				}
+
 
 				$this->timeElapsed++;
 				break;
@@ -154,16 +169,15 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				$this->timeElapsed++;
 				break;
 			case ArenaState::STATE_ARENA_CELEBRATING:
+				if(!$this->hasEnded && $this->timeElapsed > 0){
+					$this->hasEnded = true;
+					$this->timeElapsed = 0;
+				}
+
 				$this->endTick();
 
 				$this->timeElapsed++;
 				break;
-		}
-
-		if($state === ArenaState::STATE_WAITING || $state === ArenaState::STATE_STARTING){
-			$this->tickPreScoreboard();
-		}else{
-			$this->tickGameScoreboard();
 		}
 
 		$this->getArena()->getScoreboard()->tickScoreboard();
@@ -178,6 +192,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 	 */
 	public function reset(): void{
 		$this->timeElapsed = 0;
+		$this->hasEnded = false;
 	}
 
 	/**
@@ -205,6 +220,8 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 	 * This function will be called when the arena state has changed to {@link ArenaState::STATE_ARENA_CELEBRATING}
 	 */
 	public function endTick(): void{
+		$this->reset();
+
 		$this->getArena()->stopArena();
 		$this->getArena()->resetArena();
 	}
@@ -216,7 +233,10 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				$arena->getScoreboard()->setStatus(TextFormat::GREEN . "Waiting...");
 				break;
 			case ArenaState::STATE_STARTING:
-				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "Starting in " . (30 - $this->timeElapsed) . "s");
+				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "Starting in " . (30 - ($this->timeElapsed + 1)) . "s");
+				break;
+			default:
+				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "N/A");
 				break;
 		}
 	}

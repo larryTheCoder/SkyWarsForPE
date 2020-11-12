@@ -6,12 +6,12 @@
 
 # This version should not get changed
 # Otherwise something bad will happen.
-version: 2
+version: 3
 
 # Scoreboards:
 # - As you might know, scoreboards is bla bla bla...
 #   But here is the important things.
-#   -> The scoreboard are in descending order. From 15-1
+#   -> The scoreboard are in ascending order. From 1-15
 #      From down to up.
 #   -> We have limited empty spaces due to mojang tomf*ckery
 #   -> They must be in array.
@@ -29,7 +29,7 @@ version: 2
 #                     return either 'Starting' or 'Refilling in...' and
 #                     'ended'.
 #   - {player_kills}: Shows the amount of players that the player had killed.
-#   - {players_left}:  Give out the amount of player that is alive in arena.
+#   - {players_left}: Give out the amount of player that is alive in arena.
 #   - {player_place}: The player place in game (Use this when the arena is
 #                     started).
 #   - {max_players}:  Return the maximum player for the arena.
@@ -52,67 +52,67 @@ display-name: "§e§lSKYWARS"
 # The arena is not started and when it
 # is waiting for players
 wait-arena:
-  - "§ewww.hyrulePE.xyz"
   - ""
-  - "Mode: &6{arena_mode}"
-  - "Map: &6{arena_map}"
-  - ""
-  - "&6{arena_status}"
   - "Status:"
+  - "&6{arena_status}"
   - ""
+  - "Map: &6{arena_map}"
+  - "Mode: &6{arena_mode}"
+  - ""
+  - "§ewww.hyrulePE.xyz"
 
 # This scoreboard key is used
 # when the game is started.
 in-game-arena:
-  - "§ewww.hyrulePE.xyz"
   - ""
-  - "Mode: &6{arena_mode}"
-  - "Map: &6{arena_map}"
+  - "Players left: {players_left}"
+  - "You're in &6{player_place}&f place"
+  - ""
+  - "Events:"
+  - "{arena_status}"
   - ""
   - "Kills: &6{player_kills}"
   - ""
-  - "Players left: {players_left}"
+  - "Map: &6{arena_map}"
+  - "Mode: &6{arena_mode}"
   - ""
-  - "{arena_status}"
-  - "Events:"
-  - ""
-  - "You're in &6{player_place}&f place"
+  - "§ewww.hyrulePE.xyz"
 
 in-game-arena-team:
-  - "§ewww.hyrulePE.xyz"
   - ""
-  - "Mode: &6{arena_mode}"
-  - "Map: &6{arena_map}"
+  - "You're in &6{player_place}&f place"
+  - ""
+  - "Events:"
+  - "{arena_status}"
+  - ""
+  - "Team: {team_colour}"
+  - "Players left: {players_left}"
   - ""
   - "Kills: &6{player_kills}"
   - ""
-  - "Players left: {players_left}"
+  - "Map: &6{arena_map}"
+  - "Mode: &6{arena_mode}"
   - ""
-  - "Team: {team_colour}"
-  - ""
-  - "{arena_status}"
-  - "Events:"
-  - ""
-  - "You're in &6{player_place}&f place"
+  - "§ewww.hyrulePE.xyz"
 
 # This scoreboard is used when the game is ended.
 ending-state-arena:
-  - "§ewww.hyrulePE.xyz"
-  - ""
-  - "Mode: &6{arena_mode}"
-  - "Map: &6{arena_map}"
-  - ""
-  - "3. &e{player_top_3} &c{kills_top_3}"
-  - "2. &e{player_top_2} &c{kills_top_2}"
-  - "1. &a{player_top_1} &c{kills_top_1}"
   - "Top players:"
+  - "1. &a{player_top_1} &c{kills_top_1}"
+  - "2. &e{player_top_2} &c{kills_top_2}"
+  - "3. &e{player_top_3} &c{kills_top_3}"
+  - ""
+  - "Map: &6{arena_map}"
+  - "Mode: &6{arena_mode}"
+  - ""
+  - "§ewww.hyrulePE.xyz"
 
 spectate-scoreboard:
-  - "§ewww.hyrulePE.xyz"
-  - ""
-  - "Kills: &6{player_kills}"
+  - "You're in &6{player_place}&f place"
+  - "&cYou died! &7Spectating game..."
   - ""
   - "Players left: {players_left}"
   - ""
-  - "&cYou died! &7Spectating game..."
-  - "You're in &6{player_place}&f place"
+  - "Kills: &6{player_kills}"
+  - ""
+  - "§ewww.hyrulePE.xyz"
