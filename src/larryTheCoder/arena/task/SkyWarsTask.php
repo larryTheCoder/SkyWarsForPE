@@ -63,7 +63,7 @@ class SkyWarsTask extends ArenaTickTask {
 		}elseif($this->timeElapsed === $this->getArena()->arenaGraceTime){
 			$this->getArena()->setFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD, false);
 
-			$pm->broadcastToPlayers(TextFormat::RED . "You are no longer invincible.", false);
+			$pm->broadcastToPlayers(TextFormat::RED . "You are no longer invincible.");
 		}elseif($this->timeElapsed % $this->getRefillTime() === 0){
 			$this->getArena()->refillChests();
 		}
@@ -101,15 +101,15 @@ class SkyWarsTask extends ArenaTickTask {
 				}
 			}
 
-			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "-----------------------", false);
-			$pm->broadcastToPlayers(TextFormat::GREEN . TextFormat::BOLD . " TOP KILLERS: ", false);
-			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "", false);
+			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "-----------------------");
+			$pm->broadcastToPlayers(TextFormat::GREEN . TextFormat::BOLD . " TOP KILLERS: ");
+			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "");
 
 			foreach($cached as $cache){
-				$pm->broadcastToPlayers($cache, false);
+				$pm->broadcastToPlayers($cache);
 			}
 
-			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "-----------------------", false);
+			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "-----------------------");
 		}elseif($this->timeElapsed === 10){
 			parent::endTick();
 		}

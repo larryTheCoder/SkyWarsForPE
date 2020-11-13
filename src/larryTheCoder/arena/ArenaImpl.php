@@ -63,7 +63,7 @@ class ArenaImpl extends ArenaData {
 	private $arenaData;
 	/** @var SignManager */
 	private $signManager;
-	/** @var float */
+	/** @var int */
 	private $startedTime = -1;
 
 	/** @var Position[][] */
@@ -139,12 +139,12 @@ class ArenaImpl extends ArenaData {
 
 		$this->toRemove = [];
 
-		$this->startedTime = microtime(true);
+		$this->startedTime = time();
 
 		$this->setFlags(self::ARENA_INVINCIBLE_PERIOD, true);
 	}
 
-	public function getTimeStarted(): float{
+	public function getTimeStarted(): int{
 		return $this->startedTime;
 	}
 
@@ -158,6 +158,11 @@ class ArenaImpl extends ArenaData {
 		$spawnLoc = $this->getCageManager()->getCage($player);
 
 		$this->toRemove[$player->getName()] = $cage->build(Position::fromObject($spawnLoc, $this->getLevel()));
+
+		$totalPlayers = count($this->getPlayerManager()->getAlivePlayers());
+		$maxPlayers = $this->maximumPlayers;
+
+		$this->getPlayerManager()->broadcastToPlayers(TextFormat::GREEN . $player->getName() . TextFormat::YELLOW . " has joined (" . TextFormat::AQUA . $totalPlayers . TextFormat::YELLOW . "/" . TextFormat::AQUA . $maxPlayers . TextFormat::YELLOW . ")!");
 	}
 
 	public function stopArena(): void{

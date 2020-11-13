@@ -34,7 +34,6 @@ use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\utils\ColorBlockMetaHelper;
 use pocketmine\level\Level;
-use pocketmine\level\sound\ClickSound;
 use pocketmine\Player;
 
 class PlayerManager {
@@ -127,7 +126,7 @@ class PlayerManager {
 	 * @param string[] $toReplace
 	 * @param string[] $replacement
 	 */
-	public function broadcastToPlayers(string $msg, bool $popup = true, array $toReplace = [], array $replacement = []): void{
+	public function broadcastToPlayers(string $msg, bool $popup = false, array $toReplace = [], array $replacement = []): void{
 		$inGame = array_merge($this->getAlivePlayers(), $this->getSpectators());
 		/** @var Player $p */
 		foreach($inGame as $p){
@@ -136,7 +135,7 @@ class PlayerManager {
 			}else{
 				$p->sendMessage(str_replace($toReplace, $replacement, $msg));
 
-				$p->getLevel()->addSound(new ClickSound($p));
+				Utils::addSound([$p], "random.pop");
 			}
 		}
 	}
@@ -173,8 +172,7 @@ class PlayerManager {
 	}
 
 	/**
-	 * Checks either the player is inside
-	 * the arena or not.
+	 * Checks either the player is inside the arena or not.
 	 *
 	 * @param mixed $pl
 	 *
@@ -195,7 +193,6 @@ class PlayerManager {
 	 * stores its data inside the arrays.
 	 *
 	 * @param string $name
-	 *
 	 * @return Player The player itself.
 	 */
 	public function getOriginPlayer(string $name): ?Player{
