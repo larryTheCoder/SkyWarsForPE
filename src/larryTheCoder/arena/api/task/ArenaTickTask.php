@@ -34,7 +34,7 @@ namespace larryTheCoder\arena\api\task;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\ShutdownSequence;
-use pocketmine\level\sound\ClickSound;
+use larryTheCoder\utils\Utils;
 use pocketmine\scheduler\Task;
 use pocketmine\utils\MainLogger;
 use pocketmine\utils\TextFormat;
@@ -125,16 +125,18 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				if($this->timeElapsed === 20){
 					$pm->broadcastTitle(TextFormat::GOLD . "Starting in", "", 1, 25, 1);
 				}elseif($this->timeElapsed > 20){
-					foreach($pm->getAllPlayers() as $player){
-						$player->getLevel()->addSound((new ClickSound($player)), [$player]);
-					}
-
 					if($this->timeElapsed < 27){
+						Utils::addSound($pm->getAllPlayers(), "random.click");
+
 						$pm->broadcastTitle("§6" . (30 - $this->timeElapsed), "", 1, 25, 1);
 					}else{
 						if($this->timeElapsed === 30){
+							Utils::addSound($pm->getAlivePlayers(), "note.bell");
+
 							$pm->broadcastTitle("§cMatch started!", "", 1, 25, 1);
 						}else{
+							Utils::addSound($pm->getAllPlayers(), "random.click");
+
 							$pm->broadcastTitle("§c" . (30 - $this->timeElapsed), "", 1, 25, 1);
 						}
 					}
@@ -213,7 +215,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 	 * {@link ArenaTickTask::getMaxTime()}.
 	 */
 	public function overtimeTick(): void{
-		// NOOP
+		$this->getArena()->setStatus(ArenaState::STATE_ARENA_CELEBRATING);
 	}
 
 	/**
@@ -233,7 +235,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				$arena->getScoreboard()->setStatus(TextFormat::GREEN . "Waiting...");
 				break;
 			case ArenaState::STATE_STARTING:
-				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "Starting in " . (30 - ($this->timeElapsed + 1)) . "s");
+				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "Starting in " . (30 - $this->timeElapsed) . "s");
 				break;
 			default:
 				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "N/A");

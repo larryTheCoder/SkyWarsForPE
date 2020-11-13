@@ -31,6 +31,7 @@ declare(strict_types = 1);
 namespace larryTheCoder\arena\api;
 
 use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\utils\Utils;
 use pocketmine\block\utils\ColorBlockMetaHelper;
 use pocketmine\level\Level;
 use pocketmine\level\sound\ClickSound;
@@ -288,6 +289,11 @@ class PlayerManager {
 
 	public function addKills(string $target): void{
 		$this->kills[strtolower($target)] = $this->getKills($target) + 1;
+
+		$player = $this->getOriginPlayer($target);
+		if($player !== null && $player->isOnline()){
+			Utils::addSound([$player], "note.hat");
+		}
 	}
 
 	public function getKills(string $target): int{

@@ -34,6 +34,7 @@ use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\Scoreboard;
 use larryTheCoder\arena\api\utils\StandardScoreboard;
+use larryTheCoder\utils\Utils;
 use pocketmine\Player;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
@@ -151,7 +152,7 @@ class Internal implements Scoreboard {
 
 		$pm = $this->arena->getPlayerManager();
 		$kills = $pm->getKills($pl->getName());
-		$playerPlacing = $pm->getRanking($pl->getName());
+		$playerPlacing = Utils::addPrefix($pm->getRanking($pl->getName()) + 1);
 		$topKill = $pm->getTopKills();
 
 		$topPlayer = $pm->getOriginName($pm->getTopPlayer());

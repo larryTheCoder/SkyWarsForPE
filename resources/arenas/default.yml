@@ -14,9 +14,9 @@ version: 1
 # ---
 
 # You can disable this arena by setting this to false
-enabled: true
+enabled: false
 # Pick your own arena name.
-arena-name: "Beast World"
+arena-name: "Example Minigame"
 # The mode of the arena.
 #  0 - Solo
 #  1 - Team
@@ -110,23 +110,13 @@ chest:
   # Within these numbers to refill the chests.
   refill-average: [240, 332, 120, 50, 81, 85, 90]
 
-winners:
-  # Here is the command configuration for each winners.
-  # Please make sure you config this correctly, this data here is for
-  # Player who were in the 1st place. The wildcards are as follows:
-  # %p - The player name
-  # %s - The arena name
-  - command-execute:
-      - "givemoney %p 300"
-      - "addkarma %p 50"
-
-  # Here is for the player who is on the second place.
-  # ~And so on.
-  - command-execute:
-      - - "givemoney %p 150"
-        - "givemoney %p 500"
-      - - "givemoney %p 150"
-        - "givemoney %p 150"
+# The commands that will be executed per winners,
+# Next player that owns the place will be given these rewards.
+command-execute:
+  - - "givemoney %p 150"
+    - "givemoney %p 500"
+  - - "givemoney %p 150"
+    - "givemoney %p 150"
 
 # The arena section
 arena:

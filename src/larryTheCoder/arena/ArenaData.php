@@ -166,7 +166,7 @@ abstract class ArenaData extends Arena {
 			$this->refillAverage = $chest['refill-average'];
 
 			// Winner config
-			$this->winnersCommand = $data['winners'];
+			$this->winnersCommand = $data['command-execute'];
 
 			// Arena config
 			$arena = $data['arena'];

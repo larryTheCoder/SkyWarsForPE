@@ -33,6 +33,7 @@ namespace larryTheCoder\arena\task;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\ArenaImpl;
+use larryTheCoder\utils\Utils;
 use pocketmine\command\ConsoleCommandSender;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -59,7 +60,7 @@ class SkyWarsTask extends ArenaTickTask {
 
 		if($this->timeElapsed === 0){
 			$this->getArena()->refillChests();
-		}elseif($this->timeElapsed === 15){
+		}elseif($this->timeElapsed === $this->getArena()->arenaGraceTime){
 			$this->getArena()->setFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD, false);
 
 			$pm->broadcastToPlayers(TextFormat::RED . "You are no longer invincible.", false);
@@ -68,40 +69,60 @@ class SkyWarsTask extends ArenaTickTask {
 		}
 	}
 
-	public function overtimeTick(): void{
+	public function endTick(): void{
 		$arena = $this->getArena();
 		$pm = $arena->getPlayerManager();
-		if(count($pm->getAlivePlayers()) === 0){
-			$this->endTick();
-
-			return;
-		}
 
 		$winners = $pm->getWinners();
 		if($this->timeElapsed === 0){
+			Utils::addSound($pm->getAllPlayers(), "random.levelup");
+
 			foreach($pm->getAlivePlayers() as $player){
-				$player->sendMessage("Congratulations! You have won the match.");
+				$player->sendMessage(TextFormat::GREEN . "Congratulations! You have won the match.");
 
 				$arena->unsetPlayer($player);
 			}
 		}elseif($this->timeElapsed === 5){
-			$this->endTick();
-
 			// Execute various commands, this will be ran outside arena match.
-			foreach($winners as $rank => $winner){
-				$command = $arena->winnersCommand[$rank] ?? [];
-				foreach($command as $cmd){
-					Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), $cmd);
+			$level = 1;
+			$cached = [];
+			foreach($winners as $rank => [$playerName, $kills]){
+				if($playerName !== "N/A"){
+					$command = $arena->winnersCommand[$rank] ?? [];
+					foreach($command as $cmd){
+						Server::getInstance()->dispatchCommand(new ConsoleCommandSender(), str_replace("%p", "\"" . $playerName . "\"", $cmd));
+					}
+				}
+
+				// Only allows 3 player in top killers
+				if($level <= 3){
+					$cached[] = TextFormat::GOLD . " $level §c-§e $playerName (§c $kills kills §e)";
+					$level++;
 				}
 			}
+
+			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "-----------------------", false);
+			$pm->broadcastToPlayers(TextFormat::GREEN . TextFormat::BOLD . " TOP KILLERS: ", false);
+			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "", false);
+
+			foreach($cached as $cache){
+				$pm->broadcastToPlayers($cache, false);
+			}
+
+			$pm->broadcastToPlayers(TextFormat::GRAY . TextFormat::BOLD . "-----------------------", false);
+		}elseif($this->timeElapsed === 10){
+			parent::endTick();
 		}
 	}
 
-	public function endTick(): void{
-		if($this->timeElapsed === 5){
-			// TODO: Send player winner statistics
-		}elseif($this->timeElapsed === 10){
-			parent::endTick();
+	public function tickGameScoreboard(): void{
+		$arena = $this->getArena();
+		if($arena->hasFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD)){
+			$arena->getScoreboard()->setStatus(TextFormat::RED . "Invincible for " . ($arena->arenaGraceTime - $this->timeElapsed) . "s");
+		}elseif($this->nextRefill - ($this->timeElapsed % $this->nextRefill) <= 30){
+			$arena->getScoreboard()->setStatus(TextFormat::GREEN . "Chest refill in " . ($this->nextRefill - ($this->timeElapsed % $this->nextRefill)) . "s");
+		}else{
+			$arena->getScoreboard()->setStatus(TextFormat::RED . "Game ends in " . date('i:s', $this->getMaxTime() - $this->timeElapsed));
 		}
 	}
 

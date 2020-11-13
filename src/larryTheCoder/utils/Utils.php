@@ -31,7 +31,13 @@ namespace larryTheCoder\utils;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\entity\FireworksRocket;
 use larryTheCoder\utils\fireworks\Fireworks;
-use pocketmine\{network\mcpe\protocol\AddActorPacket, Player, Server, utils\MainLogger, utils\Random, utils\TextFormat};
+use pocketmine\{network\mcpe\protocol\AddActorPacket,
+	network\mcpe\protocol\PlaySoundPacket,
+	Player,
+	Server,
+	utils\MainLogger,
+	utils\Random,
+	utils\TextFormat};
 use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item};
@@ -40,9 +46,6 @@ use pocketmine\math\Vector3;
 use pocketmine\utils\Config;
 
 /**
- * Public general utils class for SkyWars
- * Copyrights Adam Matthew
- *
  * @package larryTheCoder\utils
  */
 class Utils {
@@ -109,12 +112,34 @@ class Utils {
 
 	public static function addFireworks(Position $pos): void{
 		$data = new Fireworks();
-		$data->addExplosion(Fireworks::TYPE_BURST, rand(1, 15), 1, 1);
+		$data->addExplosion(Fireworks::TYPE_BURST, Fireworks::randomColour());
 
 		$nbt = Entity::createBaseNBT($pos, null, lcg_value() * 360, 90);
 		$rocket = new FireworksRocket($pos->getLevel(), $nbt, $data);
 
 		$rocket->spawnToAll();
+	}
+
+	/**
+	 * Reference: https://minecraft.gamepedia.com/Sounds.json/Bedrock_Edition_values
+	 *
+	 * @param Player[] $players
+	 * @param string $trackName
+	 * @param float $volume
+	 * @param float $pitch
+	 */
+	public static function addSound(array $players, string $trackName = "", float $volume = 1.0, float $pitch = 1.0): void{
+		foreach($players as $player){
+			$pk = new PlaySoundPacket();
+			$pk->soundName = $trackName;
+			$pk->x = (int)$player->x;
+			$pk->y = (int)$player->y;
+			$pk->z = (int)$player->z;
+			$pk->volume = $volume;
+			$pk->pitch = $pitch;
+
+			$player->batchDataPacket($pk);
+		}
 	}
 
 	/**

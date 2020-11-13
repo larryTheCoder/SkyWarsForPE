@@ -68,6 +68,34 @@ class Fireworks extends Item {
 		parent::__construct(self::FIREWORKS, $meta, "Fireworks");
 	}
 
+	/**
+	 * @return string[]
+	 */
+	public static function getColours(): array{
+		return [
+			self::COLOR_BLACK,
+			self::COLOR_RED,
+			self::COLOR_DARK_GREEN,
+			self::COLOR_BROWN,
+			self::COLOR_BLUE,
+			self::COLOR_DARK_PURPLE,
+			self::COLOR_DARK_AQUA,
+			self::COLOR_GRAY,
+			self::COLOR_DARK_GRAY,
+			self::COLOR_PINK,
+			self::COLOR_GREEN,
+			self::COLOR_YELLOW,
+			self::COLOR_LIGHT_AQUA,
+			self::COLOR_DARK_PINK,
+			self::COLOR_GOLD,
+			self::COLOR_WHITE,
+		];
+	}
+
+	public static function randomColour(): string{
+		return self::getColours()[array_rand(self::getColours())];
+	}
+
 	public function getFlightDuration(): int{
 		return $this->getExplosionsTag()->getByte("Flight", 1);
 	}
@@ -86,13 +114,13 @@ class Fireworks extends Item {
 		return $this->getNamedTag()->getCompoundTag("Fireworks") ?? new CompoundTag("Fireworks");
 	}
 
-	public function addExplosion(int $type, int $color, int $fade = 0, int $flicker = 0, int $trail = 0): void{
+	public function addExplosion(int $type, string $color, string $fade = "", bool $flicker = false, bool $trail = false): void{
 		$explosion = new CompoundTag();
 		$explosion->setByte("FireworkType", $type);
-		$explosion->setByteArray("FireworkColor", (string)$color);
-		$explosion->setByteArray("FireworkFade", (string)$fade);
-		$explosion->setByte("FireworkFlicker", $flicker);
-		$explosion->setByte("FireworkTrail", $trail);
+		$explosion->setByteArray("FireworkColor", $color);
+		$explosion->setByteArray("FireworkFade", $fade);
+		$explosion->setByte("FireworkFlicker", $flicker ? 1 : 0);
+		$explosion->setByte("FireworkTrail", $trail ? 1 : 0);
 		$tag = $this->getExplosionsTag();
 		$explosions = $tag->getListTag("Explosions") ?? new ListTag("Explosions");
 		$explosions->push($explosion);

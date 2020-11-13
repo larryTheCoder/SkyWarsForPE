@@ -122,12 +122,14 @@ class SignManager implements Listener, ShutdownSequence {
 
 		$qm = $this->arena->getQueueManager();
 
-		if($b->equals($this->signTile)){
-			$e->setCancelled();
+		if($this->signTile === null || !$b->equals($this->signTile)){
+			return;
 		}
 
+		$e->setCancelled();
+
 		// Improved queue method.
-		if($b->equals($this->signTile) && !$qm->inQueue($p) && $e->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK
+		if(!$qm->inQueue($p) && $e->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK
 			&& ($this->delay[$p->getName()] ?? 0) !== time()){
 
 			$this->delay[$p->getName()] = time();

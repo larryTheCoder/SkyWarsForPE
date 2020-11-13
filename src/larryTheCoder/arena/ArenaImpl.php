@@ -78,11 +78,6 @@ class ArenaImpl extends ArenaData {
 		$this->setConfig($arenaData);
 
 		$this->eventListener = new EventListener($this);
-		$this->signManager = new SignManager($this, $this->getSignPosition(), Settings::$prefix);
-		$this->cageManager = new CageManager($this->spawnPedestals);
-		$this->scoreboard = new Internal($this, Utils::getScoreboardConfig());
-
-		$this->signManager->setTemplate([$this->statusLine1, $this->statusLine2, $this->statusLine3, $this->statusLine4]);
 
 		parent::__construct($plugin);
 	}
@@ -191,7 +186,7 @@ class ArenaImpl extends ArenaData {
 
 		$player->sendTitle(TextFormat::RED . TextFormat::BOLD . "YOU DIED!", SkyWarsPE::getInstance()->getMsg($player, 'player-spectate', false));
 
-		$player->teleport(Position::fromObject($this->arenaSpecPos, $this->getLevel()));
+		$player->teleport($this->getLevel()->getSafeSpawn(Position::fromObject($this->arenaSpecPos, $this->getLevel())));
 	}
 
 	public function unsetPlayer(Player $player, bool $isSpectator = false): void{

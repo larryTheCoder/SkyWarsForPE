@@ -54,6 +54,15 @@ final class SkyWarsCommand {
 	public function onCommand(CommandSender $sender, Command $cmd, array $args): bool{
 		if(strtolower($cmd->getName()) === "sw" && isset($args[0])){
 			switch(strtolower($args[0])){
+				case "test":
+					if(!$sender instanceof Player){
+						$this->consoleSender($sender);
+
+						return true;
+					}
+
+					Utils::addSound([$sender], $args[1]);
+					break;
 				case "lobby":
 				case "leave":
 					if(!$sender->hasPermission('sw.command.lobby')){
@@ -76,14 +85,6 @@ final class SkyWarsCommand {
 					$arena->leaveArena($sender);
 
 					return true;
-				case "test":
-					if(!$sender instanceof Player){
-						$this->consoleSender($sender);
-						break;
-					}
-
-					Utils::sendDebug($sender->getLocation()->__toString());
-					break;
 				case "help":
 					if(!$sender->hasPermission("sw.command.help")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));

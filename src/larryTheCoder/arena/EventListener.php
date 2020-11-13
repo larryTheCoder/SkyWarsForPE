@@ -36,6 +36,8 @@ use larryTheCoder\arena\logger\CombatEntry;
 use larryTheCoder\arena\logger\CombatLogger;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
+use pocketmine\entity\projectile\Arrow;
+use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
@@ -88,6 +90,19 @@ class EventListener extends ArenaListener {
 			return;
 		}
 
+		// Add the entry first, then we can perform anything.
+		if($event instanceof EntityDamageByChildEntityEvent && ($damager = $event->getDamager()) instanceof Player){
+			if($event->getChild() instanceof Arrow) Utils::addSound([$damager], "random.orb");
+
+			/** @var Player $damager */
+			$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause, $damager->getName()));
+		}elseif($event instanceof EntityDamageByEntityEvent && ($damager = $event->getDamager()) instanceof Player){
+			/** @var Player $damager */
+			$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause, $damager->getName()));
+		}else{
+			$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause));
+		}
+
 		$pm = $this->arena->getPlayerManager();
 
 		// In order to remove "death" loading screen. Immediate respawn.
@@ -105,13 +120,6 @@ class EventListener extends ArenaListener {
 			}
 
 			$this->onPlayerDeath($player, $event->getCause());
-		}else{
-			if($event instanceof EntityDamageByEntityEvent && ($damager = $event->getDamager()) instanceof Player){
-				/** @var Player $damager */
-				$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause, $damager->getName()));
-			}else{
-				$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause));
-			}
 		}
 	}
 
