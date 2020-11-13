@@ -39,6 +39,7 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\inventory\InventoryCloseEvent;
 use pocketmine\event\inventory\InventoryOpenEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -160,6 +161,19 @@ abstract class BasicListener implements Listener {
 		if($arena === null) return;
 
 		$arena->getEventListener()->onPlayerExhaust($event);
+	}
+
+	/**
+	 * @param PlayerChatEvent $event
+	 * @priority MONITOR
+	 */
+	public function onPlayerChatEvent(PlayerChatEvent $event): void{
+		$p = $event->getPlayer();
+
+		$arena = $this->getArena($p);
+		if($arena === null) return;
+
+		$arena->getEventListener()->onPlayerChatEvent($event);
 	}
 
 	public function onInventoryCloseEvent(InventoryCloseEvent $event): void{

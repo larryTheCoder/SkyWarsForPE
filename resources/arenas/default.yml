@@ -33,23 +33,31 @@ team-settings:
   # The number of players needed
   # For a team.
   players-per-team: 3
-  # This decides either the player has
-  # the permission to choose their own team
-  # or they will get random team. The player
-  # will have a set of colors in their inventory
-  # hotbar if this is set to false.
-  monarchy-system: false
   # The number of teams in this game.
   # You must have this set to make sure that the
   # plugin can work properly.
-  world-teams-avail: 3
+  maximum-teams: 3
   # The minimum number of players needed
   # for the arena to start it.
   minimum-teams: 2
-  # Interactive spawns mean that if you have this enabled
-  # The arena will put all of the team members in the same cage.
-  # Otherwise, the players will be placed into isolated cages.
-  interactive-spawns: false
+  # Team colour pickup, only these colours will be chosen for in game colour modes,
+  # Other than that, it will consider incomplete.
+  # These are the numbers of each team, configured from top to bottom as team spawn.
+  #     0: WHITE,
+  #		1: GOLD,
+  #		2: LIGHT_PURPLE,
+  #		3: BLUE,
+  #		4: YELLOW,
+  #		5: GREEN,
+  #		7: DARK_GRAY,
+  #		8: GRAY,
+  #		9: AQUA,
+  #		10: DARK_PURPLE,
+  #		11: DARK_BLUE,
+  #		13: DARK_GREEN,
+  #		14: RED,
+  #		15: BLACK,
+  team-colours: [0, 1, 2]
 
 # Lobby settings
 # [Game-API related features]

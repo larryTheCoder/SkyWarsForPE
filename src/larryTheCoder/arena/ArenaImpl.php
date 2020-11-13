@@ -34,6 +34,7 @@ namespace larryTheCoder\arena;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\CageManager;
 use larryTheCoder\arena\api\impl\ArenaListener;
+use larryTheCoder\arena\api\PlayerManager;
 use larryTheCoder\arena\api\scoreboard\Internal;
 use larryTheCoder\arena\api\SignManager;
 use larryTheCoder\arena\api\task\ArenaTickTask;
@@ -68,6 +69,8 @@ class ArenaImpl extends ArenaData {
 
 	/** @var Position[][] */
 	private $toRemove = [];
+	/** @var string[] */
+	private $originalNametag = [];
 
 	/**
 	 * ArenaImpl constructor.
@@ -159,10 +162,17 @@ class ArenaImpl extends ArenaData {
 
 		$this->toRemove[$player->getName()] = $cage->build(Position::fromObject($spawnLoc, $this->getLevel()));
 
-		$totalPlayers = count($this->getPlayerManager()->getAlivePlayers());
+		$pm = $this->getPlayerManager();
+		$totalPlayers = count($pm->getAlivePlayers());
 		$maxPlayers = $this->maximumPlayers;
 
-		$this->getPlayerManager()->broadcastToPlayers(TextFormat::GREEN . $player->getName() . TextFormat::YELLOW . " has joined (" . TextFormat::AQUA . $totalPlayers . TextFormat::YELLOW . "/" . TextFormat::AQUA . $maxPlayers . TextFormat::YELLOW . ")!");
+		if($pm->teamMode){
+			$this->originalNametag[$player->getName()] = $player->getNameTag();
+
+			$player->setNameTag(PlayerManager::getColorByMeta($pm->getTeamColorRaw($player)) . $player->getName());
+		}
+
+		$this->getPlayerManager()->broadcastToPlayers(TextFormat::GREEN . $pm->getOriginName($player->getName(), $player->getName()) . TextFormat::YELLOW . " has joined (" . TextFormat::AQUA . $totalPlayers . TextFormat::YELLOW . "/" . TextFormat::AQUA . $maxPlayers . TextFormat::YELLOW . ")!");
 	}
 
 	public function stopArena(): void{
@@ -189,9 +199,7 @@ class ArenaImpl extends ArenaData {
 		$player->setGamemode(Player::ADVENTURE);
 		$player->setAllowFlight(true);
 
-		$player->sendTitle(TextFormat::RED . TextFormat::BOLD . "YOU DIED!", SkyWarsPE::getInstance()->getMsg($player, 'player-spectate', false));
-
-		$player->teleport($this->getLevel()->getSafeSpawn(Position::fromObject($this->arenaSpecPos, $this->getLevel())));
+		$player->teleport(Position::fromObject($this->arenaSpecPos, $this->getLevel()));
 	}
 
 	public function unsetPlayer(Player $player, bool $isSpectator = false): void{
@@ -209,6 +217,9 @@ class ArenaImpl extends ArenaData {
 			$player->getInventory()->clearAll();
 			$player->getArmorInventory()->clearAll();
 		}
+
+		$player->setNameTag($this->originalNametag[$player->getName()]);
+		unset($this->originalNametag[$player->getName()]);
 
 		$player->setHealth(20);
 		$player->setFood(20);
@@ -277,7 +288,7 @@ class ArenaImpl extends ArenaData {
 	}
 
 	public function getMaxPlayer(): int{
-		return $this->maximumPlayers;
+		return $this->minimumPlayers;
 	}
 
 	public function getMapName(): string{

@@ -32,6 +32,7 @@ namespace larryTheCoder\arena;
 
 use larryTheCoder\arena\api\impl\ArenaListener;
 use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\api\PlayerManager;
 use larryTheCoder\arena\logger\CombatEntry;
 use larryTheCoder\arena\logger\CombatLogger;
 use larryTheCoder\SkyWarsPE;
@@ -40,10 +41,13 @@ use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
@@ -63,12 +67,41 @@ class EventListener extends ArenaListener {
 		$this->logger->resetAll();
 	}
 
+	public function onPlayerChatEvent(PlayerChatEvent $event): void{
+		$player = $event->getPlayer();
+		$pm = $this->arena->getPlayerManager();
+
+		$recipients = $pm->getAllPlayers();
+		if(!$pm->isSpectator($player)){
+			if($pm->teamMode){
+				$color = PlayerManager::getColorByMeta($pm->getTeamColorRaw($player));
+
+				$substr = substr($event->getMessage(), 0, 1);
+				if($substr !== "!"){
+					$recipients = $pm->getTeammates($player, false);
+
+					$event->setFormat($color . "[TEAM] " . $player->getNameTag() . ": " . TextFormat::RESET . $event->getMessage());
+				}else{
+					$event->setFormat($player->getNameTag() . ": " . TextFormat::RESET . substr($event->getMessage(), 1));
+				}
+			}else{
+				$event->setFormat(TextFormat::GOLD . $player->getName() . ": " . TextFormat::RESET . $event->getMessage());
+			}
+		}else{
+			$recipients = $pm->getSpectators();
+
+			$event->setFormat(TextFormat::GRAY . "[DEAD] " . $player->getName() . ": " . $event->getMessage());
+		}
+
+		$event->setRecipients($recipients);
+	}
+
 	public function onPlayerExhaust(PlayerExhaustEvent $event): void{
 		$pm = $this->arena->getPlayerManager();
 		$player = $event->getPlayer();
 
 		// Do not exhaust spectators.
-		if($player instanceof Player && $pm->isSpectator($player)){
+		if($player instanceof Player && ($pm->isSpectator($player) || $this->arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING)){
 			$event->setCancelled();
 		}
 	}
@@ -84,7 +117,8 @@ class EventListener extends ArenaListener {
 		$player = $event->getEntity();
 		$cause = $event->getCause();
 
-		if($this->arena->hasFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD)){
+		$pm = $this->arena->getPlayerManager();
+		if($this->arena->hasFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD) || $pm->isSpectator($player)){
 			$event->setCancelled();
 
 			return;
@@ -92,34 +126,55 @@ class EventListener extends ArenaListener {
 
 		// Add the entry first, then we can perform anything.
 		if($event instanceof EntityDamageByChildEntityEvent && ($damager = $event->getDamager()) instanceof Player){
-			if($event->getChild() instanceof Arrow) Utils::addSound([$damager], "random.orb");
+			$isArrow = $event->getChild() instanceof Arrow;
 
 			/** @var Player $damager */
-			$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause, $damager->getName()));
+			if($pm->isTeammates($damager, $player)){
+				$event->setCancelled();
+
+				// Return the arrow to the original player.
+				if($isArrow) $damager->getInventory()->addItem(ItemFactory::get(ItemIds::ARROW));
+
+				return;
+			}else{
+				if($isArrow) Utils::addSound([$damager], "random.orb");
+
+				$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause, $damager->getName()));
+			}
 		}elseif($event instanceof EntityDamageByEntityEvent && ($damager = $event->getDamager()) instanceof Player){
 			/** @var Player $damager */
-			$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause, $damager->getName()));
+			if($pm->isTeammates($damager, $player)){
+				$event->setCancelled();
+
+				return;
+			}else{
+				$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause, $damager->getName()));
+			}
 		}else{
 			$this->logger->addEntry(CombatEntry::fromEntry($player->getName(), $cause));
 		}
 
-		$pm = $this->arena->getPlayerManager();
-
 		// In order to remove "death" loading screen. Immediate respawn.
+		// And for void damage, immediate damage
 		$health = $player->getHealth() - $event->getFinalDamage();
-		if($health <= 0){
+		if($health <= 0 || $cause === EntityDamageEvent::CAUSE_VOID){
 			$event->setCancelled();
 
 			$entry = $this->logger->getEntry($player->getName(), $cause === EntityDamageEvent::CAUSE_VOID ? 8 : 3);
 			if($entry !== null && $entry->attackFrom !== null){
-				$pm->broadcastToPlayers(SkyWarsPE::getInstance()->getMsg($player, 'death-message', false), false, ["{PLAYER}", "{KILLER}"], [$player->getName(), $entry->attackFrom]);
+				$pm->broadcastToPlayers(SkyWarsPE::getInstance()->getMsg($player, 'death-message', false), false, ["{PLAYER}", "{KILLER}"], [
+					$pm->getOriginName($player->getName(), $player->getName()),
+					$pm->getOriginName($entry->attackFrom, $entry->attackFrom),
+				]);
 
 				$pm->addKills($entry->attackFrom);
 			}else{
-				$pm->broadcastToPlayers(SkyWarsPE::getInstance()->getMsg($player, self::getDeathMessageById($event->getCause()), false), false, ["{PLAYER}"], [$player->getName()]);
+				$pm->broadcastToPlayers(SkyWarsPE::getInstance()->getMsg($player, self::getDeathMessageById($event->getCause()), false), false, ["{PLAYER}"], [$pm->getOriginName($player->getName(), $player->getName()),]);
 			}
 
 			$this->onPlayerDeath($player, $event->getCause());
+		}else{
+			$event->setCancelled(false);
 		}
 	}
 
@@ -169,6 +224,8 @@ class EventListener extends ArenaListener {
 
 		$player->getInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();
+
+		$player->sendTitle(TextFormat::RED . TextFormat::BOLD . "YOU DIED!", SkyWarsPE::getInstance()->getMsg($player, 'player-spectate', false));
 
 		$this->arena->setSpectator($player);
 	}

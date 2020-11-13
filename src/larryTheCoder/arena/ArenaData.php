@@ -56,18 +56,6 @@ abstract class ArenaData extends Arena {
 	/** @var int */
 	public $arenaMode = ArenaState::MODE_SOLO;
 
-	// Team settings
-	/** @var int */
-	public $playerPerTeam = 0;
-	/** @var int */
-	public $playerMinimum = 0;
-	/** @var int */
-	public $worldTeamMembers = 0;
-	/** @var bool */
-	public $monarchySystem = false;
-	/** @var bool */
-	public $interactiveSpawns = false;
-
 	// Winners section
 	/** @var string[][] */
 	public $winnersCommand = [];
@@ -123,15 +111,6 @@ abstract class ArenaData extends Arena {
 	public $arenaMoneyReward = 0;
 	/** @var int */
 	public $arenaStartingTime = 0;
-
-	/** @var bool */
-	public $teamMode = false;
-	/** @var int */
-	public $maximumMembers = 0;
-	/** @var int */
-	public $maximumTeams = 0;
-	/** @var int */
-	public $minimumMembers = 0;
 
 	/**
 	 * Parses the data for the arena
@@ -195,19 +174,27 @@ abstract class ArenaData extends Arena {
 			}
 
 			// Team data(s)
+			$pm = $this->getPlayerManager();
 			if($data['arena-mode'] === ArenaState::MODE_TEAM){
-				$this->maximumTeams = $data['team-settings']['world-teams-avail'];     // Maximum teams   in arena
-				$this->maximumMembers = $data['team-settings']['players-per-team'];    // Maximum members in team
-				$this->maximumPlayers = $this->maximumMembers * $this->maximumTeams;   // Maximum players in arena
-				$this->minimumPlayers = $this->minimumMembers * $this->maximumTeams;   // Minimum players in arena
+				$teamData = $data["team-settings"];
+				$pm->teamMode = true;
+				$pm->maximumTeams = (int)$teamData['maximum-teams'];                        // Maximum teams   in arena
+				$pm->maximumMembers = (int)$teamData['players-per-team'];                   // Maximum members in a team.
+				$pm->allowedTeams = (array)$teamData['team-colours'];                       // Available teams that will be chosen.
+				$this->maximumPlayers = $pm->maximumMembers * $pm->maximumTeams;            // Maximum players in arena
+				$this->minimumPlayers = $pm->maximumMembers * $teamData['minimum-teams'];   // Minimum players in arena
+				if(count($pm->allowedTeams) < $pm->maximumTeams){
+					Utils::send("§6" . ucwords($this->arenaFileName) . " §a§l-§r§c Team colours is not configured correctly.");
+					$this->arenaEnable = false;
+				}
 			}
 
 			// Verify spawn pedestals.
 			$spawnPedestals = count($this->spawnPedestals);
-			if(($this->teamMode && ($this->playerPerTeam * $this->worldTeamMembers) > $spawnPedestals) || $this->maximumPlayers > $spawnPedestals){
+			if($this->maximumPlayers > $spawnPedestals){
 				Utils::send("§6" . ucwords($this->arenaFileName) . " §a§l-§r§c Spawn pedestals is not configured correctly.");
-				throw new \Exception("Spawn pedestals is not configured correctly.");
-			}elseif(($this->teamMode && ($this->playerPerTeam * $this->worldTeamMembers) < $spawnPedestals) || $this->maximumPlayers < $spawnPedestals){
+				$this->arenaEnable = false;
+			}elseif($this->maximumPlayers < $spawnPedestals){
 				Utils::send("§6" . ucwords($this->arenaFileName) . " §a§l-§r§e Spawn pedestals is over configured.");
 			}
 		}catch(\Exception $ex){

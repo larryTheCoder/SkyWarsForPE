@@ -35,6 +35,7 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\inventory\InventoryCloseEvent;
 use pocketmine\event\inventory\InventoryOpenEvent;
+use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -70,15 +71,19 @@ class ArenaListener {
 	}
 
 	public function onPlayerExhaust(PlayerExhaustEvent $event): void{
+		// NOOP
+	}
 
+	public function onPlayerChatEvent(PlayerChatEvent $event): void{
+		// NOOP
 	}
 
 	public function onInventoryOpenEvent(InventoryOpenEvent $event): void{
-
+		// NOOP
 	}
 
 	public function onInventoryCloseEvent(InventoryCloseEvent $event): void{
-
+		// NOOP
 	}
 
 	public function onPlayerDeath(Player $player, int $deathFrom = EntityDamageEvent::CAUSE_SUICIDE): void{

@@ -50,8 +50,12 @@ use pocketmine\Server;
 /**
  * Arena interface, here you will be able to control the arena behaviour and attach them into pre-defined
  * arena data, explicitly, the given function are the skeleton for every operation in a gamemode.
- * <p>
- * This is a very basic arena listener.
+ *
+ * <p>This is a server-standard performance based framework, you will see that this as a beautiful piece of work made by me
+ * as a favour of my knowledge gained from NetherGamesMC. This framework is written to use least server ticks to aid
+ * the server's performance, thus reducing the server stress.
+ *
+ * @author larryTheCoder
  */
 abstract class Arena implements ShutdownSequence {
 
@@ -65,10 +69,10 @@ abstract class Arena implements ShutdownSequence {
 
 	/** @var CageManager */
 	protected $cageManager;
-	/** @var Scoreboard */
-	protected $scoreboard;
-	/** @var QueueManager */
-	protected $queueManager;
+	/** @var Scoreboard|null */
+	protected $scoreboard = null;
+	/** @var QueueManager|null */
+	protected $queueManager = null;
 	/** @var string|null */
 	protected $lobbyName = null;
 
@@ -100,8 +104,6 @@ abstract class Arena implements ShutdownSequence {
 
 	public function __construct(Plugin $plugin){
 		$this->plugin = $plugin;
-		$this->playerData = new PlayerManager($this);
-		$this->queueManager = new QueueManager();
 
 		$task = $this->getArenaTask();
 		$signListener = $this->getSignManager();
@@ -177,7 +179,7 @@ abstract class Arena implements ShutdownSequence {
 	 * @return PlayerManager
 	 */
 	public function getPlayerManager(): PlayerManager{
-		return $this->playerData;
+		return $this->playerData === null ? $this->playerData = new PlayerManager($this) : $this->playerData;
 	}
 
 	public function getCageManager(): CageManager{
@@ -185,7 +187,7 @@ abstract class Arena implements ShutdownSequence {
 	}
 
 	public function getQueueManager(): QueueManager{
-		return $this->queueManager;
+		return $this->queueManager === null ? $this->queueManager = new QueueManager() : $this->queueManager;
 	}
 
 	/**
@@ -216,8 +218,6 @@ abstract class Arena implements ShutdownSequence {
 		if($this->getStatus() === ArenaState::STATE_WAITING || $this->getStatus() === ArenaState::STATE_STARTING){
 			foreach($queue as $id => $player){
 				if(count($pm->getAlivePlayers()) < $this->getMaxPlayer()){
-					$pm->addPlayer($player);
-
 					$this->joinToArena($player);
 
 					unset($queue[$id]);

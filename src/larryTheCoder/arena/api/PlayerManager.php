@@ -35,8 +35,27 @@ use larryTheCoder\utils\Utils;
 use pocketmine\block\utils\ColorBlockMetaHelper;
 use pocketmine\level\Level;
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
+use RuntimeException;
 
 class PlayerManager {
+
+	public const BLOCK_META_TO_TF = [
+		0  => TextFormat::WHITE,
+		1  => TextFormat::GOLD,
+		2  => TextFormat::LIGHT_PURPLE,
+		3  => TextFormat::BLUE,
+		4  => TextFormat::YELLOW,
+		5  => TextFormat::GREEN,
+		7  => TextFormat::DARK_GRAY,
+		8  => TextFormat::GRAY,
+		9  => TextFormat::AQUA,
+		10 => TextFormat::DARK_PURPLE,
+		11 => TextFormat::DARK_BLUE,
+		13 => TextFormat::DARK_GREEN,
+		14 => TextFormat::RED,
+		15 => TextFormat::BLACK,
+	];
 
 	//
 	// Take note that these arrays (Player names) are stored in
@@ -49,8 +68,9 @@ class PlayerManager {
 	public $maximumMembers = 0;
 	/** @var int */
 	public $maximumTeams = 0;
-	/** @var int */
-	public $minimumMembers = 0;
+	/** @var int[] */
+	public $allowedTeams = [];
+
 	/** @var Player[] */
 	private $players = [];
 	/** @var Player[] */
@@ -91,8 +111,85 @@ class PlayerManager {
 
 		// Check if the arena is in team mode.
 		if($this->teamMode){
-			$this->teams[strtolower($pl->getName())] = $team;
+			$this->teams[strtolower($pl->getName())] = $team === -1 ? $this->getRandomTeam() : $team;
 		}
+	}
+
+	/**
+	 * Returns the string/player object of a player themselves. This will return the players that is in
+	 * the same team as the given player variable.
+	 *
+	 * @param Player $player The player variable that will be used to check.
+	 * @param bool $asString Return the value as a string, it will return {@link Player} if otherwise.
+	 * @return string[]|Player[]
+	 */
+	public function getTeammates(Player $player, bool $asString = true): array{
+		$rawTeam = $this->getTeamColorRaw($player);
+
+		$assocDiff = array_keys(array_filter($this->teams, function($value) use ($rawTeam): bool{
+			return $value === $rawTeam;
+		}));
+
+		if($asString){
+			return $assocDiff;
+		}else{
+			$players = [];
+			foreach($assocDiff as $player){
+				$pl = $this->getOriginPlayer($player);
+				if($pl !== null){
+					$players[] = $pl;
+				}
+			}
+
+			return $players;
+		}
+	}
+
+	/**
+	 * Check if both player is the same teammates.
+	 *
+	 * @param Player $damager
+	 * @param Player $player
+	 * @return bool
+	 */
+	public function isTeammates(Player $damager, Player $player): bool{
+		if($this->teamMode){
+			return $this->getTeamColorRaw($damager) === $this->getTeamColorRaw($player);
+		}else{
+			return false;
+		}
+	}
+
+	/**
+	 * Fetch random team in an associative array within available team and picked teams.
+	 * This team differentiates in which one will be chosen, where available team will always be chosen first.
+	 *
+	 * @return int The team that is available,
+	 */
+	public function getRandomTeam(): int{
+		$teamData = array_count_values($this->teams);
+
+		// Test for potential teams indexed by first to end.
+		$potentialTeam = -1;
+		foreach($teamData as $team => $count){
+			if($count < $this->maximumMembers){
+				$potentialTeam = $team;
+				break;
+			}
+		}
+
+		// Only index more teams if the amount of teams available are not reaching maximum teams
+		if($potentialTeam === -1 && count($teamData) < $this->maximumTeams){
+			$team = array_diff_assoc($this->allowedTeams, array_keys($teamData));
+			if(empty($team)) throw new RuntimeException("Configuration error for SW: Missing more teams (Configure this again correctly | Arena {$this->arena->getMapName()})");
+
+			foreach($team as $pt){
+				$potentialTeam = $pt;
+				break;
+			}
+		}
+
+		return $potentialTeam;
 	}
 
 	public function setSpectator(Player $pl): void{
@@ -168,7 +265,13 @@ class PlayerManager {
 			return $return;
 		}
 
-		return $this->getOriginPlayer($name)->getName();
+		$pl = $this->getOriginPlayer($name);
+
+		if($this->teamMode){
+			return $this->getColorByMeta($this->getTeamColorRaw($pl)) . $pl->getName();
+		}else{
+			return $pl->getName();
+		}
 	}
 
 	/**
@@ -343,10 +446,38 @@ class PlayerManager {
 		return $winners;
 	}
 
-	public function getTeamColor(Player $pl): ?string{
-		$color = $this->teams[strtolower($pl->getName())] ?? null;
-		if($color === null) return null;
+	public function getTeamColorRaw(Player $player): int{
+		$color = $this->teams[strtolower($player->getName())] ?? null;
+		if($color === null) return -1;
+
+		return $color;
+	}
+
+	public function getTeamColorName(Player $pl): ?string{
+		if(($color = $this->getTeamColorRaw($pl)) === -1) return null;
 
 		return ColorBlockMetaHelper::getColorFromMeta($color);
+	}
+
+	/**
+	 * Returns a matching meta value for a TextFormat color constant.
+	 *
+	 * @param string $color a TextFormat constant
+	 * @return int Meta value, returns -1 if failed
+	 */
+	public static function getMetaByColor(string $color): int{
+		$search = array_search($color, self::BLOCK_META_TO_TF, true);
+
+		return $search !== false ? (int)$search : -1;
+	}
+
+	/**
+	 * Returns a matching TextFormat color constant from meta values.
+	 *
+	 * @param int $meta
+	 * @return string $color a TextFormat constant
+	 */
+	public static function getColorByMeta(int $meta = -1): string{
+		return self::BLOCK_META_TO_TF[$meta] ?? "";
 	}
 }

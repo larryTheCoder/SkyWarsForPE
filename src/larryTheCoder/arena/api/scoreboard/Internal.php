@@ -186,7 +186,7 @@ class Internal implements Scoreboard {
 			$this->arena->getMinPlayer(),
 			$pl->getName(),
 			TextFormat::ESCAPE,
-			$pm->getTeamColor($pl),
+			$pm->getTeamColorName($pl),
 			$this->timeLeft,
 		];
 
