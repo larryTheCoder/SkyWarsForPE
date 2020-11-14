@@ -122,18 +122,16 @@ class FormPanel implements Listener {
 	public function showStatsPanel(Player $player): void{
 		// Checked and worked.
 		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $result) use ($player){
-			$form = new CustomForm("§a{$result->player}'s stats",
-				function(Player $player, CustomFormResponse $response): void{
-				},
-				function(Player $player): void{
-				});
-
-			$form->append(new Label("§6Name: §f" . $result->player),
+			$form = new CustomForm("§a{$result->player}'s stats", [
+				new Label("§6Name: §f" . $result->player),
 				new Label("§6Kills: §f" . $result->kill),
 				new Label("§6Deaths: §f" . $result->death),
 				new Label("§6Wins: §f" . $result->wins),
-				new Label("§6Lost: §f" . $result->lost)
-			);
+				new Label("§6Lost: §f" . $result->lost),
+			], function(Player $player, CustomFormResponse $response): void{
+			});
+
+			$form->append();
 
 			$player->sendForm($form);
 		});
@@ -146,29 +144,21 @@ class FormPanel implements Listener {
 	 * @param Player $player
 	 */
 	public function setupArena(Player $player): void{
-		// Checked and worked.
-		$form = new CustomForm("§5SkyWars Setup.");
-
-		$files = [];
-		# Check if there is ANOTHER ARENA is using this world
 		$worldPath = Server::getInstance()->getDataPath() . 'worlds/';
-		foreach(scandir($worldPath) as $file){
-			if($file === "." || $file === ".."){
-				continue;
-			}
-			if(strtolower(Server::getInstance()->getDefaultLevel()->getFolderName()) === strtolower($file) || !is_dir($worldPath . $file)){
-				continue;
+
+		// Proper way to do this instead of foreach.
+		$files = array_filter(scandir($worldPath), function($file) use ($worldPath): bool{
+			if($file === "." || $file === ".." ||
+				Server::getInstance()->getDefaultLevel()->getFolderName() === $file ||
+				is_file($worldPath . $file)){
+
+				return false;
 			}
 
-			foreach($this->plugin->getArenaManager()->getArenas() as $arena){
-				if($arena->getLevel() === null) continue; // Iterate to next arena.
-				if(strtolower($arena->getLevel()->getFolderName()) === strtolower($file)){
-					continue 2;
-				}
-			}
-
-			$files[] = $file;
-		}
+			return empty(array_filter($this->plugin->getArenaManager()->getArenas(), function($arena) use ($file): bool{
+				return $arena->getLevelName() === $file;
+			}));
+		});
 
 		if(empty($files)){
 			$player->sendMessage($this->plugin->getMsg($player, "no-world"));
@@ -176,15 +166,14 @@ class FormPanel implements Listener {
 			return;
 		}
 
-		$form->append(new Input("§6The name of your Arena.", "Donkey Island"),
+		$form = new CustomForm("§5SkyWars Setup.", [
+			new Input("§6The name of your Arena.", "Donkey Island"),
 			new Dropdown("§6Select your Arena level.", $files),
 			new Slider("§eMaximum players", 4, 40),
 			new Slider("§eMinimum players", 2, 40),
 			new Toggle("§7Spectator mode", true),
-			new Toggle("§7Start on full", true)
-		);
-
-		$form->setOnSubmit(function(Player $player, CustomFormResponse $response): void{
+			new Toggle("§7Start on full", true),
+		], function(Player $player, CustomFormResponse $response): void{
 			$data = new SkyWarsData();
 
 			$responseCustom = $response;
@@ -216,14 +205,23 @@ class FormPanel implements Listener {
 			$a->startOnFull($data->startWhenFull);
 			$a->applyFullChanges();
 
-			$form = new ModalForm("", "§aYou may need to setup arena's spawn position so system could enable the arena much faster.",
-				function(Player $player, bool $response) use ($data): void{
-					if($response) $this->setupSpawn($player, $data);
-				}, "Setup arena spawn.", "§cSetup later.");
+			$level = Server::getInstance()->getLevelByName($data->arenaLevel);
+			if($level !== null) Server::getInstance()->unloadLevel($level, true);
 
-			$player->sendForm($form);
-		});
-		$form->setOnClose(function(Player $pl): void{
+			// Copy files to the directive location, then we put on the modal form in next tick.
+			new CompressionAsyncTask([
+				Server::getInstance()->getDataPath() . "worlds/" . $data->arenaLevel,
+				$this->plugin->getDataFolder() . 'arenas/worlds/' . $data->arenaLevel . ".zip",
+				true,
+			], function() use ($player, $data){
+				$form = new ModalForm("", "§aYou may need to setup arena's spawn position so system could enable the arena much faster.",
+					function(Player $player, bool $response) use ($data): void{
+						if($response) $this->setupSpawn($player, $data);
+					}, "Setup arena spawn.", "§cSetup later.");
+
+				$player->sendForm($form);
+			});
+		}, function(Player $pl): void{
 			$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
 		});
 
@@ -366,55 +364,47 @@ class FormPanel implements Listener {
 
 	private function arenaBehaviour(Player $player, SkyWarsData $arena): void{
 		// (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
-		$form = new CustomForm("Arena settings.",
-			function(Player $player, CustomFormResponse $response) use ($arena): void{
-				$enable = $response->getToggle()->getValue();
-				$graceTimer = $response->getSlider()->getValue();
-				$spectatorMode = $response->getToggle()->getValue();
-				$maxPlayer = $response->getSlider()->getValue();
-				$minPlayer = $response->getSlider()->getValue();
-				$startWhenFull = $response->getToggle()->getValue();
-				# Get the config
-
-				$a = new ConfigManager($arena->arenaName, $this->plugin);
-				$a->setEnable($enable);
-				$a->setGraceTimer($graceTimer);
-				$a->enableSpectator($spectatorMode);
-				$a->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $arena->minPlayer);
-				$a->startOnFull($startWhenFull);
-				$a->applyFullChanges();
-
-				$player->sendMessage(TextFormat::GREEN . "Successfully updated arena " . TextFormat::YELLOW . $arena->arenaName);
-			},
-			function(Player $pl): void{
-				$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
-			});
-
-		$form->append(
+		$form = new CustomForm("Arena settings.", [
 			new Toggle("§eEnable the arena?", $arena->enabled),
 			new Slider("§eSet Grace Timer", 0, 30, 1, $arena->graceTimer),
 			new Toggle("§eEnable Spectator Mode?", $arena->spectator),
 			new Slider("§eMaximum players to be in arena", 0, 50, 1, $arena->maxPlayer),
 			new Slider("§eMinimum players to be in arena", 0, 50, 1, $arena->minPlayer),
-			new Toggle("§eStart when full", $arena->startWhenFull));
+			new Toggle("§eStart when full", $arena->startWhenFull),
+		], function(Player $player, CustomFormResponse $response) use ($arena): void{
+			$enable = $response->getToggle()->getValue();
+			$graceTimer = $response->getSlider()->getValue();
+			$spectatorMode = $response->getToggle()->getValue();
+			$maxPlayer = $response->getSlider()->getValue();
+			$minPlayer = $response->getSlider()->getValue();
+			$startWhenFull = $response->getToggle()->getValue();
+			# Get the config
+
+			$a = new ConfigManager($arena->arenaName, $this->plugin);
+			$a->setEnable($enable);
+			$a->setGraceTimer($graceTimer);
+			$a->enableSpectator($spectatorMode);
+			$a->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $arena->minPlayer);
+			$a->startOnFull($startWhenFull);
+			$a->applyFullChanges();
+
+			$player->sendMessage(TextFormat::GREEN . "Successfully updated arena " . TextFormat::YELLOW . $arena->arenaName);
+		}, function(Player $pl): void{
+			$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
+		});
 
 		$player->sendForm($form);
 	}
 
 	private function joinSignBehaviour(Player $p, SkyWarsData $data): void{
-		$form = new CustomForm("§eForm Behaviour Setup");
-
-		$form->setTitle("§eForm Behaviour Setup");
-		$form->append(
+		$form = new CustomForm("§eForm Behaviour Setup", [
 			new Label("§aWelcome to sign Behaviour Setup. First before you doing anything, you may need to know these"),
 			new Label("§eStatus lines\n&a &b &c = you can use color with &\n%alive = amount of in-game players\n%dead = amount of dead players\n%status = game status\n%world = world name of arena\n%max = max players per arena"),
 			new Input("§aSign Placeholder 1", "Sign Text", $data->line1),
 			new Input("§aSign Placeholder 2", "Sign Text", $data->line2),
 			new Input("§aSign Placeholder 3", "Sign Text", $data->line3),
-			new Input("§aSign Placeholder 4", "Sign Text", $data->line4)
-		);
-
-		$form->setOnSubmit(function(Player $player, CustomFormResponse $response) use ($data): void{
+			new Input("§aSign Placeholder 4", "Sign Text", $data->line4),
+		], function(Player $player, CustomFormResponse $response) use ($data): void{
 			$a = new ConfigManager($data->arenaName, $this->plugin);
 
 			$a->setStatusLine($response->getInput()->getValue(), 1);
@@ -423,8 +413,7 @@ class FormPanel implements Listener {
 			$a->setStatusLine($response->getInput()->getValue(), 4);
 
 			$player->sendMessage(TextFormat::GREEN . "Successfully updated sign lines for " . TextFormat::YELLOW . $data->arenaName);
-		});
-		$form->setOnClose(function(Player $pl): void{
+		}, function(Player $pl): void{
 			$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
 		});
 

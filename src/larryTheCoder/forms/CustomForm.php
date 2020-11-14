@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
  * Copyright (c) 2015-2020 larryTheCoder and contributors
@@ -38,54 +38,32 @@ use function gettype;
 use function is_array;
 
 class CustomForm extends Form {
-
 	/** @var Element[] */
-	protected $elements = [];
+	protected $elements;
+	/** @var Closure */
+	private $onSubmit;
 	/** @var Closure|null */
-	private $onSubmit = null;
-	/** @var Closure|null */
-	private $onClose = null;
+	private $onClose;
 
 	/**
 	 * @param string $title
-	 * @param Closure|null $onSubmit
+	 * @param Element[] $elements
+	 * @param Closure $onSubmit
 	 * @param Closure|null $onClose
 	 */
-	public function __construct(string $title, ?Closure $onSubmit = null, ?Closure $onClose = null){
+	public function __construct(string $title, array $elements, Closure $onSubmit, ?Closure $onClose = null){
 		parent::__construct($title);
-
-		$this->setOnSubmit($onSubmit);
-		$this->setOnClose($onClose);
-	}
-
-	/**
-	 * @param Closure|null $onSubmit
-	 *
-	 * @return self
-	 */
-	public function setOnSubmit(?Closure $onSubmit): self{
-		if($onSubmit !== null){
-			Utils::validateCallableSignature(function(Player $player, CustomFormResponse $response): void{
-			}, $onSubmit);
-			$this->onSubmit = $onSubmit;
-		}
-
-		return $this;
-	}
-
-	/**
-	 * @param Closure|null $onClose
-	 *
-	 * @return self
-	 */
-	public function setOnClose(?Closure $onClose): self{
+		$this->elements = $elements;
+		$this->onSubmit = $onSubmit;
+		$this->onClose = $onClose;
+		Utils::validateCallableSignature(function(Player $player, CustomFormResponse $response): void{
+		}, $onSubmit);
+		$this->onSubmit = $onSubmit;
 		if($onClose !== null){
 			Utils::validateCallableSignature(function(Player $player): void{
 			}, $onClose);
 			$this->onClose = $onClose;
 		}
-
-		return $this;
 	}
 
 	/**
@@ -106,6 +84,13 @@ class CustomForm extends Form {
 		return self::TYPE_CUSTOM_FORM;
 	}
 
+	/**
+	 * @return mixed[]
+	 */
+	protected function serializeFormData(): array{
+		return ["content" => $this->elements];
+	}
+
 	final public function handleResponse(Player $player, $data): void{
 		if($data === null){
 			if($this->onClose !== null){
@@ -124,12 +109,5 @@ class CustomForm extends Form {
 		}else{
 			throw new FormValidationException("Expected array or null, got " . gettype($data));
 		}
-	}
-
-	/**
-	 * @return array<string, mixed>
-	 */
-	protected function serializeFormData(): array{
-		return ["content" => $this->elements];
 	}
 }

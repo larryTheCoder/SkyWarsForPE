@@ -104,7 +104,6 @@ final class ArenaManager {
 			return false;
 		}
 		$game->setFlags(Arena::ARENA_IN_SETUP_MODE, false);
-		$game->resetArena();
 
 		return true;
 	}
@@ -225,15 +224,10 @@ final class ArenaManager {
 		return $arenas[$id];
 	}
 
-	public function insideArenaLevel(Entity $sender): bool{
-		foreach($this->arenas as $arena){
-			// Lower cased, no wEIrD aESs tEsxTs
-			if(strtolower($arena->arenaWorld) === strtolower($sender->getLevel()->getName())){
-				return true;
-			}
-		}
-
-		return false;
+	public function insideArenaLevel(Entity $entity): bool{
+		return !empty(array_filter($this->arenas, function($value) use ($entity): bool{
+			return $value->getLevel()->getFolderName() === $entity->getLevel()->getFolderName();
+		}));
 	}
 
 	public function invalidate(): void{

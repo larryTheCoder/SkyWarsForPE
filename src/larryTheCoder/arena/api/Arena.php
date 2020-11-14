@@ -59,6 +59,8 @@ use pocketmine\Server;
  */
 abstract class Arena implements ShutdownSequence {
 
+	// "With artificial intelligence, we are summoning the demon" -- Elon Musk
+
 	// Arena flag constants, you can apply your own constants
 	// for arena flags in setFlags() and hasFlags()
 	public const WORLD_ATTEMPT_LOAD = 0x1;

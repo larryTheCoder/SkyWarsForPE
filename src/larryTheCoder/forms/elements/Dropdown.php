@@ -18,7 +18,7 @@ class Dropdown extends Element {
 	 */
 	public function __construct(string $text, array $options, int $default = 0){
 		parent::__construct($text);
-		$this->options = $options;
+		$this->options = array_values($options); // Only care about array values.
 		$this->default = $default;
 	}
 

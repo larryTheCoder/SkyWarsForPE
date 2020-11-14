@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
  * Copyright (c) 2015-2020 larryTheCoder and contributors
@@ -47,13 +47,6 @@ class CustomFormResponse {
 	}
 
 	/**
-	 * @return Dropdown
-	 */
-	public function getDropdown(): Dropdown{
-		return $this->tryGet(Dropdown::class);
-	}
-
-	/**
 	 * @param string $expected
 	 *
 	 * @return Element|mixed
@@ -68,6 +61,13 @@ class CustomFormResponse {
 		}
 
 		return $element;
+	}
+
+	/**
+	 * @return Dropdown
+	 */
+	public function getDropdown(): Dropdown{
+		return $this->tryGet(Dropdown::class);
 	}
 
 	/**
