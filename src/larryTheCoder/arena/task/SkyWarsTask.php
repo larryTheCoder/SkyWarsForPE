@@ -66,6 +66,8 @@ class SkyWarsTask extends ArenaTickTask {
 			$pm->broadcastToPlayers(TextFormat::RED . "You are no longer invincible.");
 		}elseif($this->timeElapsed % $this->getRefillTime() === 0){
 			$this->getArena()->refillChests();
+
+			$pm->broadcastToPlayers(TextFormat::YELLOW . "Chests has been refilled!");
 		}
 	}
 
@@ -132,6 +134,12 @@ class SkyWarsTask extends ArenaTickTask {
 		}else{
 			return $this->nextRefill;
 		}
+	}
+
+	public function reset(): void{
+		parent::reset();
+
+		$this->countdown = $this->getArena()->arenaStartingTime;
 	}
 
 	/**

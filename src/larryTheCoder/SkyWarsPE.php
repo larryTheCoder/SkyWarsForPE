@@ -76,7 +76,7 @@ class SkyWarsPE extends PluginBase {
 	/** @var FormPanel */
 	public $panel;
 	/** @var PedestalManager */
-	private $pedestalManager;
+	public $pedestalManager;
 
 	public static function getInstance(): ?SkyWarsPE{
 		return self::$instance;

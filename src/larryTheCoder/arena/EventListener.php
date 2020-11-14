@@ -222,6 +222,8 @@ class EventListener extends ArenaListener {
 			}
 		}
 
+		// TODO: Add death stats.
+
 		$player->getInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();
 

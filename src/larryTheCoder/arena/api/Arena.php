@@ -383,6 +383,8 @@ abstract class Arena implements ShutdownSequence {
 	public function setSpectator(Player $player): void{
 		$this->getPlayerManager()->setSpectator($player);
 
+		$player->getInventory()->setItem(8, self::getLeaveItem());
+
 		foreach($this->getPlayerManager()->getAllPlayers() as $p2) $p2->hidePlayer($player);
 	}
 

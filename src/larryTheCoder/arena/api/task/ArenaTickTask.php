@@ -51,6 +51,8 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
 	/** @var int */
 	protected $timeElapsed = 0;
+	/** @var int */
+	protected $countdown = 30;
 
 	/** @var Arena */
 	private $arena;
@@ -111,7 +113,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 					$arena->setStatus(ArenaState::STATE_STARTING);
 				}
 
-				$this->timeElapsed = 0;
+				$this->reset();
 				break;
 			case ArenaState::STATE_STARTING:
 				if(count($pm->getAlivePlayers()) < $arena->getMinPlayer()){
@@ -122,15 +124,15 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				}
 
 				// Game starting title.
-				if($this->timeElapsed === 20){
+				if($this->countdown === 10){
 					$pm->broadcastTitle(TextFormat::GOLD . "Starting in", "", 1, 25, 1);
-				}elseif($this->timeElapsed > 20){
-					if($this->timeElapsed < 27){
+				}elseif($this->countdown < 10){
+					if($this->countdown < 3){
 						Utils::addSound($pm->getAllPlayers(), "random.click");
 
 						$pm->broadcastTitle("§6" . (30 - $this->timeElapsed), "", 1, 25, 1);
 					}else{
-						if($this->timeElapsed === 30){
+						if($this->timeElapsed === 0){
 							Utils::addSound($pm->getAlivePlayers(), "note.bell");
 
 							$pm->broadcastTitle("§cMatch started!", "", 1, 25, 1);
@@ -143,9 +145,9 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				}
 
 				// Preparation unit and so on.
-				if($this->timeElapsed === 25){
+				if($this->countdown === 5){
 					$arena->loadWorld(false);
-				}elseif($this->timeElapsed === 30){
+				}elseif($this->countdown === 0){
 					$this->reset();
 
 					$arena->startArena();
@@ -155,7 +157,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				}
 
 
-				$this->timeElapsed++;
+				$this->countdown--;
 				break;
 			case ArenaState::STATE_ARENA_RUNNING:
 				$arena->checkAlive();

@@ -152,15 +152,16 @@ class AsyncLibDatabase {
 	 * Attempts to retrieves all players registered in the database.
 	 *
 	 * @param callable $result a callable object with datatype: <code>function({@link PlayerData[]} $data) : void{}</code>
+	 * @param callable|null $onError
 	 */
-	public function getPlayers(callable $result): void{
+	public function getPlayers(callable $result, ?callable $onError = null): void{
 		$this->database->executeSelect(self::TABLE_SELECT_PLAYERS, [],
 			function(array $rows) use ($result){
 				$players = [];
 				foreach($rows as $id => $rowObj) $players[] = AsyncLibDatabase::parsePlayerRow($rowObj);
 
 				$result($players);
-			});
+			}, $onError);
 	}
 
 	/** @var Position|null */

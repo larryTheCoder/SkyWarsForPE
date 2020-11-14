@@ -29,7 +29,6 @@
 namespace larryTheCoder\utils\npc;
 
 use larryTheCoder\SkyWarsPE;
-use larryTheCoder\utils\PlayerData;
 use pocketmine\entity\Human;
 use pocketmine\entity\Skin;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -84,9 +83,6 @@ class FakeHuman extends Human {
 		$this->fetchData();
 	}
 
-	/** @var bool */
-	private $isFetching = false;
-
 	public function attack(EntityDamageEvent $source): void{
 		$source->setCancelled();
 	}
@@ -112,63 +108,34 @@ class FakeHuman extends Human {
 	}
 
 	private function fetchData(): void{
-		if($this->isFetching){
-			return;
+		$object = $this->getPedestalManager()->getPedestalObject($this->levelPedestal);
+
+		// Send the skin (Only use the .dat skin data)
+		if(file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($object[0]) . ".dat")){
+			$nbt = Server::getInstance()->getOfflinePlayerData($object[0]);
+			$skin = $nbt->getCompoundTag("Skin");
+			if($skin !== null){
+				$skin = new Skin(
+					$skin->getString("Name"),
+					$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
+					$skin->getByteArray("CapeData", ""),
+					$skin->getString("GeometryName", ""),
+					$skin->getByteArray("GeometryData", "")
+				);
+				try{
+					$skin->validate();
+					$this->setSkin($skin);
+				}catch(\Exception $ignored){
+				}
+			}
 		}
 
-		SkyWarsPE::getInstance()->getDatabase()->getPlayers(function(array $players){
-			$this->isFetching = false;
-
-			/** @var PlayerData[] $players */
-			// Avoid nulls and other consequences
-			$player = []; // PlayerName => Kills
-			$player["Example-1"] = 0;
-			$player["Example-2"] = 0;
-			$player["Example-3"] = 0;
-			foreach($players as $value){
-				$player[$value->player] = $value->wins;
-			}
-
-			arsort($player);
-
-			// Limit them to 3
-			$limit = 0;
-			foreach($player as $playerName => $wins){
-				$limit++;
-				if($limit !== $this->levelPedestal){
-					continue;
-				}
-
-				// Send the skin (Only use the .dat skin data)
-				if(file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($playerName) . ".dat")){
-					$nbt = Server::getInstance()->getOfflinePlayerData($playerName);
-					$skin = $nbt->getCompoundTag("Skin");
-					if($skin !== null){
-						$skin = new Skin(
-							$skin->getString("Name"),
-							$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
-							$skin->getByteArray("CapeData", ""),
-							$skin->getString("GeometryName", ""),
-							$skin->getByteArray("GeometryData", "")
-						);
-						try{
-							$skin->validate();
-							$this->setSkin($skin);
-						}catch(\Exception $ignored){
-						}
-					}
-				}
-
-				// The text packets
-				$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-1', false));
-				$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-2', false));
-				$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$playerName, $this->levelPedestal, $wins], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
-				$array = [$msg1, $msg2, $msg3];
-				$this->sendText($array);
-			}
-		});
-
-		$this->isFetching = true;
+		// The text packets
+		$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-1', false));
+		$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-2', false));
+		$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
+		$array = [$msg1, $msg2, $msg3];
+		$this->sendText($array);
 	}
 
 	/**
@@ -281,5 +248,9 @@ class FakeHuman extends Human {
 				Server::getInstance()->batchPackets($this->getViewers(), $pk);
 			}
 		}
+	}
+
+	private function getPedestalManager(): PedestalManager{
+		return SkyWarsPE::getInstance()->pedestalManager;
 	}
 }

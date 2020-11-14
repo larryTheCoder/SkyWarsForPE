@@ -191,8 +191,6 @@ class ArenaImpl extends ArenaData {
 	public function setSpectator(Player $player): void{
 		parent::setSpectator($player);
 
-		// TODO: Add death stats.
-
 		$player->setHealth(20);
 		$player->setFood(20);
 
@@ -229,9 +227,9 @@ class ArenaImpl extends ArenaData {
 		$pm = $this->getPlayerManager();
 
 		if($onQuit){
-			$pm->broadcastToPlayers("{$player->getName()} has disconnected.");
+			$pm->broadcastToPlayers("{$player->getName()} " . TextFormat::RED . "has disconnected.");
 		}else{
-			$pm->broadcastToPlayers("{$player->getName()} has left the game.");
+			$pm->broadcastToPlayers("{$player->getName()} " . TextFormat::RED . "has left the game.");
 
 			$player->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
 		}
@@ -288,7 +286,7 @@ class ArenaImpl extends ArenaData {
 	}
 
 	public function getMaxPlayer(): int{
-		return $this->minimumPlayers;
+		return $this->maximumPlayers;
 	}
 
 	public function getMapName(): string{
