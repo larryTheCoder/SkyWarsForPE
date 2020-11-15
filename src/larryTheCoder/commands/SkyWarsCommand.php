@@ -30,10 +30,12 @@
 namespace larryTheCoder\commands;
 
 use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\Player;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
 final class SkyWarsCommand {
@@ -58,7 +60,7 @@ final class SkyWarsCommand {
 					if(!$sender instanceof Player){
 						$this->consoleSender($sender);
 
-						return true;
+						break;
 					}
 
 					Utils::addSound([$sender], $args[1]);
@@ -68,23 +70,28 @@ final class SkyWarsCommand {
 					if(!$sender->hasPermission('sw.command.lobby')){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
 
-						return true;
+						break;
 					}
 					if(!$sender instanceof Player){
 						$this->consoleSender($sender);
 
-						return true;
+						break;
 					}
 					$pManager = $this->plugin->getArenaManager();
 					$arena = $pManager->getPlayerArena($sender);
-					if($arena === null || !$pManager->insideArenaLevel($sender)){
+					if($arena === null){
 						$sender->sendMessage('Please use this command in-arena');
 
-						return true;
+						break;
 					}
-					$arena->leaveArena($sender);
 
-					return true;
+					if($arena->getPlayerManager()->isInArena($sender)){
+						$arena->leaveArena($sender);
+					} else {
+						$sender->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
+					}
+
+					break;
 				case "help":
 					if(!$sender->hasPermission("sw.command.help")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
@@ -131,151 +138,103 @@ final class SkyWarsCommand {
 				case "create":
 					if(!$sender->hasPermission('sw.command.create')){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
+					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-						break;
+					}else{
+						$this->plugin->panel->setupArena($sender);
 					}
 
-					$this->plugin->panel->setupArena($sender);
 					break;
 				case "settings":
 					if(!$sender->hasPermission('sw.command.set')){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
+					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-						break;
+					}else{
+						$this->plugin->panel->showSettingPanel($sender);
 					}
-
-					$this->plugin->panel->showSettingPanel($sender);
 					break;
 				case "stats":
 					if(!$sender->hasPermission("sw.command.stats")){
 						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
-						break;
-					}
-					if(!$sender instanceof Player){
+					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-						break;
+					}else{
+						$this->plugin->panel->showStatsPanel($sender);
 					}
 
-					$this->plugin->panel->showStatsPanel($sender);
 					break;
 				case "cage":
 					if(!$sender->hasPermission("sw.command.cage")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
+					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-						break;
+					}else{
+						$this->plugin->panel->setupNPCCoordinates($sender);
 					}
-
-					$this->plugin->panel->showChooseCage($sender);
 					break;
 				case "npc":
 					if(!$sender->hasPermission("sw.command.npc")){
 						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
-						break;
-					}
-					if(!$sender instanceof Player){
+					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-						break;
+					}else{
+						$this->plugin->panel->setupNPCCoordinates($sender);
 					}
-
-					$this->plugin->panel->showNPCConfiguration($sender);
 					break;
 				case "random":
 					if(!$sender->hasPermission("sw.command.random")){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
+					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-						break;
+					}else{
+						$arena = $this->plugin->getArenaManager()->getAvailableArena();
+						if(is_null($arena)){
+							$sender->sendMessage("§cNo available arena, please try again later");
+						}else{
+							$arena->getQueueManager()->addQueue($sender);
+						}
 					}
-					$arena = $this->plugin->getArenaManager()->getAvailableArena();
-					if(is_null($arena)){
-						$sender->sendMessage("§cNo available arena, please try again later");
-						break;
-					}
-
-					if($arena->hasFlags(Arena::ARENA_CRASHED)){
-						$sender->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
-
-						break;
-					}
-
-					$arena->getQueueManager()->addQueue($sender);
-					break;
-				case "reload":
-					if(!$sender->hasPermission("sw.command.reload")){
-						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
-						break;
-					}
-					$sender->sendMessage($this->plugin->getMsg($sender, 'plugin-reloading'));
-
-					// Reload the arenas...
-					Utils::unLoadGame();
-					$this->plugin->getArenaManager()->checkArenas();
-					foreach($this->plugin->getArenaManager()->getArenas() as $arena){
-						$arena->resetArena();
-					}
-
-					$sender->sendMessage($this->plugin->getMsg($sender, 'plugin-reload'));
 					break;
 				case "join":
 					if(!$sender->hasPermission('sw.command.join')){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
+					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-						break;
-					}
-					if(!isset($args[1]) || isset($args[2])){
+					}elseif(!isset($args[1]) || isset($args[2])){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'join-usage'));
-						break;
-					}
-					if(!$this->plugin->getArenaManager()->arenaExist($args[1])){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
-						break;
-					}
-					$pm = ($arena = $this->plugin->getArenaManager()->getArena($args[1]))->getPlayerManager();
-					if($pm->isInArena($sender)){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'arena-running'));
-						break;
-					}
-					if($arena->hasFlags(Arena::ARENA_CRASHED)){
-						$sender->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
+					}else{
+						$arena = $this->plugin->getArenaManager()->getArena($args[1]);
 
-						break;
+						if($arena === null){
+							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
+						}elseif($arena->getPlayerManager()->isInArena($sender)){
+							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-running'));
+						}elseif($arena->hasFlags(Arena::ARENA_CRASHED)){
+							$sender->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
+						}elseif($arena->hasFlags(ArenaImpl::ARENA_DISABLED) || $arena->hasFlags(ArenaImpl::ARENA_IN_SETUP_MODE)){
+							$sender->sendMessage(TextFormat::RED . "The arena is temporarily disabled, try again later.");
+						}else{
+							$arena->getQueueManager()->addQueue($sender);
+						}
 					}
-
-					$arena->getQueueManager()->addQueue($sender);
 					break;
 				case "setlobby":
 					if(!$sender->hasPermission('sw.command.setlobby')){
 						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
-						break;
-					}
-					if(!$sender instanceof Player){
+					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-						break;
-					}
-					if($this->plugin->getArenaManager()->insideArenaLevel($sender)){
+					}elseif($this->plugin->getArenaManager()->getPlayerArena($sender) !== null){
 						$sender->sendMessage(TextFormat::RED . "You cannot run this command in an arena!");
-						break;
-					}
+					}else{
+						$this->plugin->getDatabase()->setLobby($sender->getPosition());
 
-					$this->plugin->getDatabase()->setLobby($sender->getPosition());
-					$sender->sendMessage($this->plugin->getMsg($sender, 'main-lobby-set'));
+						$sender->sendMessage($this->plugin->getMsg($sender, 'main-lobby-set'));
+					}
 					break;
 				case "about":
 					$ver = $this->plugin->getDescription()->getVersion();
+
 					$sender->sendMessage("§aSkyWarsForPE, §cSeven Red Suns.");
 					$sender->sendMessage("§7This plugin is running SkyWarsForPE §6v" . $ver . "§7 by§b larryTheCoder!");
 					$sender->sendMessage("§7Source-link: https://github.com/larryTheCoder/SkyWarsForPE");

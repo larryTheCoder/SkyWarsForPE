@@ -9,48 +9,43 @@
     Its time to burn those old fancy paid plugins and beat them in face!
 
 ## Introduction
-**This plugin is unstable and inconsistent, it is not ready to be used, use with caution.**
+SkyWarsForPE is a production-standard plugin built for all Minecraft PE Community, the code was acquired by Alair069 for
+SkyWars project/development. However, due to some inactivity in this project in the self-isolated environment, it was brought
+back to be open-sourced again, and this plugin will continue to compete with other SkyWars plugin. I ensure you, this plugin 
+is more powerful than ever before. It's all for free! The plugin is currently in a state of testing-stage, 
+some operations in this core subroutine might be faulty but has been completed.
 
-SkyWarsForPE is a plugin built for all Minecraft PE Community, this source has been moved to open sourced again due to some inactivity in project, as the result, this plugin will be continued to compete with other SkyWars plugin. I ensure you, this plugin is more powerful than ever before. It's all for free!
+The core itself uses a very basic principle in which it is async-capable, performance-capable and configurable.
+
+This is the example of my work if you want to commission me, my prices are vary from $50-$200 in which depends on what
+type of work do you want me to do.
 
 ## Implemented features:
 - Asynchronous world loading/unloading. (Technically just fast)
-- Setup arena with a FormAPI interface, its just easy.
-- GUI handled setup and settings.
-- Chest particles, effects, custom cloaks
+- GUI handled arena setup and settings menu.
 - More commands, A lot of working commands.
-- Easy built in Item handling configuration. _check config.yml_
-- Incredible performance and fast startup.
-- Saves world, load them, then restart them with style.
-- Random Chests (To be done).
-- Events, public API, Yes we welcome developers to come contribute.
-- NPC Top winners, oh yes, this what been waiting for.
-- Top winners! Top winners! Who won the game?
-- All the player stats will be stored centrally in sql database.
-- Provides the best settings for your server.
-- Implemented scoreboards UI, it can be configured in [scoreboard.yml](https://github.com/larryTheCoder/SkyWarsForPE/blob/master/resources/scoreboard.yml).
+- Configurable arenas and easy-to-work with documentations.
+- Faster load startup and less load on the server.
+- Arenas worlds compressed in Bzip2 format to ensure more disk storage/volumes.
+- NPC top winners, these NPC has fully written all over again to not crash.
+- Mysql/Sqlite operations is asynchronous by libasynql
+- All the player stats will be stored centrally in sql/mysql database.
+- Scoreboard has been implemented, it can be configured in [scoreboard.yml](https://github.com/larryTheCoder/SkyWarsForPE/blob/master/resources/scoreboard.yml).
+- Portable GameAPI, you can take a look at the `larryTheCoder/arena/api` path for more info.
+- Team mode implementation is now available, you can now play in teams.
+- Extreme precision on death/kills checks with CombatLogger implementation.
+- Queue methods can now be changed with custom plugin.
+- Aesthetics sound effects in-game. 
 
-### Planned Features
-Giving out planned features won't do anything without trying first. These are the planned features for the plugin.
-
-- Proxy based game (Connects from server to server)
-- Chest randomized.
-- Chest Open Close packet (See Hypixel game behaviour)
-- Time manipulation
-- Game API (Do some cool stuff and controls the arena)
-- At the end of the round you will be placed in the gamemode 2 during the teleport.
-- Configurable particles at the end of the round (adjustable in Config.yml)
-- Implementation of Team Mode for SkyWars.
-- Join title when entering a round (adjustable in Config.yml).
-- In the GUI for the cages images support (In the cages.yml adjustable for example: Image: "https://fileupload.com/up/ggisdagdg")
-
+## Configuration
+This section is to be done.
 
 ## Commands
 
 | Default command | Parameter | Description | Default Permission |
 | :-----: | :-------: | :---------: | :-------: |
-| /lobby | | back to lobby | `All` |
 | /sw |`<args>` | Main SkyWars command | `All` |
+| /sw lobby | | back to lobby | `All` |
 | /sw help | | Get command map | `All` |
 | /sw random | | Randomly join to an arena | `All` |
 | /sw cage | | Set your own cage | `All` |
@@ -65,7 +60,7 @@ Giving out planned features won't do anything without trying first. These are th
 | /sw setlobby | | Set the main lobby for the plugin | `OP` |
 
 ### License
-Before you attempted to copy any of this plugin, please read following license before you continue.
+Before you try to copy any part of the code in this plugin, please read following license before you do.
 
     Adapted from the Wizardry License
 

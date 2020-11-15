@@ -33,11 +33,11 @@ namespace larryTheCoder\arena\api;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\ShutdownSequence;
 use pocketmine\block\StainedGlass;
+use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\level\Position;
-use pocketmine\Server;
 use pocketmine\tile\Sign;
 use pocketmine\utils\TextFormat;
 
@@ -46,8 +46,8 @@ use pocketmine\utils\TextFormat;
  */
 class SignManager implements Listener, ShutdownSequence {
 
-	/** @var Sign */
-	private $signTile;
+	/** @var Position */
+	private $signPosition;
 	/** @var Arena */
 	private $arena;
 	/** @var string */
@@ -67,14 +67,8 @@ class SignManager implements Listener, ShutdownSequence {
 		$this->arena = $arena;
 		$this->prefix = $prefix;
 
-		$tile = $tilePosition->getLevel()->getTile($tilePosition);
-		if(!($tile instanceof Sign)){
-			Server::getInstance()->getLogger()->warning("The position given for arena {$arena->getMapName()}'s sign is invalid.");
 
-			return;
-		}
-
-		$this->signTile = $tile;
+		$this->signPosition = $tilePosition;
 	}
 
 	private static function toReadable(Arena $arena): string{
@@ -122,7 +116,7 @@ class SignManager implements Listener, ShutdownSequence {
 
 		$qm = $this->arena->getQueueManager();
 
-		if($this->signTile === null || !$b->equals($this->signTile)){
+		if($this->signPosition === null || !$b->equals($this->signPosition)){
 			return;
 		}
 
@@ -153,7 +147,10 @@ class SignManager implements Listener, ShutdownSequence {
 
 	public function processSign(): void{
 		// Do not perform anything if the tile is null
-		if($this->signTile === null) return;
+
+		$signTile = $this->signPosition->getLevel()->getTile($this->signPosition);
+
+		if(!($signTile instanceof Sign)) return;
 
 		if(!empty($this->signTemplate)){
 			$names = ['%alive', '%status', '%max', '%min', '&', '%world', '%prefix', '%name'];
@@ -177,24 +174,36 @@ class SignManager implements Listener, ShutdownSequence {
 
 		foreach($this->updatedSign as $line => $text){
 			if(($this->cache[$line] ?? "") !== $text){
-				$this->signTile->setLine($line, $text);
+				$signTile->setLine($line, $text);
 
 				$this->cache[$line] = $text;
 			}
 		}
 
 		// Block statuses.
-
-		$level = $this->signTile->getLevel();
+		$level = $this->signPosition->getLevel();
 
 		$block = $this->getBlockStatus();
-		$sign = $this->signTile->getBlock();
+		$sign = $signTile->getBlock();
 		$vec = $sign->getSide($sign->getDamage() ^ 0x01);
 		if($level->getBlock($vec)->getId() === $block->getId() && $level->getBlock($vec)->getDamage() === $block->getDamage()){
 			return;
 		}
 
 		$level->setBlock($vec, $block);
+	}
+
+	public function onBlockBreakEvent(BlockBreakEvent $event): void{
+		$block = $event->getBlock();
+
+		if($block->equals($this->signPosition)) $event->setCancelled();
+
+		$signTile = $this->signPosition->getLevel()->getTile($this->signPosition);
+		if(!($signTile instanceof Sign)) return;
+		$sign = $signTile->getBlock();
+
+		$vec = $sign->getSide($sign->getDamage() ^ 0x01);
+		if($block->equals($vec)) $event->setCancelled();
 	}
 
 	private function getBlockStatus(): StainedGlass{

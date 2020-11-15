@@ -28,184 +28,42 @@
 
 namespace larryTheCoder;
 
-use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
 use larryTheCoder\arena\ArenaImpl;
-use larryTheCoder\utils\Settings;
+use larryTheCoder\utils\ConfigManager;
 use larryTheCoder\utils\Utils;
-use pocketmine\entity\Entity;
 use pocketmine\Player;
+use pocketmine\Server;
 use pocketmine\utils\Config;
 
 final class ArenaManager {
 
-	/** @var string[] */
-	public $arenaRealName = [];
+	/** @var SkyWarsPE */
+	private $plugin;
+
 	/** @var ArenaImpl[] */
 	private $arenas = [];
-	/** @var Config[] */
-	private $arenaConfig = [];
-	/** @var SkyWarsPE */
-	private $pl;
+	/** @var ConfigManager[] */
+	private $config;
 
-	public function __construct(SkyWarsPE $plugin){
-		$this->pl = $plugin;
+	public function __construct(){
+		$this->plugin = SkyWarsPE::getInstance();
 	}
 
-	// Check and passed.
 	public function checkArenas(): void{
-		$this->pl->getServer()->getLogger()->info(Settings::$prefix . "§6Locating arena files...");
+		foreach(glob($this->plugin->getDataFolder() . "arenas/*.yml") as $configPath){
+			$cm = new ConfigManager(basename($configPath, ".yml"), new Config($configPath, Config::YAML));
 
-		$folder = glob($this->pl->getDataFolder() . "arenas/*.yml");
-		if($folder === false) throw new \RuntimeException("Unexpected error has occurred while indexing arenas files.");
-
-		foreach($folder as $file){
-			$arena = new Config($file, Config::YAML);
-			$arenaName = $arena->get("arena-name", null);
-			$baseName = basename($file, ".yml");
-
-			if($arenaName === null){
-				Utils::send("§6" . ucwords($baseName) . " §a§l-§r§c Config file is not valid.");
+			if($cm->arenaName === null){
+				Utils::send("§6" . ucwords($cm->fileName) . " §a§l-§r§c Config file is missing its arena name.");
 
 				continue;
 			}
 
-			$this->arenaRealName[strtolower($arenaName)] = $arenaName;
-			$this->arenaRealName[strtolower($baseName)] = $arenaName;
-			$this->arenaConfig[strtolower($arenaName)] = $arena;
-
-			$baseArena = new ArenaImpl($this->pl, $arena->getAll());
-			if(!$baseArena->configChecked){
-				unset($this->arenaRealName[strtolower($arenaName)]);
-				unset($this->arenaRealName[strtolower($baseName)]);
-				unset($this->arenaConfig[strtolower($arenaName)]);
-				continue;
-			}
-
-			$this->arenas[strtolower($arenaName)] = $baseArena;
+			$this->arenas[$cm->arenaName] = new ArenaImpl($this->plugin, $cm);
+			$this->config[$cm->arenaName] = $cm;
 		}
-	}
-
-	public function reloadArena(string $arenaF): bool{
-		$arenaName = $this->getRealArenaName($arenaF);
-		$this->pl->getServer()->getLogger()->info(Settings::$prefix . "§aReloading arena§e $arenaName");
-		if(!$this->arenaExist($arenaName)){
-			Utils::sendDebug("[reloadArena] Arena $arenaName doesn't exists.");
-
-			return false;
-		}
-
-		$arenaConfig = $this->getArenaConfig($arenaName);
-		$game = $this->getArena($arenaName);
-		# Arena is null but how?
-		if(is_null($game) || is_null($arenaConfig)){
-			Utils::sendDebug("[reloadArena] Arena $arenaName exists but null.");
-
-			return false;
-		}
-		$game->setFlags(Arena::ARENA_IN_SETUP_MODE, false);
-
-		return true;
-	}
-
-	// Checked and passed
-	public function getRealArenaName(string $lowerCasedArena): string{
-		if(!isset($this->arenaRealName[strtolower($lowerCasedArena)])){
-			return $lowerCasedArena;
-		}
-
-		return $this->arenaRealName[strtolower($lowerCasedArena)];
-	}
-
-	// Checked and passed
-	public function setArenaData(Config $config, string $arenaName): void{
-		$arena = $this->getArena($arenaName);
-		if($arena === null){
-			$this->arenaRealName[strtolower($arenaName)] = $arenaName;
-			$this->arenaConfig[strtolower($arenaName)] = $config;
-
-			// Create a new arena if it doesn't exists.
-			$baseArena = new ArenaImpl($this->pl, $config->getAll());
-			if(!$baseArena->configChecked){
-				unset($this->arenaRealName[strtolower($arenaName)]);
-				unset($this->arenaConfig[strtolower($arenaName)]);
-
-				return;
-			}
-
-			$arena = $this->arenas[strtolower($arenaName)] = $baseArena;
-		}
-
-		$arena->setConfig($config->getAll());
-	}
-
-	// Checked and passed
-	public function getArena(string $arena): ?ArenaImpl{
-		if(!$this->arenaExist($arena)){
-			Utils::sendDebug("getArena($arena): Not found");
-
-			return null;
-		}
-		Utils::sendDebug("getArena($arena): Found data type.");
-
-		return $this->arenas[strtolower($arena)];
-	}
-
-	public function arenaExist(string $arena): bool{
-		return isset($this->arenas[strtolower($arena)]);
-	}
-
-	public function deleteArena(string $arena): void{
-		if($this->arenaExist($arena)){
-			$this->getArena($arena)->shutdown();
-			unset($this->arenas[strtolower($arena)]);
-			unset($this->arenaConfig[strtolower($arena)]);
-		}
-	}
-
-	public function getPlayerArena(Player $p): ?ArenaImpl{
-		foreach($this->arenas as $arena){
-			if($arena->getPlayerManager()->isInArena($p)){
-				return $arena;
-			}
-		}
-
-		return null;
-	}
-
-	public function getArenaConfig(string $arenaName): ?Config{
-		if(!isset($this->arenaConfig[strtolower($arenaName)])){
-			return null;
-		}
-
-		return $this->arenaConfig[strtolower($arenaName)];
-	}
-
-	public function getAvailableArena(): ?ArenaImpl{
-		$arena = $this->getArenas();
-		# Check if there is a player in one of the arenas
-		foreach($arena as $selector){
-			if(!empty($selector->getPlayerManager()->getAlivePlayers()) && $selector->getStatus() <= ArenaState::STATE_STARTING){
-				return $selector;
-			}
-		}
-
-		# Otherwise we need to randomize the arena
-		# By not letting the player to join a started arena
-		$arenas = [];
-		foreach($arena as $selector){
-			if($selector->getStatus() <= ArenaState::STATE_STARTING && $selector->arenaEnable){
-				$arenas[] = $selector;
-			}
-		}
-
-		# There were 0 arenas found
-		if(empty($arenas)){
-			return null;
-		}
-
-		# Otherwise randomize it and put it into return arena.
-		return $arenas[mt_rand(0, count($arenas) - 1)];
 	}
 
 	/**
@@ -215,24 +73,111 @@ final class ArenaManager {
 		return $this->arenas;
 	}
 
-	public function getArenaByInt(int $id): ArenaImpl{
-		$arenas = [];
-		foreach($this->getArenas() as $arena){
-			$arenas[] = $arena;
-		}
-
-		return $arenas[$id];
+	/**
+	 * Returns an arena instance of associated arena name. This arena name must be
+	 * exactly the name of the arena as it is name-strict.
+	 *
+	 * @param string $arena
+	 * @return ArenaImpl|null
+	 */
+	public function getArena(string $arena): ?ArenaImpl{
+		return $this->arenas[$arena] ?? null;
 	}
 
-	public function insideArenaLevel(Entity $entity): bool{
-		return !empty(array_filter($this->arenas, function($value) use ($entity): bool{
-			return $value->getLevel()->getFolderName() === $entity->getLevel()->getFolderName();
+	/**
+	 * Retrieves the config mapping system from the memory array.
+	 * {@see AMRewrite::getArena()}
+	 *
+	 * @param string $arena
+	 * @return ConfigManager|null
+	 */
+	public function getConfig(string $arena): ?ConfigManager{
+		return $this->config[$arena] ?? null;
+	}
+
+	/**
+	 * Creates a skeleton for Arena class, this will copy the arena config file to designated location
+	 * and returns a temporary arena class which is in setup mode.
+	 *
+	 * @param string $arenaName
+	 * @return ArenaImpl
+	 */
+	public function createArena(string $arenaName): ArenaImpl{
+		$configPath = $this->plugin->getDataFolder() . "arenas/$arenaName.yml";
+		file_put_contents($configPath, $this->plugin->getResource('arenas/default.yml'));
+
+		$cm = new ConfigManager(basename($configPath, ".yml"), new Config($configPath, Config::YAML));
+		$arena = new ArenaImpl($this->plugin, $cm);
+
+		$this->arenas[$cm->arenaName] = $arena;
+		$this->config[$cm->arenaName] = $cm;
+
+		$arena->setFlags(ArenaImpl::ARENA_IN_SETUP_MODE, true);
+
+		return $arena;
+	}
+
+	/**
+	 * Deletes an arena safely from the memory. This function uses the {@link ShutdownSequence} to close
+	 * all related tasks and events in the arena.
+	 *
+	 * @param string $arena
+	 */
+	public function deleteArena(string $arena): void{
+		if(($arena = $this->getArena($arena)) !== null){
+			$task = new AsyncDirectoryDelete([$this->plugin->getDataFolder() . "arenas/worlds/" . $arena->getLevelName()], function() use ($arena): void{
+				unlink($arena->getConfigManager()->getConfig()->getPath());
+
+				$arena->shutdown();
+
+				unset($this->arenas[strtolower($arena->getMapName())]);
+				unset($this->config[strtolower($arena->getMapName())]);
+			});
+
+			Server::getInstance()->getAsyncPool()->submitTask($task);
+		}
+	}
+
+	/**
+	 * Returns an available arena, the first entry that has players in them will always be chosen
+	 * first to provide better gameplay within random arenas entries.
+	 *
+	 * @return ArenaImpl|null
+	 */
+	public function getAvailableArena(): ?ArenaImpl{
+		// Check if there is a player in one of the arenas
+		foreach($this->arenas as $selector){
+			if(!empty($selector->getPlayerManager()->getAlivePlayers()) && $selector->getStatus() <= ArenaState::STATE_STARTING){
+				return $selector;
+			}
+		}
+
+		// Filter the arena to retrieves which arena is enabled and is ready.
+		$arenas = array_filter($this->arenas, function($arena): bool{
+			return $arena->getStatus() <= ArenaState::STATE_STARTING && !($arena->hasFlags(ArenaImpl::ARENA_IN_SETUP_MODE) || $arena->hasFlags(ArenaImpl::ARENA_CRASHED) || $arena->hasFlags(ArenaImpl::ARENA_DISABLED));
+		});
+
+		return empty($arenas) ? null : $arenas[array_rand($arenas)];
+	}
+
+	/**
+	 * Return the associated arena implementation if the player appears to be in the arena
+	 * world. This method will still returns the arena class if the player appears to not be
+	 * in arena system.
+	 *
+	 * @param Player $player
+	 * @return ArenaImpl|null
+	 */
+	public function getPlayerArena(Player $player): ?ArenaImpl{
+		$result = array_values(array_filter($this->arenas, function($arena) use ($player): bool{
+			return $arena->getPlayerManager()->isInArena($player) || $arena->getLevelName() === $player->getLevel()->getFolderName();
 		}));
+
+		return empty($result) ? null : $result[0];
 	}
 
 	public function invalidate(): void{
-		$this->arenaRealName = [];
-		$this->arenas = [];
-		$this->arenaConfig = [];
+		unset($this->arenas, $this->config);
+		$this->config = $this->config = [];
 	}
 }

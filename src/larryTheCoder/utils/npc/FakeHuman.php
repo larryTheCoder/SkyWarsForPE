@@ -238,8 +238,6 @@ class FakeHuman extends Human {
 		}
 
 		if(!empty($pk)){
-			print "Sending packets" . PHP_EOL;
-
 			if($player !== null){
 				foreach($pk as $packet){
 					$player->batchDataPacket($packet);

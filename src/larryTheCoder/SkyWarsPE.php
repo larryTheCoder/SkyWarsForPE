@@ -30,7 +30,7 @@ namespace larryTheCoder;
 
 use larryTheCoder\commands\SkyWarsCommand;
 use larryTheCoder\database\AsyncLibDatabase;
-use larryTheCoder\panel\FormPanel;
+use larryTheCoder\panel\FormManager;
 use larryTheCoder\utils\{fireworks\entity\FireworksRocket, npc\FakeHuman, npc\PedestalManager, Settings, Utils};
 use larryTheCoder\utils\cage\ArenaCage;
 use onebone\economyapi\EconomyAPI;
@@ -73,7 +73,7 @@ class SkyWarsPE extends PluginBase {
 
 	/** @var bool */
 	public $disabled;
-	/** @var FormPanel */
+	/** @var FormManager */
 	public $panel;
 	/** @var PedestalManager */
 	public $pedestalManager;
@@ -158,8 +158,8 @@ class SkyWarsPE extends PluginBase {
 
 		$this->database = new AsyncLibDatabase($this, $this->getConfig()->get("database"));
 		$this->cmd = new SkyWarsCommand($this);
-		$this->arenaManager = new ArenaManager($this);
-		$this->panel = new FormPanel($this);
+		$this->arenaManager = new ArenaManager();
+		$this->panel = new FormManager($this);
 		$this->cage = new ArenaCage($this);
 
 		Entity::registerEntity(FireworksRocket::class, true, ["Firework", "minecraft:firework_rocket"]);
@@ -195,6 +195,11 @@ class SkyWarsPE extends PluginBase {
 		$vectors[] = new Vector3((float)$npc1E[0], (float)$npc1E[1], (float)$npc1E[2]);
 		$vectors[] = new Vector3((float)$npc2E[0], (float)$npc2E[1], (float)$npc2E[2]);
 		$vectors[] = new Vector3((float)$npc3E[0], (float)$npc3E[1], (float)$npc3E[2]);
+
+		// Force to load the chunks (An error can occur if the world is freshly loaded) aka dummy server owner.
+		foreach($vectors as $vector){
+			$level->loadChunk($vector->getFloorX() >> 4, $vector->getFloorZ() >> 4);
+		}
 
 		$this->pedestalManager = new PedestalManager($vectors, $level);
 	}

@@ -40,6 +40,7 @@ use larryTheCoder\arena\api\SignManager;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\task\SkyWarsTask;
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\ConfigManager;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\BlockFactory;
@@ -64,6 +65,8 @@ class ArenaImpl extends ArenaData {
 	private $arenaData;
 	/** @var SignManager */
 	private $signManager;
+	/** @var ConfigManager */
+	private $configManager;
 	/** @var int */
 	private $startedTime = -1;
 
@@ -75,9 +78,9 @@ class ArenaImpl extends ArenaData {
 	/**
 	 * ArenaImpl constructor.
 	 * @param SkyWarsPE $plugin
-	 * @param array<mixed> $arenaData
+	 * @param ConfigManager $arenaData
 	 */
-	public function __construct(SkyWarsPE $plugin, array $arenaData){
+	public function __construct(SkyWarsPE $plugin, ConfigManager $arenaData){
 		$this->setConfig($arenaData);
 
 		$this->eventListener = new EventListener($this);
@@ -86,10 +89,12 @@ class ArenaImpl extends ArenaData {
 	}
 
 	/**
-	 * @param array<mixed> $arenaData
+	 * @param ConfigManager $arenaData
 	 */
-	public function setConfig(array $arenaData): void{
-		$this->arenaData = $arenaData;
+	public function setConfig(ConfigManager $arenaData): void{
+		$this->configManager = $arenaData;
+
+		$this->arenaData = $arenaData->getConfig()->getAll();
 
 		$this->parseData();
 
@@ -107,6 +112,10 @@ class ArenaImpl extends ArenaData {
 	 */
 	public function getArenaData(): array{
 		return $this->arenaData;
+	}
+
+	public function getConfigManager(): ConfigManager{
+		return $this->configManager;
 	}
 
 	public function getCodeName(): string{
