@@ -32,6 +32,8 @@ namespace larryTheCoder\arena\api\listener;
 
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\ArenaImpl;
+use larryTheCoder\SkyWarsPE;
 use pocketmine\entity\Human;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -59,7 +61,7 @@ abstract class BasicListener implements Listener {
 	 * Returns the arena that this player is in.
 	 *
 	 * @param Human $player
-	 * @return Arena|null
+	 * @return ArenaImpl|null
 	 */
 	public abstract function getArena(Human $player): ?Arena;
 
@@ -256,12 +258,15 @@ abstract class BasicListener implements Listener {
 			}
 
 			$status = $arena->getStatus();
+			$item = $p->getInventory()->getItemInHand();
 			if($status === ArenaState::STATE_WAITING || $status === ArenaState::STATE_STARTING){
-				if($p->getInventory()->getItemInHand()->equals(Arena::getLeaveItem())){
+				if($item->equals(Arena::getLeaveItem())){
 					$arena->leaveArena($p);
 
 					$e->setCancelled();
 				}
+			} else if($arena->getPlayerManager()->isSpectator($p) && $item->equals(Arena::getSpectatorItem())){
+				SkyWarsPE::getInstance()->panel->showSpectatorPanel($p, $arena);
 			}
 
 			return;

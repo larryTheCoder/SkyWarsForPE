@@ -82,7 +82,7 @@ class SkyWarsPE extends PluginBase {
 		return self::$instance;
 	}
 
-	public function onLoad(){
+	public function onLoad(): void{
 		self::$instance = $this;
 
 		$this->initConfig();
@@ -92,6 +92,7 @@ class SkyWarsPE extends PluginBase {
 		Utils::ensureDirectory();
 		Utils::ensureDirectory("image/");
 		Utils::ensureDirectory("language/");
+		Utils::ensureDirectory("scoreboards/");
 		Utils::ensureDirectory("arenas/");
 		Utils::ensureDirectory("arenas/worlds");
 		$this->saveResource("chests.yml");
@@ -137,7 +138,7 @@ class SkyWarsPE extends PluginBase {
 	/** @var bool */
 	private $crashed = true;
 
-	public function onEnable(){
+	public function onEnable(): void{
 		if(\Phar::running(true) === ""){
 			if(!class_exists("poggit\libasynql\libasynql")){
 				$this->getLogger()->error("libasynql library not found! Please refer to https://github.com/poggit/libasynql and install this first!");
@@ -225,7 +226,7 @@ class SkyWarsPE extends PluginBase {
 		return $this->cage;
 	}
 
-	public function onDisable(){
+	public function onDisable(): void{
 		try{
 			if($this->crashed) return;
 

@@ -90,8 +90,9 @@ class ArenaImpl extends ArenaData {
 
 	/**
 	 * @param ConfigManager $arenaData
+	 * @param bool $duringRuntime
 	 */
-	public function setConfig(ConfigManager $arenaData): void{
+	public function setConfig(ConfigManager $arenaData, bool $duringRuntime = false): void{
 		$this->configManager = $arenaData;
 
 		$this->arenaData = $arenaData->getConfig()->getAll();
@@ -102,9 +103,16 @@ class ArenaImpl extends ArenaData {
 
 		$this->signManager = new SignManager($this, $this->getSignPosition(), Settings::$prefix);
 		$this->cageManager = new CageManager($this->spawnPedestals);
-		$this->scoreboard = new Internal($this, Utils::getScoreboardConfig());
+		$this->scoreboard = new Internal($this, Utils::getScoreboardConfig($this));
 
 		$this->signManager->setTemplate([$this->statusLine1, $this->statusLine2, $this->statusLine3, $this->statusLine4]);
+
+		if($duringRuntime){
+			$this->shutdown();
+
+			// Reinitialize the arena load sequence.
+			parent::__construct($this->getPlugin());
+		}
 	}
 
 	/**
@@ -225,8 +233,10 @@ class ArenaImpl extends ArenaData {
 			$player->getArmorInventory()->clearAll();
 		}
 
-		$player->setNameTag($this->originalNametag[$player->getName()]);
-		unset($this->originalNametag[$player->getName()]);
+		if($this->getPlayerManager()->teamMode){
+			$player->setNameTag($this->originalNametag[$player->getName()]);
+			unset($this->originalNametag[$player->getName()]);
+		}
 
 		$player->setHealth(20);
 		$player->setFood(20);

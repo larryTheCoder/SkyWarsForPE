@@ -137,7 +137,7 @@ class Internal implements Scoreboard {
 			$msg = $this->replaceData($pl, $line, $message);
 
 			// Do nothing, we do not want to send the same thing all over again.
-			if(($this->networkBound[$pl->getName()][$line] ?? "") === $msg){
+			if(($this->networkBound[$pl->getName()][$line] ?? -1) === $msg){
 				continue;
 			}
 
@@ -214,6 +214,7 @@ class Internal implements Scoreboard {
 		}
 
 		$this->networkBound = [];
+		$this->config->reload();
 	}
 
 	public function removePlayer(Player $pl): void{

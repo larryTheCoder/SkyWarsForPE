@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\utils;
 
+use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\fireworks\entity\FireworksRocket;
 use larryTheCoder\utils\fireworks\Fireworks;
@@ -54,8 +55,6 @@ class Utils {
 	public static $particleTimer = [];
 	/** @var int[][] */
 	public static $helixMathMap = [];
-	/** @var Config */
-	private static $scoreboard;
 
 	public static function sendDebug(string $log): void{
 		MainLogger::getLogger()->debug("SW-DEBUG: " . $log);
@@ -299,21 +298,22 @@ class Utils {
 		}
 	}
 
-	public static function getScoreboardConfig(): Config{
-		if(isset(self::$scoreboard)) return self::$scoreboard;
+	public static function getScoreboardConfig(ArenaImpl $arena): Config{
+		$path = SkyWarsPE::getInstance()->getDataFolder() . "scoreboards/{$arena->getMapName()}.yml";
 
-		$scoreboard = new Config(SkyWarsPE::getInstance()->getDataFolder() . "scoreboard.yml");
-		if($scoreboard->get("version", 3) < 3){
-			$plug = SkyWarsPE::getInstance();
-
-			rename($plug->getDataFolder() . "scoreboard.yml", $plug->getDataFolder() . "scoreboard.yml.old");
-			$plug->saveResource("scoreboard.yml", true);
-			$scoreboard->reload();
-
-			Utils::send(TextFormat::YELLOW . "Updated scoreboard version to 3");
+		if(!is_file($path)){
+			file_put_contents($path, SkyWarsPE::getInstance()->getResource("scoreboard.yml"));
 		}
 
-		return self::$scoreboard = $scoreboard;
+		$scoreboard = new Config($path);
+		if($scoreboard->get("version", 3) < 3){
+			rename($path, $path . ".old");
+			file_put_contents($path, SkyWarsPE::getInstance()->getResource("scoreboard.yml"));
+
+			$scoreboard->reload();
+		}
+
+		return $scoreboard;
 	}
 
 	/**

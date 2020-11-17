@@ -385,6 +385,7 @@ abstract class Arena implements ShutdownSequence {
 	public function setSpectator(Player $player): void{
 		$this->getPlayerManager()->setSpectator($player);
 
+		$player->getInventory()->setItem(0, self::getSpectatorItem());
 		$player->getInventory()->setItem(8, self::getLeaveItem());
 
 		foreach($this->getPlayerManager()->getAllPlayers() as $p2) $p2->hidePlayer($player);
@@ -441,10 +442,16 @@ abstract class Arena implements ShutdownSequence {
 		foreach($this->shutdownSequence as $shutdown){
 			$shutdown->shutdown();
 		}
+
+		$this->shutdownSequence = [];
 	}
 
 	public static function getLeaveItem(): Item{
 		return ItemFactory::get(ItemIds::BED, 14)->setCustomName("§r§cLeave the game.");
+	}
+
+	public static function getSpectatorItem(): Item{
+		return ItemFactory::get(ItemIds::PAPER)->setCustomName("§r§eTeleport to player");
 	}
 
 	public function getScoreboard(): Scoreboard{

@@ -38,6 +38,7 @@ use larryTheCoder\forms\CustomForm;
 use larryTheCoder\forms\CustomFormResponse;
 use larryTheCoder\forms\elements\Button;
 use larryTheCoder\forms\elements\Dropdown;
+use larryTheCoder\forms\elements\Image;
 use larryTheCoder\forms\elements\Input;
 use larryTheCoder\forms\elements\Label;
 use larryTheCoder\forms\elements\Slider;
@@ -89,6 +90,8 @@ class FormManager implements Listener {
 		foreach($arena->getPlayerManager()->getAlivePlayers() as $inGame){
 			$buttons[] = new Button($inGame->getName());
 		}
+
+		$buttons[] = new Button("Exit");
 
 		$form = new MenuForm(TextFormat::BLUE . "Select Player Name", "Select a player to spectate", $buttons, function(Player $player, Button $selected) use ($arena): void{
 			// Do not attempt to do anything if the arena is no longer running.
@@ -193,7 +196,7 @@ class FormManager implements Listener {
 				->enableSpectator($spectator)
 				->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $minPlayer)
 				->startOnFull($startWhenFull)
-				->saveArena());
+				->saveArena(), true);
 
 			// Unload the level, this is needed in order to copy the arena worlds
 			// into directive arenas plugin's path world directory.
@@ -231,6 +234,7 @@ class FormManager implements Listener {
 	public function showSettingPanel(Player $player): void{
 		$form = new MenuForm("§aChoose your arena first.");
 
+		/** @var ArenaImpl[] $arenas */
 		$arenas = [];
 		foreach($this->plugin->getArenaManager()->getArenas() as $arena){
 			$form->append(ucwords($arena->getMapName()));
@@ -239,7 +243,9 @@ class FormManager implements Listener {
 		}
 
 		$form->setOnSubmit(function(Player $player, Button $selected) use ($arenas): void{
-			$arena = $arenas[(int)$selected->getValue()];
+			$arena = $this->arenaSetup[$player->getName()] = $arenas[(int)$selected->getValue()];
+
+			$arena->setFlags(ArenaImpl::ARENA_IN_SETUP_MODE, true);
 
 			$form = new MenuForm("Setup for arena {$arena->getMapName()}", "", [
 				"Setup Arena Spawn",            // Arena Spawn
@@ -247,6 +253,7 @@ class FormManager implements Listener {
 				"Setup Arena Behaviour",        // (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
 				"Set Join Sign Behaviour",      // (Text) (Interval) (enable-interval)
 				"Set Join Sign Location",       // Sign location teleportation.
+				"Setup Scoreboard",				// Setup scoreboard.
 				"Edit this world",              // Editing the world.
 				TextFormat::RED . "Delete this arena",
 			], function(Player $player, Button $selected) use ($arena): void{
@@ -267,15 +274,22 @@ class FormManager implements Listener {
 						$this->setupJoinSign($player, $arena);
 						break;
 					case 5:
-						$this->teleportWorld($player, $arena);
+						$this->setupScoreboard($player, $arena);
 						break;
 					case 6:
+						$this->teleportWorld($player, $arena);
+						break;
+					case 7:
 						$this->deleteArena($player, $arena);
 						break;
 					default:
 						$this->cleanupEvent($player);
 						break;
 				}
+			}, function(Player $player): void{
+				$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+
+				$this->cleanupEvent($player);
 			});
 
 			$player->sendForm($form);
@@ -312,7 +326,7 @@ class FormManager implements Listener {
 				->enableSpectator($spectatorMode)
 				->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $arena->getMinPlayer())
 				->startOnFull($startWhenFull)
-				->saveArena());
+				->saveArena(), true);
 
 			$player->sendMessage(TextFormat::GREEN . "Successfully updated arena " . TextFormat::YELLOW . $arena->getMapName());
 
@@ -339,7 +353,7 @@ class FormManager implements Listener {
 				->setStatusLine($response->getInput()->getValue(), 1)
 				->setStatusLine($response->getInput()->getValue(), 2)
 				->setStatusLine($response->getInput()->getValue(), 3)
-				->setStatusLine($response->getInput()->getValue(), 4));
+				->setStatusLine($response->getInput()->getValue(), 4), true);
 
 			$player->sendMessage(TextFormat::GREEN . "Successfully updated sign lines for " . TextFormat::YELLOW . $arena->getMapName());
 
@@ -409,6 +423,8 @@ class FormManager implements Listener {
 	private function deleteArena(Player $p, ArenaImpl $data): void{
 		$form = new ModalForm("", "§cAre you sure to perform this action? Deleting an arena will delete your arena config and your world!",
 			function(Player $player, bool $response) use ($data): void{
+				$this->cleanupEvent($player);
+
 				if(!$response) return;
 
 				$this->plugin->getArenaManager()->deleteArena($data->getMapName());
@@ -419,6 +435,134 @@ class FormManager implements Listener {
 		$p->sendForm($form);
 	}
 
+	private function setupScoreboard(Player $player, ArenaImpl $arena, int $id = -1): void{
+		if($id === -1){
+			$buttons = [
+				new Button("Waiting display"),
+				new Button("In game display"),
+				new Button("Ending game display"),
+				new Button("Spectator display"),
+				new Button("Exit", new Image("textures/blocks/barrier", Image::TYPE_PATH)),
+			];
+
+			$form = new MenuForm("§aChoose your arena first.", "", $buttons, function(Player $player, Button $selected) use ($buttons, $arena): void{
+				$selectedButton = $selected->getValue();
+				if(!isset($buttons[$selectedButton])){
+					$this->cleanupEvent($player);
+
+					return;
+				}
+
+				if($selectedButton === 4){
+					$player->sendMessage(TextFormat::RED . "Exited scoreboard setup");
+					$this->cleanupEvent($player);
+				}else{
+					$this->setupScoreboard($player, $arena, $selectedButton);
+				}
+			}, function(Player $player): void{
+				$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+
+				$this->cleanupEvent($player);
+			});
+
+			$player->sendForm($form);
+
+			return;
+		}
+
+		$configPath = $this->plugin->getDataFolder() . "scoreboards/" . $arena->getMapName() . ".yml";
+		if(!is_file($configPath)){
+			file_put_contents($configPath, $this->plugin->getResource("scoreboard.yml"));
+		}
+
+		$config = new Config($configPath, Config::YAML);
+
+		switch($id){
+			case 0: // wait-arena
+				$inputs = $this->recurseConfig($config->get("wait-arena", []));
+				break;
+			case 1: // in-game-arena
+				$inputs = $this->recurseConfig($config->get("in-game-arena", []));
+				break;
+			case 2: // ending-state-arena
+				$inputs = $this->recurseConfig($config->get("ending-state-arena", []));
+				break;
+			case 3: // spectate-scoreboard
+				$inputs = $this->recurseConfig($config->get("spectate-scoreboard", []));
+				break;
+			default:
+				$player->sendMessage('The id you have requested is invalid, unable to perform this command');
+				$this->cleanupEvent($player);
+
+				return;
+		}
+
+		$elements = array_merge([new Label([
+			"This section will be used during waiting state.",
+			"This section will be used when the arena has started but without any teams.",
+			"This section will be used when the game has finished.",
+			"This section will be used the player has died.",
+		][$id])], $inputs);
+
+		$form = new CustomForm("Scoreboard setup", $elements, function(Player $player, CustomFormResponse $response) use ($arena, $config, $id): void{
+			$this->cleanupEvent($player);
+
+			$responses = [];
+
+			$emptyElements = [];
+			foreach($response->getElements() as $elements){
+				if($elements instanceof Input){
+					$element = (string)$elements->getValue();
+					if(empty($element)){
+						$emptyElements[] = $element;
+						continue;
+					}elseif(!empty($emptyElements)){
+						$responses = array_merge($responses, $emptyElements);
+
+						$emptyElements = [];
+					}
+
+					$responses[] = $element;
+				}
+			}
+
+			unset($emptyElements); // Clear off unused variable from memory?
+
+			$config->set([
+				"wait-arena",
+				"in-game-arena",
+				"ending-state-arena",
+				"spectate-scoreboard",
+			][$id], $responses);
+			$config->save();
+
+			$arena->getScoreboard()->resetScoreboard();
+
+			$player->sendMessage(Settings::$prefix . TextFormat::GREEN . "Successfully setup the arena scoreboard configuration.");
+		}, function(Player $player): void{
+			$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+
+			$this->cleanupEvent($player);
+		});
+
+		$player->sendForm($form);
+	}
+
+	/**
+	 * Recursively returns the string objects that are set in the config given
+	 * for a specific key.
+	 *
+	 * @param string[] $metadata
+	 * @return Input[]
+	 */
+	private function recurseConfig(array $metadata): array{
+		$inputs = [];
+		for($i = 1; $i <= 15; $i++){
+			$inputs[] = new Input("Line #" . $i, "Placeholder #" . $i, $metadata[$i - 1] ?? "");
+		}
+
+		return $inputs;
+	}
 	//////////////////////////////////////// ARENA SETUP RELATED FUNCTIONS ////////////////////////////////////////
 
 	/**
@@ -600,7 +744,7 @@ class FormManager implements Listener {
 	private function cleanupEvent(Player $player, bool $cleanWorld = false): void{
 		$arena = $this->arenaSetup[$player->getName()] ?? null;
 		if($arena !== null){
-			$arena->setConfig($arena->getConfigManager()->saveArena());
+			$arena->setConfig($arena->getConfigManager()->saveArena(), true);
 			$arena->setFlags(ArenaImpl::ARENA_IN_SETUP_MODE, false);
 
 			if($cleanWorld){

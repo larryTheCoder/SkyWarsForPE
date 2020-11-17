@@ -134,8 +134,8 @@ class SignManager implements Listener, ShutdownSequence {
 				return;
 			}
 
-			if($this->arena->hasFlags(Arena::ARENA_DISABLED)){
-				$p->sendMessage(TextFormat::RED . "Arena is disabled");
+			if($this->arena->hasFlags(Arena::ARENA_DISABLED) || $this->arena->hasFlags(Arena::ARENA_IN_SETUP_MODE)){
+				$p->sendMessage(TextFormat::RED . "Arena is disabled temporarily, try again later.");
 
 				return;
 			}
