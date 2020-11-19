@@ -253,7 +253,7 @@ class FormManager implements Listener {
 				"Setup Arena Behaviour",        // (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
 				"Set Join Sign Behaviour",      // (Text) (Interval) (enable-interval)
 				"Set Join Sign Location",       // Sign location teleportation.
-				"Setup Scoreboard",				// Setup scoreboard.
+				"Setup Scoreboard",             // Setup scoreboard.
 				"Edit this world",              // Editing the world.
 				TextFormat::RED . "Delete this arena",
 			], function(Player $player, Button $selected) use ($arena): void{
@@ -427,7 +427,7 @@ class FormManager implements Listener {
 
 				if(!$response) return;
 
-				$this->plugin->getArenaManager()->deleteArena($data->getMapName());
+				$this->plugin->getArenaManager()->deleteArena($data);
 
 				$player->sendMessage(str_replace("{ARENA}", $data->getMapName(), $this->plugin->getMsg($player, 'arena-delete')));
 			}, "§cDelete", "Cancel");
@@ -682,7 +682,7 @@ class FormManager implements Listener {
 					$this->cleanupEvent($player, true);
 					break;
 				case self::SET_JOIN_SIGN_COORDINATES:
-					if($arena->getLevelName() === $player->getLevel()->getFolderName()){
+					if($this->plugin->getArenaManager()->getPlayerArena($player) !== null){
 						$player->sendMessage("You cannot set arena join sign in the arena world!");
 						break;
 					}
@@ -694,7 +694,7 @@ class FormManager implements Listener {
 					$this->cleanupEvent($player);
 					break;
 				case self::SET_NPC_COORDINATES:
-					if($arena->getLevelName() === $player->getLevel()->getFolderName()){
+					if($this->plugin->getArenaManager()->getPlayerArena($player) !== null){
 						$player->sendMessage("You cannot set arena join sign in the arena world!");
 						break;
 					}
@@ -706,6 +706,8 @@ class FormManager implements Listener {
 						$y = $block instanceof Slab ? 0.5 : 1;
 
 						$config->set("npc-$mode", [$block->getX() + .5, $block->getY() + $y, $block->getZ() + .5, $block->level->getFolderName()]);
+						$config->save();
+
 						$player->sendMessage(str_replace("{COUNT}", (string)$mode, $this->plugin->getMsg($player, 'panel-spawn-pos')));
 
 						$this->spawnCache[$player->getName()] = ++$mode;

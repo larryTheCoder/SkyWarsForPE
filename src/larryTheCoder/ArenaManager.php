@@ -121,21 +121,19 @@ final class ArenaManager {
 	 * Deletes an arena safely from the memory. This function uses the {@link ShutdownSequence} to close
 	 * all related tasks and events in the arena.
 	 *
-	 * @param string $arena
+	 * @param ArenaImpl $arena
 	 */
-	public function deleteArena(string $arena): void{
-		if(($arena = $this->getArena($arena)) !== null){
-			$task = new AsyncDirectoryDelete([$this->plugin->getDataFolder() . "arenas/worlds/" . $arena->getLevelName()], function() use ($arena): void{
-				unlink($arena->getConfigManager()->getConfig()->getPath());
+	public function deleteArena(ArenaImpl $arena): void{
+		$task = new AsyncDirectoryDelete([$this->plugin->getDataFolder() . "arenas/worlds/{$arena->getLevelName()}.zip"], function() use ($arena): void{
+			unlink($arena->getConfigManager()->getConfig()->getPath());
 
-				$arena->shutdown();
+			$arena->shutdown();
 
-				unset($this->arenas[strtolower($arena->getMapName())]);
-				unset($this->config[strtolower($arena->getMapName())]);
-			});
+			unset($this->arenas[$arena->getMapName()]);
+			unset($this->config[$arena->getMapName()]);
+		});
 
-			Server::getInstance()->getAsyncPool()->submitTask($task);
-		}
+		Server::getInstance()->getAsyncPool()->submitTask($task);
 	}
 
 	/**
@@ -173,7 +171,7 @@ final class ArenaManager {
 			return $arena->getPlayerManager()->isInArena($player) || $arena->getLevelName() === $player->getLevel()->getFolderName();
 		}));
 
-		return empty($result) ? null : $result[0];
+		return $result[0] ?? null;
 	}
 
 	public function invalidate(): void{
