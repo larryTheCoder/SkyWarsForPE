@@ -30,6 +30,7 @@ declare(strict_types = 1);
 
 namespace larryTheCoder\arena\api\task;
 
+use pocketmine\level\Level;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
 
@@ -40,11 +41,19 @@ class AsyncDirectoryDelete extends AsyncTask {
 
 	/**
 	 * AsyncDirectoryDelete constructor.
-	 * @param string[] $worldToDelete
+	 *
+	 * @param Level[]|null[] $worldToDelete
 	 * @param callable|null $onComplete
 	 */
 	public function __construct(array $worldToDelete, ?callable $onComplete = null){
-		$this->worldTable = serialize($worldToDelete);
+		$worlds = [];
+		foreach($worldToDelete as $level){
+			if($level === null) continue;
+			if(!$level->isClosed()) Server::getInstance()->unloadLevel($level, true);
+
+			$worlds[] = Server::getInstance()->getDataPath() . "worlds/" . $level->getFolderName();
+		}
+		$this->worldTable = serialize($worlds);
 
 		$this->storeLocal($onComplete);
 	}

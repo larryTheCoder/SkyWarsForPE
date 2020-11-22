@@ -124,7 +124,7 @@ final class ArenaManager {
 	 * @param ArenaImpl $arena
 	 */
 	public function deleteArena(ArenaImpl $arena): void{
-		$task = new AsyncDirectoryDelete([$this->plugin->getDataFolder() . "arenas/worlds/{$arena->getLevelName()}.zip"], function() use ($arena): void{
+		$task = new AsyncDirectoryDelete([$arena->getLevel()], function() use ($arena): void{
 			unlink($arena->getConfigManager()->getConfig()->getPath());
 
 			$arena->shutdown();

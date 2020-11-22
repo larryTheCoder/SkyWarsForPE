@@ -108,7 +108,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 		switch($state){
 			case ArenaState::STATE_WAITING:
 				if(count($pm->getAlivePlayers()) >= $arena->getMinPlayer()){
-					$pm->broadcastToPlayers(TextFormat::GOLD . "Game starting in 30 seconds.");
+					$pm->broadcastToPlayers(TextFormat::GOLD . "Game starting in {$this->countdown} seconds.");
 
 					$arena->setStatus(ArenaState::STATE_STARTING);
 				}
@@ -127,19 +127,21 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				if($this->countdown === 10){
 					$pm->broadcastTitle(TextFormat::GOLD . "Starting in", "", 1, 25, 1);
 				}elseif($this->countdown < 10){
-					if($this->countdown < 3){
+					if($this->countdown > 3){
 						Utils::addSound($pm->getAllPlayers(), "random.click");
 
-						$pm->broadcastTitle("§6" . (30 - $this->timeElapsed), "", 1, 25, 1);
+						$pm->broadcastTitle("§6" . $this->countdown, "", 1, 25, 1);
 					}else{
-						if($this->timeElapsed === 0){
+						if($this->countdown === 0){
 							Utils::addSound($pm->getAlivePlayers(), "note.bell");
 
 							$pm->broadcastTitle("§cMatch started!", "", 1, 25, 1);
+
+							$arena->getScoreboard()->setStatus(TextFormat::GREEN . "Match started!");
 						}else{
 							Utils::addSound($pm->getAllPlayers(), "random.click");
 
-							$pm->broadcastTitle("§c" . (30 - $this->timeElapsed), "", 1, 25, 1);
+							$pm->broadcastTitle("§c" . $this->countdown, "", 1, 25, 1);
 						}
 					}
 				}
@@ -155,7 +157,6 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
 					return;
 				}
-
 
 				$this->countdown--;
 				break;
@@ -237,7 +238,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 				$arena->getScoreboard()->setStatus(TextFormat::GREEN . "Waiting...");
 				break;
 			case ArenaState::STATE_STARTING:
-				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "Starting in " . (30 - $this->timeElapsed) . "s");
+				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "Starting in " . $this->countdown . "s");
 				break;
 			default:
 				$arena->getScoreboard()->setStatus(TextFormat::YELLOW . "N/A");

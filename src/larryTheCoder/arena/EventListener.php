@@ -53,13 +53,12 @@ use pocketmine\utils\TextFormat;
 
 class EventListener extends ArenaListener {
 
-	/** @var ArenaImpl */
-	private $arena;
 	/** @var CombatLogger */
 	private $logger;
 
 	public function __construct(ArenaImpl $arena){
-		$this->arena = $arena;
+		parent::__construct($arena);
+
 		$this->logger = new CombatLogger();
 	}
 
@@ -173,8 +172,6 @@ class EventListener extends ArenaListener {
 			}
 
 			$this->onPlayerDeath($player, $event->getCause());
-		}else{
-			$event->setCancelled(false);
 		}
 	}
 

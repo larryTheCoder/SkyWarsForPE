@@ -30,6 +30,7 @@ declare(strict_types = 1);
 
 namespace larryTheCoder\arena\api\impl;
 
+use larryTheCoder\arena\api\Arena;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -41,6 +42,7 @@ use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\item\Item;
 use pocketmine\Player;
 
 /**
@@ -49,6 +51,13 @@ use pocketmine\Player;
  * internal listener will be handled in other class.
  */
 class ArenaListener {
+
+	/** @var Arena */
+	protected $arena;
+
+	public function __construct(Arena $arena){
+		$this->arena = $arena;
+	}
 
 	public function onPlayerMove(PlayerMoveEvent $event): void{
 		// NOOP
@@ -76,6 +85,34 @@ class ArenaListener {
 
 	public function onPlayerChatEvent(PlayerChatEvent $event): void{
 		// NOOP
+	}
+
+	/**
+	 * Handles item drop event from a player, this event will be cancelled if the
+	 * function returns true.
+	 *
+	 * @param Player $player
+	 * @param Item $item
+	 * @return bool
+	 */
+	public function onItemDropEvent(Player $player, Item $item): bool{
+		$pm = $this->arena->getPlayerManager();
+
+		return $pm->isSpectator($player) || $this->arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING;
+	}
+
+	/**
+	 * Handles item pickup event from a player, this event is as the same as {@link ArenaListener::onItemDropEvent()}.
+	 * However, please make sure that this function will be called in the end of your code if you override this method.
+	 *
+	 * @param Player $player
+	 * @param Item $item
+	 * @return bool
+	 */
+	public function onItemPickupEvent(Player $player, Item $item): bool{
+		$pm = $this->arena->getPlayerManager();
+
+		return $pm->isSpectator($player) || $this->arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING;
 	}
 
 	public function onInventoryOpenEvent(InventoryOpenEvent $event): void{

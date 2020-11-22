@@ -40,14 +40,17 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\inventory\InventoryCloseEvent;
 use pocketmine\event\inventory\InventoryOpenEvent;
+use pocketmine\event\inventory\InventoryPickupItemEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
+use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\inventory\PlayerInventory;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -187,6 +190,31 @@ abstract class BasicListener implements Listener {
 		$arena->getEventListener()->onInventoryCloseEvent($event);
 	}
 
+	public function onItemPickupEvent(InventoryPickupItemEvent $event): void{
+		/** @var PlayerInventory $inv */
+		$inv = $event->getInventory();
+		/** @var Player $p */
+		$p = $inv->getHolder();
+
+		$arena = $this->getArena($p);
+		if($arena === null) return;
+
+		if($arena->getEventListener()->onItemPickupEvent($p, $event->getItem()->getItem())){
+			$event->setCancelled();
+		}
+	}
+
+	public function onItemDropEvent(PlayerDropItemEvent $event): void{
+		$p = $event->getPlayer();
+
+		$arena = $this->getArena($p);
+		if($arena === null) return;
+
+		if($arena->getEventListener()->onItemDropEvent($p, $event->getItem())){
+			$event->setCancelled();
+		}
+	}
+
 	/**
 	 * Handles player damages towards another players. This event is to log player's damages towards
 	 * another player entity. This is required to check who actually killed this player.
@@ -210,7 +238,6 @@ abstract class BasicListener implements Listener {
 		}
 
 		$arena->getEventListener()->onPlayerHitEvent($event);
-		if($event->isCancelled()) return;
 	}
 
 	/**
@@ -265,7 +292,7 @@ abstract class BasicListener implements Listener {
 
 					$e->setCancelled();
 				}
-			} else if($arena->getPlayerManager()->isSpectator($p) && $item->equals(Arena::getSpectatorItem())){
+			}elseif($arena->getPlayerManager()->isSpectator($p) && $item->equals(Arena::getSpectatorItem())){
 				SkyWarsPE::getInstance()->panel->showSpectatorPanel($p, $arena);
 			}
 

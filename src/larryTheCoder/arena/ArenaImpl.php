@@ -228,10 +228,10 @@ class ArenaImpl extends ArenaData {
 					$pl->showPlayer($player);
 				}
 			}
-		}else{
-			$player->getInventory()->clearAll();
-			$player->getArmorInventory()->clearAll();
 		}
+
+		$player->getInventory()->clearAll();
+		$player->getArmorInventory()->clearAll();
 
 		if($this->getPlayerManager()->teamMode){
 			$player->setNameTag($this->originalNametag[$player->getName()]);

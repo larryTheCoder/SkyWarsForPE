@@ -33,6 +33,8 @@ namespace larryTheCoder\arena\task;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\ArenaImpl;
+use larryTheCoder\database\AsyncLibDatabase;
+use larryTheCoder\utils\PlayerData;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\ConsoleCommandSender;
 use pocketmine\Server;
@@ -80,6 +82,12 @@ class SkyWarsTask extends ArenaTickTask {
 			Utils::addSound($pm->getAllPlayers(), "random.levelup");
 
 			foreach($pm->getAlivePlayers() as $player){
+				AsyncLibDatabase::$instance->getPlayerData($player->getName(), function(PlayerData $data): void{
+					$data->wins += 1;
+
+					AsyncLibDatabase::$instance->setPlayerData($data->player, $data);
+				});
+
 				$player->sendMessage(TextFormat::GREEN . "Congratulations! You have won the match.");
 
 				$arena->unsetPlayer($player);

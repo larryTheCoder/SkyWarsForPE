@@ -257,15 +257,7 @@ abstract class Arena implements ShutdownSequence {
 
 	final public function resetWorld(): void{
 		// The sequence of deleting the arena.
-		Server::getInstance()->unloadLevel($this->getLevel(), true);
-
-		$loadedLevel = [];
-		if($this->lobbyName !== null){
-			$loadedLevel[] = $this->lobbyName;
-		}
-		$loadedLevel[] = $this->level->getFolderName();
-
-		$task = new AsyncDirectoryDelete($loadedLevel, function(){
+		$task = new AsyncDirectoryDelete([$this->lobbyLevel, $this->level], function(){
 			$this->setFlags(self::ARENA_OFFLINE_MODE, true);
 
 			$this->deleteTimeout = 0;

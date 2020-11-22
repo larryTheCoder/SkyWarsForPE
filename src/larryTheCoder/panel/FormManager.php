@@ -30,7 +30,6 @@ declare(strict_types = 1);
 
 namespace larryTheCoder\panel;
 
-use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
 use larryTheCoder\arena\api\task\CompressionAsyncTask;
 use larryTheCoder\arena\ArenaImpl;
@@ -96,7 +95,7 @@ class FormManager implements Listener {
 		$form = new MenuForm(TextFormat::BLUE . "Select Player Name", "Select a player to spectate", $buttons, function(Player $player, Button $selected) use ($arena): void{
 			// Do not attempt to do anything if the arena is no longer running.
 			// Or the player is no longer in arena
-			if($arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING || !$arena->getPlayerManager()->isInArena($player)){
+			if(!$arena->getPlayerManager()->isInArena($player)){
 				$player->sendMessage(TextFormat::RED . "You are no longer in the arena.");
 
 				return;
@@ -245,6 +244,7 @@ class FormManager implements Listener {
 		$form->setOnSubmit(function(Player $player, Button $selected) use ($arenas): void{
 			$arena = $this->arenaSetup[$player->getName()] = $arenas[(int)$selected->getValue()];
 
+			$arena->resetWorld();
 			$arena->setFlags(ArenaImpl::ARENA_IN_SETUP_MODE, true);
 
 			$form = new MenuForm("Setup for arena {$arena->getMapName()}", "", [
@@ -316,15 +316,15 @@ class FormManager implements Listener {
 			$enable = $response->getToggle()->getValue();
 			$graceTimer = $response->getSlider()->getValue();
 			$spectatorMode = $response->getToggle()->getValue();
-			$maxPlayer = $response->getSlider()->getValue();
-			$minPlayer = $response->getSlider()->getValue();
+			$maxPlayer = (int)$response->getSlider()->getValue();
+			$minPlayer = (int)$response->getSlider()->getValue();
 			$startWhenFull = $response->getToggle()->getValue();
 
 			$arena->setConfig($arena->getConfigManager()
 				->setEnable($enable)
 				->setGraceTimer($graceTimer)
 				->enableSpectator($spectatorMode)
-				->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $arena->getMinPlayer())
+				->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $minPlayer)
 				->startOnFull($startWhenFull)
 				->saveArena(), true);
 
@@ -373,6 +373,8 @@ class FormManager implements Listener {
 
 			$player->teleport($level->getSpawnLocation());
 			$player->sendMessage("You can now setup the arena spawn positions, use the blaze rod and break a block to set the position, changes made in this world will be discarded.");
+
+			$arena->getConfigManager()->resetSpawnPedestal();
 
 			$this->arenaSetup[$player->getName()] = $arena;
 			$this->blockEvent[$player->getName()] = self::SET_SPAWN_COORDINATES;
@@ -749,12 +751,8 @@ class FormManager implements Listener {
 			$arena->setConfig($arena->getConfigManager()->saveArena(), true);
 			$arena->setFlags(ArenaImpl::ARENA_IN_SETUP_MODE, false);
 
-			if($cleanWorld){
-				$level = Server::getInstance()->getLevelByName($arena->getLevelName());
-				if($level !== null) Server::getInstance()->unloadLevel($level, true);
-
-				$task = new AsyncDirectoryDelete([Server::getInstance()->getDataPath() . "worlds/" . $arena->getLevelName()]);
-				Server::getInstance()->getAsyncPool()->submitTask($task);
+			if($cleanWorld && ($level = Server::getInstance()->getLevelByName($arena->getLevelName())) !== null){
+				Server::getInstance()->getAsyncPool()->submitTask(new AsyncDirectoryDelete([$level]));
 			}
 		}
 
