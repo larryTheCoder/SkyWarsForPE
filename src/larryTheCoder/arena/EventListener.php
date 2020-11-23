@@ -33,9 +33,10 @@ namespace larryTheCoder\arena;
 use larryTheCoder\arena\api\impl\ArenaListener;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\PlayerManager;
+use larryTheCoder\arena\api\translation\TranslationContainer;
 use larryTheCoder\arena\logger\CombatEntry;
 use larryTheCoder\arena\logger\CombatLogger;
-use larryTheCoder\SkyWarsPE;
+use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\utils\Utils;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
@@ -55,6 +56,8 @@ class EventListener extends ArenaListener {
 
 	/** @var CombatLogger */
 	private $logger;
+	/** @var ArenaImpl */
+	protected $arena;
 
 	public function __construct(ArenaImpl $arena){
 		parent::__construct($arena);
@@ -169,14 +172,18 @@ class EventListener extends ArenaListener {
 
 			$entry = $this->logger->getEntry($player->getName(), $cause === EntityDamageEvent::CAUSE_VOID ? 8 : 3);
 			if($entry !== null && $entry->attackFrom !== null){
-				$pm->broadcastToPlayers(SkyWarsPE::getInstance()->getMsg($player, 'death-message', false), false, ["{PLAYER}", "{KILLER}"], [
-					$pm->getOriginName($player->getName(), $player->getName()),
-					$pm->getOriginName($entry->attackFrom, $entry->attackFrom),
+				$pm->broadcastToPlayers('death-message', false, [
+					"{PLAYER}" => $pm->getOriginName($player->getName(), $player->getName()),
+					"{KILLER}" => $pm->getOriginName($entry->attackFrom, $entry->attackFrom),
 				]);
 
 				$pm->addKills($entry->attackFrom);
+
+				SkyWarsDatabase::addKills($pm->getOriginPlayer($entry->attackFrom));
 			}else{
-				$pm->broadcastToPlayers(SkyWarsPE::getInstance()->getMsg($player, self::getDeathMessageById($event->getCause()), false), false, ["{PLAYER}"], [$pm->getOriginName($player->getName(), $player->getName()),]);
+				$pm->broadcastToPlayers(self::getDeathMessageById($event->getCause()), false, [
+					"{PLAYER}" => $pm->getOriginName($player->getName(), $player->getName()),
+				]);
 			}
 
 			$this->onPlayerDeath($player, $event->getCause());
@@ -227,12 +234,13 @@ class EventListener extends ArenaListener {
 			}
 		}
 
-		// TODO: Add death stats.
+		SkyWarsDatabase::addDeaths($player);
+		SkyWarsDatabase::addPlayedSince($player, time() - $this->arena->startedTime);
 
 		$player->getInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();
 
-		$player->sendTitle(TextFormat::RED . TextFormat::BOLD . "YOU DIED!", SkyWarsPE::getInstance()->getMsg($player, 'player-spectate', false));
+		$player->sendTitle(TranslationContainer::getTranslation($player, 'died-title'), TranslationContainer::getTranslation($player, 'died-subtitle'));
 
 		$this->arena->setSpectator($player);
 	}
@@ -243,7 +251,7 @@ class EventListener extends ArenaListener {
 		if(!in_array(strtolower($event->getMessage()), ['sw', 'skywars'], true)
 			&& $this->arena->getStatus() === ArenaState::STATE_ARENA_RUNNING
 			&& !$player->hasPermission("sw.command.bypass")){
-			$player->sendMessage(TextFormat::RED . "You cannot execute any command while in game.");
+			$player->sendMessage(TranslationContainer::getTranslation($player, 'arena-command-forbidden'));
 		}
 	}
 }

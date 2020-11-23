@@ -2,100 +2,184 @@
 # This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
 # the one at http://yaml-online-parser.appspot.com                                        #
 ###########################################################################################
-# English-Rewrite by larryTheCoder,
 ---
 # No reason to edit this
-config-version: 4
+config-version: 5
 
 low-permission: "&eHmm, some new command, too bad its not available yet."
 no-permission: "&cYou don't have the right permission to do this."
-subtitle-splashes:
-- "§6Win this game!"
-- "§6Good luck!"
-- "§6Show your skill!"
 
 # Arena-Game behaviour language.
-arena-disabled: "&cArena is currently disabled."
-arena-insetup: "&cArena is currently under maintenance."
-arena-full: "&cArena is now full of players."
 arena-running: "&cThe arena is currently running!"
-arena-wait-players: "&6Waiting more players..."
-arena-low-players: "&eNot enough players, cancelling countdown."
-arena-starting: "&aStarting in..."
-arena-subtitle: "&aEnjoy"
-arena-game-started: "§aGame had started!"
 arena-delete: "&cDeleted the arena &d{ARENA}."
 arena-exists: "&cThe arena with that name already exists!"
 arena-not-exist: "&cThe arena doesn't exists!"
-arena-not-running: "&cThat arena not in game."
-arena-start: "&aMatch has started."
-chest-refilled: "&aArena chests has been refilled."
-admin-kick: "&cYou have been kicked from the game."
-player-join: "&c{PLAYER}&a, Welcome to the match."
-player-join-2: "&7-> &c{PLAYER}, &7just joined the match."
-player-leave: "&e{PLAYER} &7just leave the arena."
-player-leave-2: "&cLeaving the arena now."
-player-spectate: "&7You are now a spectator."
-player-receive-money: "&aYou earned &d${VALUE}&a from the game."
-command-banned: "&cPlease do not use that command here."
-finish-broadcast-message: "&a{PLAYER}&e had won arena &a{ARENA}!"
-messageEffectIsComing: "Guys, effects are now propagated for all!"
 
-# Kill message
-death-message-void: "§7- §e{PLAYER} §cwere killed by void"
-death-message-suicide: "§7- §e{PLAYER} §cjust committed suicide."
-death-message-suffocated: "§7- §e{PLAYER} §csuffocated to death."
-death-message-burned: "§7- §e{PLAYER} §cwere burned to death."
-death-message-catused: "§7- §e{PLAYER} §ckilled by a cactus. Silly?"
-death-message-fall: "§7- §e{PLAYER} §chad fall from the sky."
-death-message-toasted: "§7- §e{PLAYER} §cwere toasted by lava"
-death-message-drowned: "§7- §e{PLAYER} §cwere drowned"
-death-message-nature: "§7- §e{PLAYER} §cwere killed by nature"
-death-message-explode: "§7- §e{PLAYER} §cexploded to pieces"
-death-message-magic: "§7- §e{PLAYER} §cwere killed by some kind of magic"
-death-message-unknown: "§7- §e{PLAYER} is a member of the illuminati"
-death-message: "§7- §e{PLAYER} §cwere killed by §e{KILLER}"
+message-disconnected: "&6{PLAYER}&c has disconnected."
+message-left: "&6{PLAYER}&c has left the game.."
 
-# Command help message
-help-main: "&cPlease use /sw help for a list of commands"
-lobby-help: "&2/sw leave §l§5»§r§f Teleport to lobby."
-random-help: "&2/sw random §l§5»§r§f Randomly teleport to an arena."
-stats-help: "&2/sw stats §l§5»§r§f Show your game status."
-reload-help: "&2/sw reload §l§5»§r§f Reload the plugin, make new start."
-create-help: "&2/sw create §l§5»§r§f Create a new arena."
-cage-help: "&2/sw cage §l§5»§r§f Set your custom cages."
-start-help: "&2/sw start §b[Arena Name] §l§5»§r§f Force to start the arena."
-stop-help: "&2/sw stop §b[Arena Name] §l§5»§r§f Forcefully stop the arena."
-join-help: "&2/sw join §b[Arena Name] §l§5»§r§f Join to the arena."
-settings-help: "&2/sw settings §l§5»§r§f Setup or modify the arena."
-setlobby-help: "&2/sw setlobby §l§5»§r§f Set the main lobby for the plugin."
-about-help: "&2/sw about §l§5»§r§f About and notes from author."
-npc-help: "&2/sw npc §l§5»§r§f Create an NPC for TopWinners."
-kit-help: "&2/sw kit §l§5»§r§f Show all of the available kits."
+arena-disabled: "&cThe arena is temporarily disabled, try again later."
+arena-crashed: "&cThe arena has crashed! Ask server owner to check server logs."
+arena-in-queue: "&6You are now queuing for {ARENA_NAME}, please wait."
+arena-join: "&6{PLAYER}&e has joined the match (&b{TOTAL_PLAYERS}&e/&b{MAX_SIZE}&e)"
+arena-startup: "&6Game starting in {TIME} seconds"
+arena-no-invincible: "&cYou are no longer invincible."
+arena-chest-refilled: "&eChests has been refilled!"
+arena-command-forbidden: "You cannot execute any command while in game."
 
-# Command false usage help message
-start-usage: "&6Usage: &2/sw start §b[Arena Name]."
-stop-usage: "&6Usage: &2/sw start §b[Arena Name]."
-join-usage: "&6Usage: &2/sw start §b[Arena Name]."
+# Arena titles and subtitles translations
+countdown-cancel-title: "&cNot enough players"
+countdown-cancel-subtitle: "&cCountdown has been cancelled."
+countdown-starting-title: "&6Starting in"
+countdown-starting-subtitle: ""
+countdown-started-title: "&cMatch started!"
+countdown-started-subtitle: ""
+
+died-title: "&c&lYOU DIED!"
+died-subtitle: "&7You are now a spectator."
 
 # Command messages, Here the messages
 arena-unavailable: "&cNo available arena, please try again later."
-plugin-reloading: "&eReloading the plugin, this may take a while..."
-plugin-reload: "&aPlugin has been successfully loaded."
 arena-started: "&aStarted the arena &d{ARENA}."
-main-lobby-set: "&aMarked the location for lobby transportation."
-no-world: "&cSorry, you don't have any levels left to create an arena."
+main-lobby-set: "&aSuccessfully set this location as SkyWars lobby."
+no-world: "&cSorry, you don't have any worlds left to create an arena."
+command-setlobby-inarena: "&cYou cannot run this command in an arena!"
+use-in-arena: "&cPlease use this command in-arena"
+
+stats-1: "&a{PLAYER}'s stats"
+stats-2: "&6Name: &f{DATA}"
+stats-3: "&6Kills: &f{DATA}"
+stats-4: "&6Deaths: &f{DATA}"
+stats-5: "&6K/D Ratio: &f{DATA}"
+stats-6: "&6Wins: &f{DATA}"
+stats-7: "&6Lost: &f{DATA}"
+
+setup-choose-arena: "&aChoose your arena first."
+
+settings-arena-1: "Setup for arena {ARENA_NAME}"
+settings-arena-2: "Setup Arena Spawn"
+settings-arena-3: "Setup Spectator Spawn"
+settings-arena-4: "Setup Arena Behaviour"
+settings-arena-5: "Set Join Sign Behaviour"
+settings-arena-6: "Set Join Sign Location"
+settings-arena-7: "Setup Scoreboard"
+settings-arena-8: "Edit this world"
+settings-arena-9: "&cDelete this arena."
+
+behaviour-setup-1: "Arena settings."
+behaviour-setup-2: "&eEnable the arena?"
+behaviour-setup-3: "&eSet Grace Timer"
+behaviour-setup-4: "&eEnable Spectator Mode?"
+behaviour-setup-5: "&eMaximum players to be in arena"
+behaviour-setup-6: "&eMinimum players to be in arena"
+behaviour-setup-7: "&eStart when full"
+behaviour-setup-complete: "&aSuccessfully updated arena &e{ARENA_NAME}"
+
+behaviour-sign-1: "&eForm Behaviour Setup"
+behaviour-sign-2: "&aWelcome to sign Behaviour Setup. First before you doing anything, you may need to know these"
+behaviour-sign-3: "&eStatus lines\n&a &b &c = you can use color with &\n%alive = amount of in-game players\n%dead = amount of dead players\n%status = game status\n%world = world name of arena\n%max = max players per arena"
+behaviour-sign-4: "&aSign Placeholder 1"
+behaviour-sign-5: "&aSign Placeholder 2"
+behaviour-sign-6: "&aSign Placeholder 3"
+behaviour-sign-7: "&aSign Placeholder 4"
+behaviour-sign-complete: "&aSuccessfully updated sign lines for &e{ARENA_NAME}"
+
+setup-arena-spawn: "You can now setup the arena spawn positions, use the blaze rod and break a block to set the position, changes made in this world will be discarded."
+setup-arena-spectator: "You can now setup the arena spectator position, use the blaze rod and break a block to set the position, changes made in this world will be discarded."
+setup-arena-joinsign: "You can now setup the arena join sign position, use the blaze rod and break a block to set the position."
+setup-npc: "You can now setup the NPC position, use the blaze rod and break a block to set the position."
+edit-world: "You can now edit this world safely, any changes in this world will be saved."
+
+arena-delete-1: "&cDelete"
+arena-delete-2: "Cancel"
+arena-delete-confirm: "&cAre you sure to perform this action? Deleting an arena will delete your arena config and your world!"
+
+setup-scoreboard: ""
+
+spectator-select1: "Select Player Name"
+spectator-select2: "Select a player to spectate"
+spectator-exit: "&cExit"
+spectator-not-ingame: "&cYou are no longer in the arena."
+spectator-player-left: "&cThat player is no longer in the arena."
+
+setup-arena-1: "&5SkyWars Setup."
+setup-arena-2: "&6The name of your Arena."
+setup-arena-3: "&6Select your Arena level."
+setup-arena-4: "&eMaximum players"
+setup-arena-5: "&eMinimum players"
+setup-arena-6: "&7Spectator mode"
+setup-arena-7: "&7Start on full"
+
+setup-arena-spawn-1: "Setup spawn?"
+setup-arena-spawn-2: "&aYou may need to setup arena's spawn position so system could enable the arena much faster."
+setup-arena-spawn-3: "Setup arena spawn."
+setup-arena-spawn-4: "&cSetup later."
+
+setup-later: "&aYou can setup this later with /sw settings"
+
+no-data: "&cThat player does not exists in the database!"
+
+form-error-1: 'The id you have requested is invalid, unable to perform this command'
+
+scoreboard-button-1: "Waiting display"
+scoreboard-button-2: "In game display"
+scoreboard-button-3: "Ending game display"
+scoreboard-button-4: "Spectator display"
+scoreboard-button-5: "Exit"
+
+scoreboard-state-1: "This section will be used during waiting state."
+scoreboard-state-2: "This section will be used when the arena has started but without any teams."
+scoreboard-state-3: "This section will be used when the game has finished."
+scoreboard-state-4: "This section will be used the player has died."
+
+scoreboard-success: "&aSuccessfully setup the arena scoreboard configuration."
+
+# Kill message
+death-message-void: "&7- &e{PLAYER} &cwere killed by void"
+death-message-suicide: "&7- &e{PLAYER} &cjust committed suicide."
+death-message-suffocated: "&7- &e{PLAYER} &csuffocated to death."
+death-message-burned: "&7- &e{PLAYER} &cwere burned to death."
+death-message-catused: "&7- &e{PLAYER} &ckilled by a cactus. Silly?"
+death-message-fall: "&7- &e{PLAYER} &chad fall from the sky."
+death-message-toasted: "&7- &e{PLAYER} &cwere toasted by lava"
+death-message-drowned: "&7- &e{PLAYER} &cwere drowned"
+death-message-nature: "&7- &e{PLAYER} &cwere killed by nature"
+death-message-explode: "&7- &e{PLAYER} &cexploded to pieces"
+death-message-magic: "&7- &e{PLAYER} &cwere killed by some kind of magic"
+death-message-unknown: "&7- &e{PLAYER} is a member of the illuminati"
+death-message: "&7- &e{PLAYER} &cwere killed by &e{KILLER}"
+
+# Command help message
+help-main: "&cPlease use /sw help for a list of commands"
+lobby-help: "&2/sw leave &l&5»&r&f Teleport to lobby."
+random-help: "&2/sw random &l&5»&r&f Randomly teleport to an arena."
+stats-help: "&2/sw stats &l&5»&r&f Show your game status."
+reload-help: "&2/sw reload &l&5»&r&f Reload the plugin, make new start."
+create-help: "&2/sw create &l&5»&r&f Create a new arena."
+cage-help: "&2/sw cage &l&5»&r&f Set your custom cages."
+join-help: "&2/sw join &b[Arena Name] &l&5»&r&f Join to the arena."
+settings-help: "&2/sw settings &l&5»&r&f Setup or modify the arena."
+setlobby-help: "&2/sw setlobby &l&5»&r&f Set the main lobby for the plugin."
+about-help: "&2/sw about &l&5»&r&f About and notes from author."
+npc-help: "&2/sw npc &l&5»&r&f Create an NPC for TopWinners."
+kit-help: "&2/sw kit &l&5»&r&f Show all of the available kits."
+
+# Command false usage help message
+start-usage: "&6Usage: &2/sw start &b[Arena Name]."
+stop-usage: "&6Usage: &2/sw start &b[Arena Name]."
+join-usage: "&6Usage: &2/sw start &b[Arena Name]."
+
+setup-wrong-world-1: "&cYou are not in the right arena world, teleport back to level {ARENA_WORLD}"
+setup-wrong-world-2: "&cYou cannot perform this action in the arena world!"
+world-teleport: "&aTeleporting you back to main world."
 
 # Panel messages
-panel-low-arguments: "&cCannot create arena, missing some arguments."
 panel-cancelled: "&cYour request has been cancelled."
 panel-choose-cage: "&aYou chosen the cage, &d{CAGE}"
-panel-spawn-wand: "&aBreak a block with the wand in your inventory."
 panel-join-spect: "&aSpectator spawn location has been marked."
 panel-join-sign: "&aJoin sign location has been marked."
 panel-spawn-pos: "&aMarked spawn location &e#{COUNT}."
 panel-spawn-set: "&eSuccessfully marked the spawn locations."
-panel-npc-next: "&eNow stand on the location where you want your NPC to look at, then say 'done'"
 
 # Top winners
 top-winner-1: "&r&lTop winner #{VAL}"

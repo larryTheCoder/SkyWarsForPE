@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\utils\npc;
 
+use larryTheCoder\arena\api\translation\TranslationContainer;
 use larryTheCoder\SkyWarsPE;
 use pocketmine\entity\Human;
 use pocketmine\entity\Skin;
@@ -131,9 +132,9 @@ class FakeHuman extends Human {
 		}
 
 		// The text packets
-		$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-1', false));
-		$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-2', false));
-		$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], SkyWarsPE::getInstance()->getMsg(null, 'top-winner-3', false));
+		$msg1 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], TranslationContainer::getTranslation(null, 'top-winner-1'));
+		$msg2 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], TranslationContainer::getTranslation(null, 'top-winner-2'));
+		$msg3 = str_replace(["{PLAYER}", "{VAL}", "{WINS}"], [$object[0], $this->levelPedestal, $object[1]], TranslationContainer::getTranslation(null, 'top-winner-3'));
 		$array = [$msg1, $msg2, $msg3];
 		$this->sendText($array);
 	}

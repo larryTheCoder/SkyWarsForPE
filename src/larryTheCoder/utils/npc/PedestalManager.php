@@ -30,6 +30,7 @@ declare(strict_types = 1);
 
 namespace larryTheCoder\utils\npc;
 
+use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\PlayerData;
 use pocketmine\entity\Entity;
@@ -138,7 +139,7 @@ class PedestalManager extends Task implements Listener {
 		if($this->isFetching) return;
 		$this->isFetching = true;
 
-		SkyWarsPE::getInstance()->getDatabase()->getPlayers(function(array $players) use ($onComplete): void{
+		SkyWarsDatabase::getEntries(function(?array $players) use ($onComplete): void{
 			// Avoid nulls and other consequences
 			$player = [
 				"Example-1" => 0,

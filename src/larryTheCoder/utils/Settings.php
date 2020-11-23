@@ -28,9 +28,8 @@
 
 namespace larryTheCoder\utils;
 
-use pocketmine\item\Item;
 use pocketmine\Server;
-use pocketmine\utils\{Config, TextFormat};
+use pocketmine\utils\Config;
 
 class Settings {
 
@@ -40,54 +39,12 @@ class Settings {
 	public static $lang = "";
 	/** @var string */
 	public static $prefix = "";
-	/** @var bool */
-	public static $useEconomy = true;
-	/** @var bool */
-	public static $useKits = true;
 	/** @var int */
 	public static $joinHealth = 20;
 	/** @var string[] */
 	public static $acceptedCommand = [];
-	/** @var bool */
-	public static $startWhenFull = true;
-	/** @var bool */
-	public static $itemInteract = true;
-	/** @var bool */
-	public static $zipCompression = true;
-	/** @var bool */
-	public static $zipArchive = true;
-	/** @var int */
-	public static $typeMessageSendArena = 0;
-	/** @var bool */
-	public static $isModded = false;
 
 	# ============ GENERALS CONFIG ============
-
-	# ============== CHAT CONFIG ==============
-
-	/** @var bool */
-	public static $enableCListener = true;
-	/** @var string */
-	public static $chatFormatPlayer = "§a%1 §0-> §f%2";
-	/** @var string */
-	public static $chatFormatSpectator = "§7[DEAD] %1 §0-> §7%2";
-	/** @var bool */
-	public static $chatSpy = true;
-
-	# ============== CHAT CONFIG ==============
-
-	# ============== ITEM CONFIG ==============
-
-	/** @var bool */
-	public static $enableSpecialItem = false;
-	/** @var bool */
-	public static $enableDoubleTap = false;
-	/** @var int */
-	public static $doubleTapInterval = 0;
-	/** @var mixed[] */
-	public static $items = [];
-
-	# ============== ITEM CONFIG ==============
 
 	public final static function init(Config $config): void{
 		# ============ GENERALS CONFIG ============
@@ -95,57 +52,10 @@ class Settings {
 		$general = $config->get("general");
 		self::$lang = $general['language'];
 		self::$prefix = str_replace("&", "§", $general['prefix']);
-		self::$useEconomy = $general['use-economy'];
-		self::$useKits = $general['use-kits'];
 		self::$joinHealth = $general['join-health'];
 		self::$acceptedCommand = explode(":", $general['accepted-cmd']);
-		self::$startWhenFull = $general['start-when-full'];
-		self::$itemInteract = $general['item-interact'];
-		self::$zipCompression = $general['zip-compression'];
-		self::$zipArchive = $general['zip-archive'];
-		self::$isModded = $general['isModded'];
 
 		# ============ GENERALS CONFIG ============
-
-		# ============== CHAT CONFIG ==============
-
-		$chat = $config->get("chat");
-		self::$enableCListener = $chat["chat-listener"];
-		self::$chatFormatPlayer = str_replace("&", "§", $chat["chat-format-player"]);
-		self::$chatFormatSpectator = str_replace("&", "§", $chat["chat-format-spectate"]);
-		self::$chatSpy = $chat["chat-spy"];
-
-		# ============== CHAT CONFIG ==============
-
-		# ============== ITEM CONFIG ==============
-
-		$item = $config->get("item");
-		self::$enableSpecialItem = $item['enable-special-item'];
-		self::$enableDoubleTap = $item['enable-double-tap'];
-		self::$doubleTapInterval = $item['double-tap-interval'];
-		foreach(array_keys($item) as $key){
-			# Check if the item contains a `item-id`
-			# Which its is important
-			if(isset($item[$key]['item-id']) && !isset(self::$items[$key])){
-				$data = explode(":", $item[$key]['item-id']);
-				$toItem = Item::get((int)$data[0], (int)$data[1]);
-				$toItem->setCustomName(str_replace("&", "§", "&r" . $item[$key]['item-name']) . "\n§e(Right Click)");
-				$placeAt = !isset($item[$key]['item-place']) ? 0 : $item[$key]['item-place'];
-				$itemCmd = !isset($item[$key]['item-cmd']) ? "" : $item[$key]['item-cmd'];
-				$showItemAt = !isset($item[$key]['show-after-win']) ? true : $item[$key]['show-after-win'];
-				$itemPermission = !isset($item[$key]['item-permission']) ? "" : $itemPermission = $item[$key]['item-permission'];
-				$itemSpectate = !isset($item[$key]['item-spectate']) ? false : $itemSpectate = $item[$key]['item-spectate'];
-				$itemBypass = !isset($item[$key]['bypass-double-tap']) ? false : $item[$key]['bypass-double-tap'];
-				$itemDoubleMessage = !isset($item[$key]['double-tap-message']) ? "&aTap again to confirm" : $item[$key]['double-tap-message'];
-				$nbt = $toItem->getNamedTag();
-				$nbt->setString("command", $itemCmd);
-				$toItem->setNamedTag($nbt);
-
-				self::$items[TextFormat::clean($toItem->getCustomName())] = [$toItem, $placeAt, $itemPermission, $itemSpectate, $itemBypass, $itemDoubleMessage, $showItemAt];
-			}
-		}
-
-		# ============== ITEM CONFIG ==============
 
 		Server::getInstance()->getLogger()->info(Settings::$prefix . "§aLoaded SkyWars configuration into system.");
 	}

@@ -38,7 +38,8 @@ use pocketmine\{network\mcpe\protocol\AddActorPacket,
 	Server,
 	utils\MainLogger,
 	utils\Random,
-	utils\TextFormat};
+	utils\TextFormat
+};
 use pocketmine\block\{Block, BlockIds};
 use pocketmine\entity\Entity;
 use pocketmine\item\{Item};
@@ -227,7 +228,6 @@ class Utils {
 
 		$templates = [];
 		for($i = 0; $i < 25; $i++){
-
 			$armorq = mt_rand(0, 1);
 			$armortype = $items['armor'][mt_rand(0, (count($items['armor']) - 1))];
 			$armor1 = [$armortype[\mt_rand(0, (\count($armortype) - 1))], 1];
@@ -302,13 +302,16 @@ class Utils {
 		$path = SkyWarsPE::getInstance()->getDataFolder() . "scoreboards/{$arena->getMapName()}.yml";
 
 		if(!is_file($path)){
-			file_put_contents($path, SkyWarsPE::getInstance()->getResource("scoreboard.yml"));
+			file_put_contents($path, $resource = SkyWarsPE::getInstance()->getResource("scoreboard.yml"));
+			fclose($resource);
 		}
 
 		$scoreboard = new Config($path);
 		if($scoreboard->get("version", 3) < 3){
 			rename($path, $path . ".old");
-			file_put_contents($path, SkyWarsPE::getInstance()->getResource("scoreboard.yml"));
+
+			file_put_contents($path, $resource = SkyWarsPE::getInstance()->getResource("scoreboard.yml"));
+			fclose($resource);
 
 			$scoreboard->reload();
 		}

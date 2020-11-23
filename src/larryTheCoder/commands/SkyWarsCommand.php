@@ -30,13 +30,15 @@
 namespace larryTheCoder\commands;
 
 use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\translation\TranslationContainer;
 use larryTheCoder\arena\ArenaImpl;
+use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
 
 final class SkyWarsCommand {
 
@@ -68,7 +70,7 @@ final class SkyWarsCommand {
 				case "lobby":
 				case "leave":
 					if(!$sender->hasPermission('sw.command.lobby')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 
 						break;
 					}
@@ -80,64 +82,64 @@ final class SkyWarsCommand {
 					$pManager = $this->plugin->getArenaManager();
 					$arena = $pManager->getPlayerArena($sender);
 					if($arena === null){
-						$sender->sendMessage('Please use this command in-arena');
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'use-in-arena'));
 
 						break;
 					}
 
 					if($arena->getPlayerManager()->isInArena($sender)){
 						$arena->leaveArena($sender);
-					} else {
+					}else{
 						$sender->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
 					}
 
 					break;
 				case "help":
 					if(!$sender->hasPermission("sw.command.help")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 						break;
 					}
 
 					$sender->sendMessage("§9--- §c§lSkyWars help§l§9 ---§r§f");
 					if($sender->hasPermission("sw.command.lobby")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'lobby-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'lobby-help'));
 					}
 					if($sender->hasPermission("sw.command.random")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'random-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'random-help'));
 					}
 					if($sender->hasPermission("sw.command.stats")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'stats-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'stats-help'));
 					}
 					if($sender->hasPermission("sw.command.reload")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'reload-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'reload-help'));
 					}
 					if($sender->hasPermission("sw.command.create")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'create-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'create-help'));
 					}
 					if($sender->hasPermission("sw.command.set")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'settings-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'settings-help'));
 					}
 					if($sender->hasPermission("sw.command.join")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'join-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'join-help'));
 					}
 					if($sender->hasPermission("sw.command.setlobby")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'setlobby-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'setlobby-help'));
 					}
 					if($sender->hasPermission("sw.command.npc")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'npc-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'npc-help'));
 					}
 					if($sender->hasPermission("sw.command.kit")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'kit-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'kit-help'));
 					}
 					if($sender->hasPermission("sw.command.cage")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'cage-help', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'cage-help'));
 					}
 
-					$sender->sendMessage($this->plugin->getMsg($sender, 'about-help', false));
+					$sender->sendMessage(TranslationContainer::getTranslation($sender, 'about-help'));
 					break;
 				case "create":
 					if(!$sender->hasPermission('sw.command.create')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
@@ -147,7 +149,7 @@ final class SkyWarsCommand {
 					break;
 				case "settings":
 					if(!$sender->hasPermission('sw.command.set')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
@@ -156,17 +158,19 @@ final class SkyWarsCommand {
 					break;
 				case "stats":
 					if(!$sender->hasPermission("sw.command.stats")){
-						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, "no-permission"));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
-					}else{
-						$this->plugin->panel->showStatsPanel($sender);
+					}elseif(isset($args[1])){
+						$this->plugin->panel->showStatsPanel($sender, $args[1]);
+					} else {
+						$this->plugin->panel->showStatsPanel($sender, $sender);
 					}
 
 					break;
 				case "cage":
 					if(!$sender->hasPermission("sw.command.cage")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
@@ -175,7 +179,7 @@ final class SkyWarsCommand {
 					break;
 				case "npc":
 					if(!$sender->hasPermission("sw.command.npc")){
-						$sender->sendMessage($this->plugin->getMsg($sender, "no-permission"));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, "no-permission"));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
@@ -184,13 +188,13 @@ final class SkyWarsCommand {
 					break;
 				case "random":
 					if(!$sender->hasPermission("sw.command.random")){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
 						$arena = $this->plugin->getArenaManager()->getAvailableArena();
 						if(is_null($arena)){
-							$sender->sendMessage("§cNo available arena, please try again later");
+							$sender->sendMessage(TranslationContainer::getTranslation($sender, "arena-unavailable"));
 						}else{
 							$arena->getQueueManager()->addQueue($sender);
 						}
@@ -198,22 +202,22 @@ final class SkyWarsCommand {
 					break;
 				case "join":
 					if(!$sender->hasPermission('sw.command.join')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}elseif(!isset($args[1]) || isset($args[2])){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'join-usage'));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'join-usage'));
 					}else{
 						$arena = $this->plugin->getArenaManager()->getArena($args[1]);
 
 						if($arena === null){
-							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-not-exist'));
+							$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-not-exist'));
 						}elseif($arena->getPlayerManager()->isInArena($sender)){
-							$sender->sendMessage($this->plugin->getMsg($sender, 'arena-running'));
+							$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-running'));
 						}elseif($arena->hasFlags(Arena::ARENA_CRASHED)){
-							$sender->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
+							$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-crashed'));
 						}elseif($arena->hasFlags(ArenaImpl::ARENA_DISABLED) || $arena->hasFlags(ArenaImpl::ARENA_IN_SETUP_MODE)){
-							$sender->sendMessage(TextFormat::RED . "The arena is temporarily disabled, try again later.");
+							$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-disabled'));
 						}else{
 							$arena->getQueueManager()->addQueue($sender);
 						}
@@ -221,37 +225,37 @@ final class SkyWarsCommand {
 					break;
 				case "setlobby":
 					if(!$sender->hasPermission('sw.command.setlobby')){
-						$sender->sendMessage($this->plugin->getMsg($sender, 'no-permission', false));
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}elseif($this->plugin->getArenaManager()->getPlayerArena($sender) !== null){
-						$sender->sendMessage(TextFormat::RED . "You cannot run this command in an arena!");
+						$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'command-setlobby-inarena'));
 					}else{
-						$this->plugin->getDatabase()->setLobby($sender->getPosition());
+						SkyWarsDatabase::setLobby($sender->getPosition());
 
-						$sender->sendMessage($this->plugin->getMsg($sender, 'main-lobby-set'));
+						$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'main-lobby-set'));
 					}
 					break;
 				case "about":
 					$ver = $this->plugin->getDescription()->getVersion();
 
-					$sender->sendMessage("§aSkyWarsForPE, §cSeven Red Suns.");
+					$sender->sendMessage("§aSkyWarsForPE, §dUnseen Stars, Seven Blue Stones §e(Rain World Reference).");
 					$sender->sendMessage("§7This plugin is running SkyWarsForPE §6v" . $ver . "§7 by§b larryTheCoder!");
 					$sender->sendMessage("§7Source-link: https://github.com/larryTheCoder/SkyWarsForPE");
 					break;
 				default:
-					$sender->sendMessage($this->plugin->getMsg($sender, 'help-main'));
+					$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'help-main'));
 					break;
 			}
 		}else{
-			$sender->sendMessage($this->plugin->getMsg($sender, 'help-main'));
+			$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'help-main'));
 		}
 
 		return true;
 	}
 
 	private function consoleSender(CommandSender $p): void{
-		$p->sendMessage("run command only in-game");
+		$p->sendMessage("Please run command only in-game");
 	}
 
 }

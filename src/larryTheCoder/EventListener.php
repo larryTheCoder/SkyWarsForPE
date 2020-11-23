@@ -32,6 +32,7 @@ namespace larryTheCoder;
 
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\listener\BasicListener;
+use larryTheCoder\database\SkyWarsDatabase;
 use pocketmine\entity\Human;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -62,7 +63,7 @@ class EventListener extends BasicListener implements Listener {
 	 * @priority MONITOR
 	 */
 	public function onPlayerLogin(PlayerJoinEvent $e): void{
-		$this->plugin->getDatabase()->createNewData($e->getPlayer()->getName());
+		SkyWarsDatabase::createPlayer($e->getPlayer());
 	}
 
 	public function loginEvent(DataPacketReceiveEvent $event): void{

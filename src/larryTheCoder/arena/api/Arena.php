@@ -38,6 +38,7 @@ use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
 use larryTheCoder\arena\api\task\CompressionAsyncTask;
 use larryTheCoder\arena\api\utils\QueueManager;
+use larryTheCoder\database\SkyWarsDatabase;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -394,10 +395,14 @@ abstract class Arena implements ShutdownSequence {
 			if($type === "player"){
 				foreach($player as $pl){
 					$this->unsetPlayer($pl);
+
+					$pl->teleport(SkyWarsDatabase::getLobby());
 				}
 			}else{
 				foreach($player as $pl){
 					$this->unsetPlayer($pl, true);
+
+					$pl->teleport(SkyWarsDatabase::getLobby());
 				}
 			}
 		}

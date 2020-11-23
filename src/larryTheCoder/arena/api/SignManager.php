@@ -32,6 +32,7 @@ namespace larryTheCoder\arena\api;
 
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\ShutdownSequence;
+use larryTheCoder\arena\api\translation\TranslationContainer;
 use pocketmine\block\StainedGlass;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\HandlerList;
@@ -129,19 +130,21 @@ class SignManager implements Listener, ShutdownSequence {
 			$this->delay[$p->getName()] = time();
 
 			if($this->arena->hasFlags(Arena::ARENA_CRASHED)){
-				$p->sendMessage(TextFormat::RED . "The arena has crashed! Ask server owner to check server logs.");
+				$p->sendMessage(TranslationContainer::getTranslation($p, 'arena-crashed'));
 
 				return;
 			}
 
 			if($this->arena->hasFlags(Arena::ARENA_DISABLED) || $this->arena->hasFlags(Arena::ARENA_IN_SETUP_MODE)){
-				$p->sendMessage(TextFormat::RED . "Arena is disabled temporarily, try again later.");
+				$p->sendMessage(TranslationContainer::getTranslation($p, 'arena-disabled'));
 
 				return;
 			}
 
 			$qm->addQueue($p);
-			$p->sendMessage(TextFormat::GOLD . "You are now queuing for {$this->arena->getMapName()}, please wait.");
+			$p->sendMessage(TranslationContainer::getTranslation($p, 'arena-in-queue', [
+				"{ARENA_NAME}" => $this->arena->getMapName(),
+			]));
 		}
 	}
 

@@ -108,7 +108,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 		switch($state){
 			case ArenaState::STATE_WAITING:
 				if(count($pm->getAlivePlayers()) >= $arena->getMinPlayer()){
-					$pm->broadcastToPlayers(TextFormat::GOLD . "Game starting in {$this->countdown} seconds.");
+					$pm->broadcastToPlayers('arena-startup', false, ["{TIME}" => $this->countdown]);
 
 					$arena->setStatus(ArenaState::STATE_STARTING);
 				}
@@ -125,7 +125,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 
 				// Game starting title.
 				if($this->countdown === 10){
-					$pm->broadcastTitle(TextFormat::GOLD . "Starting in", "", 1, 25, 1);
+					$pm->broadcastTitle('countdown-starting-title', "countdown-starting-subtitle", 1, 25, 1);
 				}elseif($this->countdown < 10){
 					if($this->countdown > 3){
 						Utils::addSound($pm->getAllPlayers(), "random.click");
@@ -135,7 +135,7 @@ abstract class ArenaTickTask extends Task implements ShutdownSequence {
 						if($this->countdown === 0){
 							Utils::addSound($pm->getAlivePlayers(), "note.bell");
 
-							$pm->broadcastTitle("§cMatch started!", "", 1, 25, 1);
+							$pm->broadcastTitle("countdown-started-title", "countdown-started-subtitle", 1, 25, 1);
 
 							$arena->getScoreboard()->setStatus(TextFormat::GREEN . "Match started!");
 						}else{

@@ -39,22 +39,23 @@ use larryTheCoder\arena\api\scoreboard\Internal;
 use larryTheCoder\arena\api\SignManager;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\task\SkyWarsTask;
+use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\ConfigManager;
+use larryTheCoder\utils\LootGenerator;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\BlockFactory;
-use pocketmine\item\enchantment\Enchantment;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\Item;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\tile\Chest;
-use pocketmine\utils\TextFormat;
 
 class ArenaImpl extends ArenaData {
+
+	/** @var LootGenerator|null */
+	public static $lootTables = null;
 
 	// Allow invincible period on this arena.
 	const ARENA_INVINCIBLE_PERIOD = 0x12;
@@ -67,13 +68,14 @@ class ArenaImpl extends ArenaData {
 	private $signManager;
 	/** @var ConfigManager */
 	private $configManager;
-	/** @var int */
-	private $startedTime = -1;
 
 	/** @var Position[][] */
 	private $toRemove = [];
 	/** @var string[] */
 	private $originalNametag = [];
+
+	/** @var int */
+	public $startedTime = -1;
 
 	/**
 	 * ArenaImpl constructor.
@@ -180,8 +182,6 @@ class ArenaImpl extends ArenaData {
 		$this->toRemove[$player->getName()] = $cage->build(Position::fromObject($spawnLoc, $this->getLevel()));
 
 		$pm = $this->getPlayerManager();
-		$totalPlayers = count($pm->getAlivePlayers());
-		$maxPlayers = $this->maximumPlayers;
 
 		if($pm->teamMode){
 			$this->originalNametag[$player->getName()] = $player->getNameTag();
@@ -189,15 +189,14 @@ class ArenaImpl extends ArenaData {
 			$player->setNameTag(PlayerManager::getColorByMeta($pm->getTeamColorRaw($player)) . $player->getName());
 		}
 
-		$this->getPlayerManager()->broadcastToPlayers(TextFormat::GREEN . $pm->getOriginName($player->getName(), $player->getName()) . TextFormat::YELLOW . " has joined (" . TextFormat::AQUA . $totalPlayers . TextFormat::YELLOW . "/" . TextFormat::AQUA . $maxPlayers . TextFormat::YELLOW . ")!");
+		$this->getPlayerManager()->broadcastToPlayers('arena-join', false, [
+			"{PLAYER}"        => $pm->getOriginName($player->getName(), $player->getName()),
+			"{TOTAL_PLAYERS}" => count($pm->getAlivePlayers()),
+			"{MAX_SIZE}"      => $this->maximumPlayers,
+		]);
 	}
 
 	public function stopArena(): void{
-		// TODO: Spawn to default lobby location.
-		foreach($this->getPlayerManager()->getAllPlayers() as $player){
-			$player->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
-		}
-
 		$this->startedTime = -1;
 
 		$this->eventListener->resetEntry();
@@ -225,6 +224,8 @@ class ArenaImpl extends ArenaData {
 					$pl->showPlayer($player);
 				}
 			}
+		}elseif($this->startedTime !== -1){
+			SkyWarsDatabase::addPlayedSince($player, time() - $this->startedTime);
 		}
 
 		$player->getInventory()->clearAll();
@@ -243,11 +244,11 @@ class ArenaImpl extends ArenaData {
 		$pm = $this->getPlayerManager();
 
 		if($onQuit){
-			$pm->broadcastToPlayers("{$player->getName()} " . TextFormat::RED . "has disconnected.");
+			$pm->broadcastToPlayers('message-disconnected', false, ["{PLAYER}" => $player->getName()]);
 		}else{
-			$pm->broadcastToPlayers("{$player->getName()} " . TextFormat::RED . "has left the game.");
+			$pm->broadcastToPlayers('message-left', false, ["{PLAYER}" => $player->getName()]);
 
-			$player->teleport(Server::getInstance()->getDefaultLevel()->getSafeSpawn());
+			$player->teleport(SkyWarsDatabase::getLobby());
 		}
 
 		if(isset($this->toRemove[$player->getName()])){
@@ -262,39 +263,13 @@ class ArenaImpl extends ArenaData {
 	}
 
 	public function refillChests(): void{
-		$contents = Utils::getChestContents();
 		foreach($this->getLevel()->getTiles() as $tile){
 			if($tile instanceof Chest){
-				//CLEARS CHESTS
 				$tile->getInventory()->clearAll();
-				//SET CONTENTS
-				if(empty($contents)) $contents = Utils::getChestContents();
-				foreach(array_shift($contents) as $key => $val){
-					$item = Item::get($val[0], 0, $val[1]);
-					if($item->getId() == Item::IRON_SWORD ||
-						$item->getId() == Item::DIAMOND_SWORD){
-						$enchantment = Enchantment::getEnchantment(Enchantment::SHARPNESS);
-						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
-					}elseif($item->getId() == Item::LEATHER_TUNIC ||
-						$item->getId() == Item::CHAIN_CHESTPLATE ||
-						$item->getId() == Item::IRON_CHESTPLATE ||
-						$item->getId() == Item::GOLD_CHESTPLATE ||
-						$item->getId() == Item::DIAMOND_CHESTPLATE ||
-						$item->getId() == Item::DIAMOND_LEGGINGS ||
-						$item->getId() == Item::DIAMOND_HELMET){
-						$enchantment = Enchantment::getEnchantment(Enchantment::PROTECTION);
-						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
-					}elseif($item->getId() == Item::BOW){
-						$enchantment = Enchantment::getEnchantment(Enchantment::POWER);
-						$item->addEnchantment(new EnchantmentInstance($enchantment, mt_rand(1, 2)));
-					}
 
-					$tile->getInventory()->addItem($item);
-				}
+				$tile->getInventory()->setContents(LootGenerator::getLoot());
 			}
 		}
-
-		unset($contents, $tile);
 	}
 
 	public function getMinPlayer(): int{

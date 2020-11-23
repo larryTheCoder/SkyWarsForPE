@@ -33,8 +33,7 @@ namespace larryTheCoder\arena\task;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\ArenaImpl;
-use larryTheCoder\database\AsyncLibDatabase;
-use larryTheCoder\utils\PlayerData;
+use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\utils\Utils;
 use pocketmine\command\ConsoleCommandSender;
 use pocketmine\Server;
@@ -65,11 +64,11 @@ class SkyWarsTask extends ArenaTickTask {
 		}elseif($this->timeElapsed === $this->getArena()->arenaGraceTime){
 			$this->getArena()->setFlags(ArenaImpl::ARENA_INVINCIBLE_PERIOD, false);
 
-			$pm->broadcastToPlayers(TextFormat::RED . "You are no longer invincible.");
+			$pm->broadcastToPlayers('arena-no-invincible');
 		}elseif($this->timeElapsed % $this->getRefillTime() === 0){
 			$this->getArena()->refillChests();
 
-			$pm->broadcastToPlayers(TextFormat::YELLOW . "Chests has been refilled!");
+			$pm->broadcastToPlayers('arena-chest-refilled');
 		}
 	}
 
@@ -82,11 +81,7 @@ class SkyWarsTask extends ArenaTickTask {
 			Utils::addSound($pm->getAllPlayers(), "random.levelup");
 
 			foreach($pm->getAlivePlayers() as $player){
-				AsyncLibDatabase::$instance->getPlayerData($player->getName(), function(PlayerData $data): void{
-					$data->wins += 1;
-
-					AsyncLibDatabase::$instance->setPlayerData($data->player, $data);
-				});
+				SkyWarsDatabase::addWins($player);
 
 				$player->sendMessage(TextFormat::GREEN . "Congratulations! You have won the match.");
 

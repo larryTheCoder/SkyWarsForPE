@@ -32,7 +32,9 @@ namespace larryTheCoder\panel;
 
 use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
 use larryTheCoder\arena\api\task\CompressionAsyncTask;
+use larryTheCoder\arena\api\translation\TranslationContainer as TC;
 use larryTheCoder\arena\ArenaImpl;
+use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\forms\CustomForm;
 use larryTheCoder\forms\CustomFormResponse;
 use larryTheCoder\forms\elements\Button;
@@ -57,7 +59,6 @@ use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
-use pocketmine\utils\TextFormat;
 
 class FormManager implements Listener {
 
@@ -90,40 +91,46 @@ class FormManager implements Listener {
 			$buttons[] = new Button($inGame->getName());
 		}
 
-		$buttons[] = new Button("Exit");
+		$buttons[] = new Button(TC::getTranslation($player, 'spectator-exit'), new Image("textures/blocks/barrier", Image::TYPE_PATH));
 
-		$form = new MenuForm(TextFormat::BLUE . "Select Player Name", "Select a player to spectate", $buttons, function(Player $player, Button $selected) use ($arena): void{
+		$form = new MenuForm(TC::getTranslation($player, 'spectator-select1'), TC::getTranslation($player, 'spectator-select2'), $buttons, function(Player $player, Button $selected) use ($arena): void{
 			// Do not attempt to do anything if the arena is no longer running.
 			// Or the player is no longer in arena
 			if(!$arena->getPlayerManager()->isInArena($player)){
-				$player->sendMessage(TextFormat::RED . "You are no longer in the arena.");
+				$player->sendMessage(TC::getTranslation($player, 'spectator-not-ingame'));
 
 				return;
 			}
 
 			$target = $arena->getPlayerManager()->getOriginPlayer($selected->getText());
 			if($target === null){
-				$player->sendMessage(TextFormat::RED . "That player is no longer in the arena.");
+				$player->sendMessage(TC::getTranslation($player, 'spectator-player-left'));
 
 				return;
 			}
 			$player->teleport($target);
 		}, function(Player $player): void{
-			$player->sendMessage($this->plugin->getMsg($player, "panel-cancelled"));
+			$player->sendMessage(TC::getTranslation($player, "panel-cancelled"));
 		});
 
 		$player->sendForm($form);
 	}
 
-	public function showStatsPanel(Player $player): void{
-		// Checked and worked.
-		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $result) use ($player){
-			$form = new CustomForm("§a{$result->player}'s stats", [
-				new Label("§6Name: §f" . $result->player),
-				new Label("§6Kills: §f" . $result->kill),
-				new Label("§6Deaths: §f" . $result->death),
-				new Label("§6Wins: §f" . $result->wins),
-				new Label("§6Lost: §f" . $result->lost),
+	public function showStatsPanel(Player $player, string $target): void{
+		SkyWarsDatabase::getPlayerEntry($target, function(?PlayerData $result) use ($player){
+			if($result === null){
+				$player->sendMessage(Settings::$prefix . TC::getTranslation($player, 'no-data'));
+
+				return;
+			}
+
+			$form = new CustomForm(TC::getTranslation($player, 'stats-1', ["{PLAYER}" => $result->player]), [
+				new Label(TC::getTranslation($player, 'stats-2', ["{DATA}" => $result->player])),
+				new Label(TC::getTranslation($player, 'stats-3', ["{DATA}" => $result->kill])),
+				new Label(TC::getTranslation($player, 'stats-4', ["{DATA}" => $result->death])),
+				new Label(TC::getTranslation($player, 'stats-5', ["{DATA}" => ($result->kill / ($result->death === 0 ? 1 : $result->death))])), // a denominator cannot ever be 0
+				new Label(TC::getTranslation($player, 'stats-6', ["{DATA}" => $result->wins])),
+				new Label(TC::getTranslation($player, 'stats-7', ["{DATA}" => $result->lost])),
 			], function(Player $player, CustomFormResponse $response): void{
 			});
 
@@ -157,18 +164,18 @@ class FormManager implements Listener {
 		});
 
 		if(empty($files)){
-			$player->sendMessage($this->plugin->getMsg($player, "no-world"));
+			$player->sendMessage(TC::getTranslation($player, "no-world"));
 
 			return;
 		}
 
-		$form = new CustomForm("§5SkyWars Setup.", [
-			new Input("§6The name of your Arena.", "Donkey Island"),
-			new Dropdown("§6Select your Arena level.", $files),
-			new Slider("§eMaximum players", 4, 40),
-			new Slider("§eMinimum players", 2, 40),
-			new Toggle("§7Spectator mode", true),
-			new Toggle("§7Start on full", true),
+		$form = new CustomForm(TC::getTranslation($player, 'setup-arena-1'), [
+			new Input(TC::getTranslation($player, 'setup-arena-2'), "Donkey Island"),
+			new Dropdown(TC::getTranslation($player, 'setup-arena-3'), $files),
+			new Slider(TC::getTranslation($player, 'setup-arena-4'), 4, 40),
+			new Slider(TC::getTranslation($player, 'setup-arena-5'), 2, 40),
+			new Toggle(TC::getTranslation($player, 'setup-arena-6'), true),
+			new Toggle(TC::getTranslation($player, 'setup-arena-7'), true),
 		], function(Player $player, CustomFormResponse $response): void{
 			$am = $this->plugin->getArenaManager();
 
@@ -182,7 +189,7 @@ class FormManager implements Listener {
 			// Check if the arena name is the same, otherwise we notify the player
 			// that this arena has already exists.
 			if($am->getArena($arenaName) !== null){
-				$player->sendMessage($this->plugin->getMsg($player, 'arena-exists'));
+				$player->sendMessage(TC::getTranslation($player, 'arena-exists'));
 
 				return;
 			}
@@ -208,30 +215,30 @@ class FormManager implements Listener {
 				$this->plugin->getDataFolder() . 'arenas/worlds/' . $arenaLevel . ".zip",
 				true,
 			], function() use ($player, $arena){
-				$form = new ModalForm("Setup spawn?", "§aYou may need to setup arena's spawn position so system could enable the arena much faster.",
+				$form = new ModalForm(TC::getTranslation($player, 'setup-arena-spawn-1'), TC::getTranslation($player, 'setup-arena-spawn-2'),
 					function(Player $player, bool $response) use ($arena): void{
 						if($response){
 							$this->setupSpawn($player, $arena);
 						}else{
 							$arena->setFlags(ArenaImpl::ARENA_IN_SETUP_MODE, false);
 
-							$player->sendMessage("You can setup this later with /sw settings");
+							$player->sendMessage(TC::getTranslation($player, 'setup-later'));
 						}
-					}, "Setup arena spawn.", "§cSetup later.");
+					}, TC::getTranslation($player, 'setup-arena-spawn-3'), TC::getTranslation($player, 'setup-arena-spawn-4'));
 
 				$player->sendForm($form);
 			});
 
 			Server::getInstance()->getAsyncPool()->submitTask($task);
 		}, function(Player $pl): void{
-			$pl->sendMessage($this->plugin->getMsg($pl, 'panel-cancelled'));
+			$pl->sendMessage(TC::getTranslation($pl, 'panel-cancelled'));
 		});
 
 		$player->sendForm($form);
 	}
 
 	public function showSettingPanel(Player $player): void{
-		$form = new MenuForm("§aChoose your arena first.");
+		$form = new MenuForm(TC::getTranslation($player, 'setup-choose-arena'));
 
 		/** @var ArenaImpl[] $arenas */
 		$arenas = [];
@@ -247,15 +254,15 @@ class FormManager implements Listener {
 			$arena->resetWorld();
 			$arena->setFlags(ArenaImpl::ARENA_IN_SETUP_MODE, true);
 
-			$form = new MenuForm("Setup for arena {$arena->getMapName()}", "", [
-				"Setup Arena Spawn",            // Arena Spawn
-				"Setup Spectator Spawn",        // Spectator spawn
-				"Setup Arena Behaviour",        // (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
-				"Set Join Sign Behaviour",      // (Text) (Interval) (enable-interval)
-				"Set Join Sign Location",       // Sign location teleportation.
-				"Setup Scoreboard",             // Setup scoreboard.
-				"Edit this world",              // Editing the world.
-				TextFormat::RED . "Delete this arena",
+			$form = new MenuForm(TC::getTranslation($player, 'settings-arena-1', ["{ARENA_NAME}" => $arena->getMapName()]), "", [
+				TC::getTranslation($player, 'settings-arena-2'),      // Arena Spawn
+				TC::getTranslation($player, 'settings-arena-3'),      // Spectator spawn
+				TC::getTranslation($player, 'settings-arena-4'),      // (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
+				TC::getTranslation($player, 'settings-arena-5'),      // (Text) (Interval) (enable-interval)
+				TC::getTranslation($player, 'settings-arena-6'),      // Sign location teleportation.
+				TC::getTranslation($player, 'settings-arena-7'),      // Setup scoreboard.
+				TC::getTranslation($player, 'settings-arena-8'),      // Editing the world.
+				TC::getTranslation($player, 'settings-arena-9'),
 			], function(Player $player, Button $selected) use ($arena): void{
 				switch($selected->getValue()){
 					case 0:
@@ -287,7 +294,7 @@ class FormManager implements Listener {
 						break;
 				}
 			}, function(Player $player): void{
-				$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+				$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 
 				$this->cleanupEvent($player);
 			});
@@ -295,7 +302,7 @@ class FormManager implements Listener {
 			$player->sendForm($form);
 		});
 		$form->setOnClose(function(Player $player): void{
-			$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+			$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 
 			$this->cleanupEvent($player);
 		});
@@ -305,13 +312,13 @@ class FormManager implements Listener {
 
 	private function arenaBehaviour(Player $player, ArenaImpl $arena): void{
 		// (Grace Timer) (Spectator Mode) (Time) (Enable) (Starting Time) (Max Player) (Min Player)
-		$form = new CustomForm("Arena settings.", [
-			new Toggle("§eEnable the arena?", $arena->arenaEnable),
-			new Slider("§eSet Grace Timer", 0, 30, 1, $arena->arenaGraceTime),
-			new Toggle("§eEnable Spectator Mode?", $arena->enableSpectator),
-			new Slider("§eMaximum players to be in arena", 0, 50, 1, $arena->getMaxPlayer()),
-			new Slider("§eMinimum players to be in arena", 0, 50, 1, $arena->getMinPlayer()),
-			new Toggle("§eStart when full", $arena->arenaStartOnFull),
+		$form = new CustomForm(TC::getTranslation($player, 'behaviour-setup-1'), [
+			new Toggle(TC::getTranslation($player, 'behaviour-setup-2'), $arena->arenaEnable),
+			new Slider(TC::getTranslation($player, 'behaviour-setup-3'), 0, 30, 1, $arena->arenaGraceTime),
+			new Toggle(TC::getTranslation($player, 'behaviour-setup-4'), $arena->enableSpectator),
+			new Slider(TC::getTranslation($player, 'behaviour-setup-5'), 0, 50, 1, $arena->getMaxPlayer()),
+			new Slider(TC::getTranslation($player, 'behaviour-setup-6'), 0, 50, 1, $arena->getMinPlayer()),
+			new Toggle(TC::getTranslation($player, 'behaviour-setup-7'), $arena->arenaStartOnFull),
 		], function(Player $player, CustomFormResponse $response) use ($arena): void{
 			$enable = $response->getToggle()->getValue();
 			$graceTimer = $response->getSlider()->getValue();
@@ -328,11 +335,11 @@ class FormManager implements Listener {
 				->startOnFull($startWhenFull)
 				->saveArena(), true);
 
-			$player->sendMessage(TextFormat::GREEN . "Successfully updated arena " . TextFormat::YELLOW . $arena->getMapName());
+			$player->sendMessage(TC::getTranslation($player, 'behaviour-setup-complete', ["{ARENA_NAME}", $arena->getMapName()]));
 
 			$this->cleanupEvent($player);
 		}, function(Player $player): void{
-			$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+			$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 
 			$this->cleanupEvent($player);
 		});
@@ -340,14 +347,14 @@ class FormManager implements Listener {
 		$player->sendForm($form);
 	}
 
-	private function joinSignBehaviour(Player $p, ArenaImpl $arena): void{
-		$form = new CustomForm("§eForm Behaviour Setup", [
-			new Label("§aWelcome to sign Behaviour Setup. First before you doing anything, you may need to know these"),
-			new Label("§eStatus lines\n&a &b &c = you can use color with &\n%alive = amount of in-game players\n%dead = amount of dead players\n%status = game status\n%world = world name of arena\n%max = max players per arena"),
-			new Input("§aSign Placeholder 1", "Sign Text", $arena->statusLine1),
-			new Input("§aSign Placeholder 2", "Sign Text", $arena->statusLine2),
-			new Input("§aSign Placeholder 3", "Sign Text", $arena->statusLine3),
-			new Input("§aSign Placeholder 4", "Sign Text", $arena->statusLine4),
+	private function joinSignBehaviour(Player $player, ArenaImpl $arena): void{
+		$form = new CustomForm(TC::getTranslation($player, 'behaviour-sign-1'), [
+			new Label(TC::getTranslation($player, 'behaviour-sign-2')),
+			new Label(TC::getTranslation($player, 'behaviour-sign-3')),
+			new Input(TC::getTranslation($player, 'behaviour-sign-4'), "", $arena->statusLine1),
+			new Input(TC::getTranslation($player, 'behaviour-sign-5'), "", $arena->statusLine2),
+			new Input(TC::getTranslation($player, 'behaviour-sign-6'), "", $arena->statusLine3),
+			new Input(TC::getTranslation($player, 'behaviour-sign-7'), "", $arena->statusLine4),
 		], function(Player $player, CustomFormResponse $response) use ($arena): void{
 			$arena->setConfig($arena->getConfigManager()
 				->setStatusLine($response->getInput()->getValue(), 1)
@@ -355,16 +362,16 @@ class FormManager implements Listener {
 				->setStatusLine($response->getInput()->getValue(), 3)
 				->setStatusLine($response->getInput()->getValue(), 4), true);
 
-			$player->sendMessage(TextFormat::GREEN . "Successfully updated sign lines for " . TextFormat::YELLOW . $arena->getMapName());
+			$player->sendMessage(TC::getTranslation($player, 'behaviour-sign-complete', ["{ARENA_NAME}" => $arena->getMapName()]));
 
 			$this->cleanupEvent($player);
 		}, function(Player $player): void{
-			$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+			$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 
 			$this->cleanupEvent($player);
 		});
 
-		$p->sendForm($form);
+		$player->sendForm($form);
 	}
 
 	public function setupSpawn(Player $player, ArenaImpl $arena): void{
@@ -372,7 +379,7 @@ class FormManager implements Listener {
 			$this->setMagicWand($player);
 
 			$player->teleport($level->getSpawnLocation());
-			$player->sendMessage("You can now setup the arena spawn positions, use the blaze rod and break a block to set the position, changes made in this world will be discarded.");
+			$player->sendMessage(TC::getTranslation($player, "setup-arena-spawn"));
 
 			$arena->getConfigManager()->resetSpawnPedestal();
 
@@ -386,7 +393,7 @@ class FormManager implements Listener {
 			$this->setMagicWand($player);
 
 			$player->teleport($level->getSpawnLocation());
-			$player->sendMessage("You can now setup the arena spectator position, use the blaze rod and break a block to set the position, changes made in this world will be discarded.");
+			$player->sendMessage(TC::getTranslation($player, "setup-arena-spectator"));
 
 			$this->arenaSetup[$player->getName()] = $arena;
 			$this->blockEvent[$player->getName()] = self::SET_SPECTATOR_COORDINATES;
@@ -398,7 +405,7 @@ class FormManager implements Listener {
 			$this->setMagicWand($player);
 
 			$player->teleport($level->getSpawnLocation());
-			$player->sendMessage("You can now edit this world safely, any changes in this world will be saved.");
+			$player->sendMessage(TC::getTranslation($player, "edit-world"));
 
 			$this->arenaSetup[$player->getName()] = $arena;
 			$this->blockEvent[$player->getName()] = self::TELEPORT_TO_WORLD;
@@ -408,7 +415,7 @@ class FormManager implements Listener {
 	public function setupJoinSign(Player $player, ArenaImpl $arena): void{
 		$this->setMagicWand($player);
 
-		$player->sendMessage("You can now setup the arena spectator position, use the blaze rod and break a block to set the position.");
+		$player->sendMessage(TC::getTranslation($player, 'setup-arena-joinsign'));
 
 		$this->arenaSetup[$player->getName()] = $arena;
 		$this->blockEvent[$player->getName()] = self::SET_JOIN_SIGN_COORDINATES;
@@ -417,13 +424,13 @@ class FormManager implements Listener {
 	public function setupNPCCoordinates(Player $player): void{
 		$this->setMagicWand($player);
 
-		$player->sendMessage("You can now setup the NPC position, use the blaze rod and break a block to set the position.");
+		$player->sendMessage(TC::getTranslation($player, 'setup-npc'));
 
 		$this->blockEvent[$player->getName()] = self::SET_NPC_COORDINATES;
 	}
 
 	private function deleteArena(Player $p, ArenaImpl $data): void{
-		$form = new ModalForm("", "§cAre you sure to perform this action? Deleting an arena will delete your arena config and your world!",
+		$form = new ModalForm("", TC::getTranslation($p, 'arena-delete-confirm'),
 			function(Player $player, bool $response) use ($data): void{
 				$this->cleanupEvent($player);
 
@@ -431,8 +438,8 @@ class FormManager implements Listener {
 
 				$this->plugin->getArenaManager()->deleteArena($data);
 
-				$player->sendMessage(str_replace("{ARENA}", $data->getMapName(), $this->plugin->getMsg($player, 'arena-delete')));
-			}, "§cDelete", "Cancel");
+				$player->sendMessage(TC::getTranslation($player, 'arena-delete', ["{ARENA}" => $data->getMapName()]));
+			}, TC::getTranslation($p, 'arena-delete-1'), TC::getTranslation($p, 'arena-delete-2'));
 
 		$p->sendForm($form);
 	}
@@ -440,14 +447,14 @@ class FormManager implements Listener {
 	private function setupScoreboard(Player $player, ArenaImpl $arena, int $id = -1): void{
 		if($id === -1){
 			$buttons = [
-				new Button("Waiting display"),
-				new Button("In game display"),
-				new Button("Ending game display"),
-				new Button("Spectator display"),
-				new Button("Exit", new Image("textures/blocks/barrier", Image::TYPE_PATH)),
+				new Button(TC::getTranslation($player, 'scoreboard-button-1')),
+				new Button(TC::getTranslation($player, 'scoreboard-button-2')),
+				new Button(TC::getTranslation($player, 'scoreboard-button-3')),
+				new Button(TC::getTranslation($player, 'scoreboard-button-4')),
+				new Button(TC::getTranslation($player, 'scoreboard-button-5'), new Image("textures/blocks/barrier", Image::TYPE_PATH)),
 			];
 
-			$form = new MenuForm("§aChoose your arena first.", "", $buttons, function(Player $player, Button $selected) use ($buttons, $arena): void{
+			$form = new MenuForm(TC::getTranslation($player, 'setup-choose-arena'), "", $buttons, function(Player $player, Button $selected) use ($buttons, $arena): void{
 				$selectedButton = $selected->getValue();
 				if(!isset($buttons[$selectedButton])){
 					$this->cleanupEvent($player);
@@ -456,13 +463,13 @@ class FormManager implements Listener {
 				}
 
 				if($selectedButton === 4){
-					$player->sendMessage(TextFormat::RED . "Exited scoreboard setup");
+					$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 					$this->cleanupEvent($player);
 				}else{
 					$this->setupScoreboard($player, $arena, $selectedButton);
 				}
 			}, function(Player $player): void{
-				$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+				$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 
 				$this->cleanupEvent($player);
 			});
@@ -474,7 +481,8 @@ class FormManager implements Listener {
 
 		$configPath = $this->plugin->getDataFolder() . "scoreboards/" . $arena->getMapName() . ".yml";
 		if(!is_file($configPath)){
-			file_put_contents($configPath, $this->plugin->getResource("scoreboard.yml"));
+			file_put_contents($configPath, $resource = $this->plugin->getResource("scoreboard.yml"));
+			fclose($resource);
 		}
 
 		$config = new Config($configPath, Config::YAML);
@@ -493,17 +501,17 @@ class FormManager implements Listener {
 				$inputs = $this->recurseConfig($config->get("spectate-scoreboard", []));
 				break;
 			default:
-				$player->sendMessage('The id you have requested is invalid, unable to perform this command');
+				$player->sendMessage(TC::getTranslation($player, 'form-error-1'));
 				$this->cleanupEvent($player);
 
 				return;
 		}
 
 		$elements = array_merge([new Label([
-			"This section will be used during waiting state.",
-			"This section will be used when the arena has started but without any teams.",
-			"This section will be used when the game has finished.",
-			"This section will be used the player has died.",
+			TC::getTranslation($player, 'scoreboard-state-1'),
+			TC::getTranslation($player, 'scoreboard-state-2'),
+			TC::getTranslation($player, 'scoreboard-state-3'),
+			TC::getTranslation($player, 'scoreboard-state-4'),
 		][$id])], $inputs);
 
 		$form = new CustomForm("Scoreboard setup", $elements, function(Player $player, CustomFormResponse $response) use ($arena, $config, $id): void{
@@ -540,9 +548,9 @@ class FormManager implements Listener {
 
 			$arena->getScoreboard()->resetScoreboard();
 
-			$player->sendMessage(Settings::$prefix . TextFormat::GREEN . "Successfully setup the arena scoreboard configuration.");
+			$player->sendMessage(Settings::$prefix . TC::getTranslation($player, 'scoreboard-success'));
 		}, function(Player $player): void{
-			$player->sendMessage($this->plugin->getMsg($player, 'panel-cancelled'));
+			$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 
 			$this->cleanupEvent($player);
 		});
@@ -605,7 +613,7 @@ class FormManager implements Listener {
 	 * @param Player $player
 	 */
 	public function showChooseCage(Player $player): void{
-		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player){
+		SkyWarsDatabase::getPlayerEntry($player, function(?PlayerData $pd) use ($player){
 			$form = new MenuForm("§cChoose Your Cage", "§aVarieties of cages available!");
 
 			$cages = [];
@@ -648,7 +656,7 @@ class FormManager implements Listener {
 			switch($this->blockEvent[$player->getName()]){
 				case self::SET_SPAWN_COORDINATES:
 					if($arena->getLevelName() !== $player->getLevel()->getFolderName()){
-						$player->sendMessage("You are not in the right arena world, teleport back to level {$arena->getLevelName()}");
+						$player->sendMessage(TC::getTranslation($player, 'setup-wrong-world-1', ["{ARENA_WORLD}", $arena->getLevelName()]));
 						break;
 					}
 
@@ -657,10 +665,10 @@ class FormManager implements Listener {
 					if($mode <= $arena->getMaxPlayer()){
 						$config->setSpawnPosition([$block->getX(), $block->getY() + 1, $block->getZ()], $mode);
 
-						$player->sendMessage(str_replace("{COUNT}", (string)$mode, $this->plugin->getMsg($player, 'panel-spawn-pos')));
+						$player->sendMessage(str_replace("{COUNT}", (string)$mode, TC::getTranslation($player, 'panel-spawn-pos')));
 
 						if($mode === $arena->getMaxPlayer()){
-							$player->sendMessage($this->plugin->getMsg($player, "panel-spawn-set"));
+							$player->sendMessage(TC::getTranslation($player, "panel-spawn-set"));
 							$player->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn(), 0, 0);
 
 							$this->cleanupEvent($player, true);
@@ -672,32 +680,32 @@ class FormManager implements Listener {
 					break;
 				case self::SET_SPECTATOR_COORDINATES:
 					if($arena->getLevelName() !== $player->getLevel()->getFolderName()){
-						$player->sendMessage("You are not in the right arena world, teleport back to level {$arena->getLevelName()}");
+						$player->sendMessage(TC::getTranslation($player, 'setup-wrong-world-1', ["{ARENA_WORLD}", $arena->getLevelName()]));
 						break;
 					}
 
 					$config->setSpecSpawn($block->getX(), $block->getY(), $block->getZ());
 
-					$player->sendMessage($this->plugin->getMsg($player, 'panel-join-spect'));
+					$player->sendMessage(TC::getTranslation($player, 'panel-join-spect'));
 					$player->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn(), 0, 0);
 
 					$this->cleanupEvent($player, true);
 					break;
 				case self::SET_JOIN_SIGN_COORDINATES:
 					if($this->plugin->getArenaManager()->getPlayerArena($player) !== null){
-						$player->sendMessage("You cannot set arena join sign in the arena world!");
+						$player->sendMessage(TC::getTranslation($player, 'setup-wrong-world-2'));
 						break;
 					}
 
 					$config->setJoinSign($block->getX(), $block->getY(), $block->getZ(), $block->level->getFolderName());
 
-					$player->sendMessage($this->plugin->getMsg($player, 'panel-join-sign'));
+					$player->sendMessage(TC::getTranslation($player, 'panel-join-sign'));
 
 					$this->cleanupEvent($player);
 					break;
 				case self::SET_NPC_COORDINATES:
 					if($this->plugin->getArenaManager()->getPlayerArena($player) !== null){
-						$player->sendMessage("You cannot set arena join sign in the arena world!");
+						$player->sendMessage(TC::getTranslation($player, 'setup-wrong-world-2'));
 						break;
 					}
 
@@ -710,18 +718,18 @@ class FormManager implements Listener {
 						$config->set("npc-$mode", [$block->getX() + .5, $block->getY() + $y, $block->getZ() + .5, $block->level->getFolderName()]);
 						$config->save();
 
-						$player->sendMessage(str_replace("{COUNT}", (string)$mode, $this->plugin->getMsg($player, 'panel-spawn-pos')));
+						$player->sendMessage(str_replace("{COUNT}", (string)$mode, TC::getTranslation($player, 'panel-spawn-pos')));
 
 						$this->spawnCache[$player->getName()] = ++$mode;
 					}else{
-						$player->sendMessage($this->plugin->getMsg($player, "panel-spawn-set"));
+						$player->sendMessage(TC::getTranslation($player, "panel-spawn-set"));
 						$player->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn(), 0, 0);
 
 						$this->cleanupEvent($player);
 					}
 					break;
 				case self::TELEPORT_TO_WORLD:
-					$player->sendMessage(Settings::$prefix . "Teleporting you back to main world.");
+					$player->sendMessage(Settings::$prefix . TC::getTranslation($player, 'world-teleport'));
 
 					$player->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn(), 0, 0);
 

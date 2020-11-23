@@ -31,6 +31,7 @@ declare(strict_types = 1);
 namespace larryTheCoder\arena\api;
 
 use larryTheCoder\arena\api\impl\ArenaState;
+use larryTheCoder\arena\api\translation\TranslationContainer;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\utils\ColorBlockMetaHelper;
 use pocketmine\level\Level;
@@ -218,19 +219,18 @@ class PlayerManager {
 	}
 
 	/**
-	 * @param string $msg
+	 * @param string $key
 	 * @param bool $popup
-	 * @param string[] $toReplace
-	 * @param string[] $replacement
+	 * @param mixed[] $replacements
 	 */
-	public function broadcastToPlayers(string $msg, bool $popup = false, array $toReplace = [], array $replacement = []): void{
+	public function broadcastToPlayers(string $key, bool $popup = false, array $replacements = []): void{
 		$inGame = array_merge($this->getAlivePlayers(), $this->getSpectators());
 		/** @var Player $p */
 		foreach($inGame as $p){
 			if($popup){
-				$p->sendPopup(str_replace($toReplace, $replacement, $msg));
+				$p->sendPopup(TranslationContainer::getTranslation($p, $key, $replacements));
 			}else{
-				$p->sendMessage(str_replace($toReplace, $replacement, $msg));
+				$p->sendMessage(TranslationContainer::getTranslation($p, $key, $replacements));
 
 				Utils::addSound([$p], "random.pop");
 			}
@@ -410,6 +410,9 @@ class PlayerManager {
 
 	public function broadcastTitle(string $title, string $subtitle = "", int $fadeIn = -1, int $stay = -1, int $fadeOut = -1): void{
 		foreach($this->getAllPlayers() as $player){
+			$title = TranslationContainer::getTranslation($player, $title);
+			$subtitle = TranslationContainer::getTranslation($player, $subtitle);
+
 			$player->sendTitle($title, $subtitle, $fadeIn, $stay, $fadeOut);
 		}
 	}

@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\utils\cage;
 
+use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\PlayerData;
 use larryTheCoder\utils\Settings;
@@ -96,7 +97,7 @@ class ArenaCage {
 	 * @param Cage $cage
 	 */
 	public function setPlayerCage(Player $player, Cage $cage): void{
-		$this->plugin->getDatabase()->getPlayerData($player->getName(), function(PlayerData $pd) use ($player, $cage){
+		SkyWarsDatabase::getPlayerEntry($player, function(?PlayerData $pd) use ($player, $cage){
 			if(!in_array(strtolower($cage->getCageName()), $pd->cages)){
 				$this->buyCage($player, $cage);
 
@@ -109,7 +110,7 @@ class ArenaCage {
 	}
 
 	public function buyCage(Player $p, Cage $cage): void{
-		$this->plugin->getDatabase()->getPlayerData($p->getName(), function(PlayerData $playerData) use ($p, $cage){
+		SkyWarsDatabase::getPlayerEntry($p, function(?PlayerData $playerData) use ($p, $cage){
 			if(in_array(strtolower($cage->getCageName()), $playerData->cages)){
 				$p->sendMessage("You already bought this cage");
 
@@ -137,10 +138,9 @@ class ArenaCage {
 			}
 
 			$playerData->cages[] = strtolower($cage->getCageName());
-			$this->plugin->getDatabase()->setPlayerData($p->getName(), $playerData);
 			$this->setPlayerCage($p, $cage);
 
-			var_dump("Buying cage.");
+			SkyWarsDatabase::setPlayerData($p, $playerData);
 		});
 	}
 

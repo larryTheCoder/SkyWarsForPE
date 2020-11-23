@@ -28,16 +28,22 @@
 
 namespace larryTheCoder;
 
+use larryTheCoder\arena\api\translation\TranslationContainer;
 use larryTheCoder\commands\SkyWarsCommand;
-use larryTheCoder\database\AsyncLibDatabase;
+use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\panel\FormManager;
-use larryTheCoder\utils\{fireworks\entity\FireworksRocket, npc\FakeHuman, npc\PedestalManager, Settings, Utils};
+use larryTheCoder\utils\{fireworks\entity\FireworksRocket,
+	LootGenerator,
+	npc\FakeHuman,
+	npc\PedestalManager,
+	Settings,
+	Utils
+};
 use larryTheCoder\utils\cage\ArenaCage;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
-use pocketmine\Player;
 use pocketmine\plugin\{PluginBase};
 use pocketmine\utils\{Config, MainLogger, TextFormat};
 
@@ -49,7 +55,7 @@ use pocketmine\utils\{Config, MainLogger, TextFormat};
  */
 class SkyWarsPE extends PluginBase {
 
-	const CONFIG_VERSION = 2;
+	const CONFIG_VERSION = 3;
 
 	/** @var SkyWarsPE|null */
 	public static $instance;
@@ -62,12 +68,8 @@ class SkyWarsPE extends PluginBase {
 	/** @var EconomyAPI|null */
 	public $economy;
 
-	/** @var Config[] */
-	private $translation = [];
 	/** @var ArenaManager */
 	private $arenaManager;
-	/** @var AsyncLibDatabase */
-	private $database;
 	/** @var ArenaCage */
 	private $cage;
 
@@ -95,13 +97,10 @@ class SkyWarsPE extends PluginBase {
 		Utils::ensureDirectory("scoreboards/");
 		Utils::ensureDirectory("arenas/");
 		Utils::ensureDirectory("arenas/worlds");
-		$this->saveResource("chests.yml");
 		$this->saveResource("config.yml");
-		$this->saveResource("scoreboard.yml");
-		$this->saveResource("image/map.png");
 		$this->saveResource("arenas/default.yml");
+		$this->saveResource("looting-tables.json");
 		$this->saveResource("language/en_US.yml", true);
-		$this->saveResource("language/pt_BR.yml", true);
 
 		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
 		if($cfg->get("config-version") !== SkyWarsPE::CONFIG_VERSION){
@@ -110,29 +109,18 @@ class SkyWarsPE extends PluginBase {
 		}
 		Settings::init(new Config($this->getDataFolder() . "config.yml", Config::YAML));
 
-		$folder = glob($this->getDataFolder() . "language/*.yml");
-		if($folder === false) throw new \RuntimeException("Unexpected error has occurred while indexing arenas files.");
-
-		foreach($folder as $file){
+		foreach(glob($this->getDataFolder() . "language/*.yml") as $file){
 			$locale = new Config($file, Config::YAML);
 			$localeCode = basename($file, ".yml");
-			if($locale->get("config-version") < 4){
+			if($locale->get("config-version") < 5 && ($resource = $this->getResource($file)) !== null){
 				$this->getServer()->getLogger()->info(Settings::$prefix . "§cLanguage '" . $localeCode . "' is old, using new one");
 				$this->saveResource("language/" . $localeCode . ".yml", true);
+
+				fclose($resource);
 			}
-			$this->translation[strtolower($localeCode)] = $locale;
+
+			TranslationContainer::getInstance()->addTranslation($localeCode, $locale);
 		}
-
-		if(empty($this->translation)){
-			$this->getServer()->getLogger()->error(Settings::$prefix . "§cNo locales been found, this is discouraged.");
-			$this->getServer()->getPluginManager()->disablePlugin($this);
-			$this->disabled = true;
-			self::$instance = null;
-
-			return;
-		}
-
-		$this->getServer()->getLogger()->info(Settings::$prefix . "§aTracked and flashed §e" . count($this->translation) . "§a locales");
 	}
 
 	/** @var bool */
@@ -157,7 +145,11 @@ class SkyWarsPE extends PluginBase {
 
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 
-		$this->database = new AsyncLibDatabase($this, $this->getConfig()->get("database"));
+		SkyWarsDatabase::getInstance()->createContext($this->getConfig()->get("database"));
+		SkyWarsDatabase::loadLobby();
+
+		LootGenerator::init();
+
 		$this->cmd = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager();
 		$this->panel = new FormManager($this);
@@ -218,10 +210,6 @@ class SkyWarsPE extends PluginBase {
 		return $this->arenaManager;
 	}
 
-	public function getDatabase(): AsyncLibDatabase{
-		return $this->database;
-	}
-
 	public function getCage(): ArenaCage{
 		return $this->cage;
 	}
@@ -231,8 +219,8 @@ class SkyWarsPE extends PluginBase {
 			if($this->crashed) return;
 
 			Utils::unLoadGame();
+			SkyWarsDatabase::shutdown();
 
-			$this->database->close();
 			$this->pedestalManager->closeAll();
 
 			$this->getServer()->getLogger()->info(Settings::$prefix . TextFormat::RED . 'SkyWarsForPE has disabled');
@@ -245,34 +233,5 @@ class SkyWarsPE extends PluginBase {
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool{
 		return $this->cmd->onCommand($sender, $command, $args);
-	}
-
-	/**
-	 * Get the translation for player and console too
-	 *
-	 * @param null|CommandSender $p
-	 * @param string $key
-	 * @param bool $prefix
-	 *
-	 * @return string
-	 */
-	public function getMsg(?CommandSender $p, string $key, $prefix = true){
-		$msg = "Locale could not found";
-
-		if(!is_null($p) && $p instanceof Player){
-			if(isset($this->translation[strtolower($p->getLocale())])){
-				$msg = str_replace(["&", "%prefix"], ["§", Settings::$prefix], $this->translation[strtolower($p->getLocale())]->get($key));
-			}elseif(isset($this->translation["en_us"])){
-				$msg = str_replace(["&", "%prefix"], ["§", Settings::$prefix], $this->translation["en_us"]->get($key));
-			}else{
-				$this->getServer()->getLogger()->error(Settings::$prefix . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
-			}
-		}elseif(isset($this->translation["en_us"])){
-			$msg = str_replace(["&", "%prefix"], ["§", Settings::$prefix], $this->translation["en_us"]->get($key));
-		}else{
-			$this->getServer()->getLogger()->error(Settings::$prefix . "ERROR: LOCALE COULD NOT FOUND! LOCALE COULD NOT FOUND!");
-		}
-
-		return ($prefix ? Settings::$prefix : "") . $msg;
 	}
 }

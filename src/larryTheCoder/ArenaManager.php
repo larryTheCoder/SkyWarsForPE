@@ -104,7 +104,9 @@ final class ArenaManager {
 	 */
 	public function createArena(string $arenaName): ArenaImpl{
 		$configPath = $this->plugin->getDataFolder() . "arenas/$arenaName.yml";
-		file_put_contents($configPath, $this->plugin->getResource('arenas/default.yml'));
+		file_put_contents($configPath, $resource = $this->plugin->getResource('arenas/default.yml'));
+
+		fclose($resource);
 
 		$cm = new ConfigManager(basename($configPath, ".yml"), new Config($configPath, Config::YAML));
 		$arena = new ArenaImpl($this->plugin, $cm);
