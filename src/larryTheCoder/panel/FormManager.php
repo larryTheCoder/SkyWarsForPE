@@ -101,7 +101,7 @@ class FormManager implements Listener {
 				return;
 			}
 
-			$target = $arena->getPlayerManager()->getOriginPlayer($selected->getValue());
+			$target = $arena->getPlayerManager()->getOriginPlayer($selected->getText());
 			if($target === null){
 				$player->sendMessage(TextFormat::RED . "That player is no longer in the arena.");
 

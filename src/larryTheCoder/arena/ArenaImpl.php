@@ -211,9 +211,6 @@ class ArenaImpl extends ArenaData {
 		$player->setHealth(20);
 		$player->setFood(20);
 
-		$player->setGamemode(Player::ADVENTURE);
-		$player->setAllowFlight(true);
-
 		$player->teleport(Position::fromObject($this->arenaSpecPos, $this->getLevel()));
 	}
 

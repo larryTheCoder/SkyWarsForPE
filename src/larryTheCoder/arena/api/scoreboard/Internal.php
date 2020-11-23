@@ -60,7 +60,7 @@ class Internal implements Scoreboard {
 	/** @var int */
 	private $timeLeft = 0;
 
-	/** @var int[] */
+	/** @var int[][] */
 	private $lastState = [];
 
 	public function __construct(Arena $arena, Config $defaultConf){
@@ -102,14 +102,23 @@ class Internal implements Scoreboard {
 			return;
 		}
 
+		$pm = $this->arena->getPlayerManager();
+
 		// Reset network cache if the state are no longer the same.
 		$status = $this->arena->getStatus();
-		if(($this->lastState[$pl->getName()] ?? -1) !== $status){
+		if(($this->lastState[$pl->getName()]["arena"] ?? -1) !== $status){
 			foreach(($this->networkBound[$pl->getName()] ?? []) as $line => $message){
 				StandardScoreboard::setScoreLine($pl, $line, null);
 			}
 
-			$this->lastState[$pl->getName()] = $status;
+			$this->lastState[$pl->getName()]["arena"] = $status;
+			unset($this->networkBound[$pl->getName()]);
+		}elseif(($this->lastState[$pl->getName()]["status"] ?? false) !== $pm->isSpectator($pl)){
+			foreach(($this->networkBound[$pl->getName()] ?? []) as $line => $message){
+				StandardScoreboard::setScoreLine($pl, $line, null);
+			}
+
+			$this->lastState[$pl->getName()]["status"] = true;
 			unset($this->networkBound[$pl->getName()]);
 		}
 

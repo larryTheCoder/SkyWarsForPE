@@ -131,7 +131,9 @@ class ArenaListener {
 		// NOOP
 	}
 
-	public function onPlayerInteractEvent(PlayerInteractEvent $e): void{
-		// NOOP
+	public function onPlayerInteractEvent(PlayerInteractEvent $e): bool{
+		$pm = $this->arena->getPlayerManager();
+
+		return $pm->isSpectator($e->getPlayer()) || $this->arena->getStatus() !== ArenaState::STATE_ARENA_RUNNING;
 	}
 }

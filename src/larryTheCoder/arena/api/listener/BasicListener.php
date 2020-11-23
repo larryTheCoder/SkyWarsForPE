@@ -278,12 +278,6 @@ abstract class BasicListener implements Listener {
 		$p = $e->getPlayer();
 
 		if(($arena = $this->getArena($e->getPlayer())) !== null){
-			$arena->getEventListener()->onPlayerInteractEvent($e);
-
-			if($e->isCancelled()){
-				return;
-			}
-
 			$status = $arena->getStatus();
 			$item = $p->getInventory()->getItemInHand();
 			if($status === ArenaState::STATE_WAITING || $status === ArenaState::STATE_STARTING){
@@ -296,7 +290,9 @@ abstract class BasicListener implements Listener {
 				SkyWarsPE::getInstance()->panel->showSpectatorPanel($p, $arena);
 			}
 
-			return;
+			if(!$e->isCancelled() && $arena->getEventListener()->onPlayerInteractEvent($e)){
+				$e->setCancelled();
+			}
 		}
 	}
 

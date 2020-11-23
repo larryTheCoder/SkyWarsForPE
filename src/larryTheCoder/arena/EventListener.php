@@ -135,6 +135,10 @@ class EventListener extends ArenaListener {
 				if($isArrow) $damager->getInventory()->addItem(ItemFactory::get(ItemIds::ARROW));
 
 				return;
+			}elseif($pm->isSpectator($damager)){
+				$event->setCancelled();
+
+				return;
 			}else{
 				if($isArrow) Utils::addSound([$damager], "random.orb");
 
@@ -143,6 +147,10 @@ class EventListener extends ArenaListener {
 		}elseif($event instanceof EntityDamageByEntityEvent && ($damager = $event->getDamager()) instanceof Player){
 			/** @var Player $damager */
 			if($pm->isTeammates($damager, $player)){
+				$event->setCancelled();
+
+				return;
+			}elseif($pm->isSpectator($damager)){
 				$event->setCancelled();
 
 				return;

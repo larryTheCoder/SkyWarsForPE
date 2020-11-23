@@ -43,6 +43,8 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
+use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
+use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
@@ -381,6 +383,9 @@ abstract class Arena implements ShutdownSequence {
 		$player->getInventory()->setItem(8, self::getLeaveItem());
 
 		foreach($this->getPlayerManager()->getAllPlayers() as $p2) $p2->hidePlayer($player);
+
+		$player->setGamemode(Player::ADVENTURE);
+		self::sendAdventureSettings($player);
 	}
 
 	final public function resetArena(): void{
@@ -448,5 +453,24 @@ abstract class Arena implements ShutdownSequence {
 
 	public function getScoreboard(): Scoreboard{
 		return $this->scoreboard;
+	}
+
+	public static function sendAdventureSettings(Player $player): void{
+		$player->setAllowFlight(true);
+
+		$pk = new AdventureSettingsPacket();
+
+		$pk->setFlag(AdventureSettingsPacket::WORLD_IMMUTABLE, true);
+		$pk->setFlag(AdventureSettingsPacket::NO_PVP, true);
+		$pk->setFlag(AdventureSettingsPacket::AUTO_JUMP, $player->hasAutoJump());
+		$pk->setFlag(AdventureSettingsPacket::ALLOW_FLIGHT, $player->getAllowFlight());
+		$pk->setFlag(AdventureSettingsPacket::NO_CLIP, false);
+		$pk->setFlag(AdventureSettingsPacket::FLYING, $player->isFlying());
+
+		$pk->commandPermission = ($player->isOp() ? AdventureSettingsPacket::PERMISSION_OPERATOR : AdventureSettingsPacket::PERMISSION_NORMAL);
+		$pk->playerPermission = ($player->isOp() ? PlayerPermissions::OPERATOR : PlayerPermissions::MEMBER);
+		$pk->entityUniqueId = $player->getId();
+
+		$player->dataPacket($pk);
 	}
 }
