@@ -1,8 +1,10 @@
-<p align="center">
-  <img src="https://cdn.discordapp.com/attachments/514331305111191563/662292362223026216/SkyWarsForPE.png"/>
-</p>
+<!-- 
+  The artist for this profile picture is gatodelfuturo
+  Twitter: @GatodelFuturo
+  Tumblr: https://gatodelfuturo.tumblr.com
+ -->
+<h1>SkyWarsForPE<img src="https://cdn.discordapp.com/attachments/512987829970665482/785515846092849198/PuppyBox-new-h-trans.png" height="200" width="200" align="right"></img></h1>
 
-## SkyWarsForPE
 [![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE) [![Donate](https://img.shields.io/badge/donate-PayPal-yellow.svg?style=flat-square)](http://www.paypal.me/Permeable)
 
     Powered by Open Sourced code.
@@ -47,10 +49,8 @@ This section is to be done.
 | /sw |`<args>` | Main SkyWars command | `All` |
 | /sw lobby | | back to lobby | `All` |
 | /sw help | | Get command map | `All` |
-| /sw random | | Randomly join to an arena | `All` |
 | /sw cage | | Set your own cage | `All` |
 | /sw stats | | Show the player stats | `ALL`|
-| /sw reload | | Reload the plugin | `OP` |
 | /sw npc | | Creates a top winner NPC | `OP` |
 | /sw create | `<Arena Name>` | create an arena for SkyWars | `OP` |
 | /sw start | `<Arena Name>` | Start the game | `OP` |

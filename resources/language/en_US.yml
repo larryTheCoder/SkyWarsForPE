@@ -4,7 +4,7 @@
 ###########################################################################################
 ---
 # No reason to edit this
-config-version: 5
+config-version: 6
 
 low-permission: "&eHmm, some new command, too bad its not available yet."
 no-permission: "&cYou don't have the right permission to do this."
@@ -68,11 +68,24 @@ settings-arena-9: "&cDelete this arena."
 
 behaviour-setup-1: "Arena settings."
 behaviour-setup-2: "&eEnable the arena?"
-behaviour-setup-3: "&eSet Grace Timer"
+behaviour-setup-3: "&eSet Invincible Timer"
 behaviour-setup-4: "&eEnable Spectator Mode?"
-behaviour-setup-5: "&eMaximum players to be in arena"
-behaviour-setup-6: "&eMinimum players to be in arena"
-behaviour-setup-7: "&eStart when full"
+behaviour-setup-5: "&eEnable team mode?"
+behaviour-setup-6: "&eStart when full?"
+
+team-setup-1: 'Setup team mode'
+team-setup-2: 'Players per team'
+team-setup-3: 'Minimum teams'
+team-setup-4: 'Maximum teams'
+team-setup-5: 'Team colours'
+
+team-error-1: '&cTeam configuration error, must be an integer in range of 0-15 and separated by `;`'
+team-error-2: '&cYour configured team colour(s) is lesser than your maximum teams.'
+
+solo-setup-1: "Solo team setup"
+solo-setup-2: "Minimum players"
+solo-setup-3: "Maximum players"
+
 behaviour-setup-complete: "&aSuccessfully updated arena &e{ARENA_NAME}"
 
 behaviour-sign-1: "&eForm Behaviour Setup"

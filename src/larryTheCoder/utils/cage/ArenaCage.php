@@ -117,20 +117,20 @@ class ArenaCage {
 				return;
 			}
 
-			if($this->plugin->economy === null){
+			if($this->plugin->getEconomy() === null){
 				$p->sendMessage("This feature is disabled when EconomyAPI is not installed.");
 
 				return;
 			}
 
 			$price = $cage->getPrice();
-			if($this->plugin->economy->myMoney($p) < $price){
+			if($this->plugin->getEconomy()->myMoney($p) < $price){
 				$p->sendMessage("You don't have enough money to buy this");
 
 				return;
 			}
 
-			$ret = $this->plugin->economy->reduceMoney($p->getName(), $price);
+			$ret = $this->plugin->getEconomy()->reduceMoney($p->getName(), $price);
 			if($ret !== EconomyAPI::RET_SUCCESS){
 				$p->sendMessage("Cannot process your payment. Try again later");
 

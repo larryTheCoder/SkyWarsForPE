@@ -53,7 +53,7 @@ class Settings {
 		self::$lang = $general['language'];
 		self::$prefix = str_replace("&", "§", $general['prefix']);
 		self::$joinHealth = $general['join-health'];
-		self::$acceptedCommand = explode(":", $general['accepted-cmd']);
+		self::$acceptedCommand = array_merge(explode(":", $general['accepted-cmd']), ['sw', 'skywars']);
 
 		# ============ GENERALS CONFIG ============
 

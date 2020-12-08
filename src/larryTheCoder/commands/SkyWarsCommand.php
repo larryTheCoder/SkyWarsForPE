@@ -143,7 +143,7 @@ final class SkyWarsCommand {
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
-						$this->plugin->panel->setupArena($sender);
+						$this->plugin->getPanel()->setupArena($sender);
 					}
 
 					break;
@@ -153,7 +153,7 @@ final class SkyWarsCommand {
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
-						$this->plugin->panel->showSettingPanel($sender);
+						$this->plugin->getPanel()->showSettingPanel($sender);
 					}
 					break;
 				case "stats":
@@ -162,9 +162,9 @@ final class SkyWarsCommand {
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}elseif(isset($args[1])){
-						$this->plugin->panel->showStatsPanel($sender, $args[1]);
+						$this->plugin->getPanel()->showStatsPanel($sender, $args[1]);
 					} else {
-						$this->plugin->panel->showStatsPanel($sender, $sender);
+						$this->plugin->getPanel()->showStatsPanel($sender, $sender);
 					}
 
 					break;
@@ -174,7 +174,7 @@ final class SkyWarsCommand {
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
-						$this->plugin->panel->setupNPCCoordinates($sender);
+						$this->plugin->getPanel()->setupNPCCoordinates($sender);
 					}
 					break;
 				case "npc":
@@ -183,7 +183,7 @@ final class SkyWarsCommand {
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
-						$this->plugin->panel->setupNPCCoordinates($sender);
+						$this->plugin->getPanel()->setupNPCCoordinates($sender);
 					}
 					break;
 				case "random":

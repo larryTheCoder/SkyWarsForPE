@@ -316,28 +316,88 @@ class FormManager implements Listener {
 			new Toggle(TC::getTranslation($player, 'behaviour-setup-2'), $arena->arenaEnable),
 			new Slider(TC::getTranslation($player, 'behaviour-setup-3'), 0, 30, 1, $arena->arenaGraceTime),
 			new Toggle(TC::getTranslation($player, 'behaviour-setup-4'), $arena->enableSpectator),
-			new Slider(TC::getTranslation($player, 'behaviour-setup-5'), 0, 50, 1, $arena->getMaxPlayer()),
-			new Slider(TC::getTranslation($player, 'behaviour-setup-6'), 0, 50, 1, $arena->getMinPlayer()),
-			new Toggle(TC::getTranslation($player, 'behaviour-setup-7'), $arena->arenaStartOnFull),
+			new Toggle(TC::getTranslation($player, 'behaviour-setup-5'), $arena->getPlayerManager()->teamMode),
+			new Toggle(TC::getTranslation($player, 'behaviour-setup-6'), $arena->arenaStartOnFull),
 		], function(Player $player, CustomFormResponse $response) use ($arena): void{
 			$enable = $response->getToggle()->getValue();
-			$graceTimer = $response->getSlider()->getValue();
+			$graceTimer = (int)$response->getSlider()->getValue();
 			$spectatorMode = $response->getToggle()->getValue();
-			$maxPlayer = (int)$response->getSlider()->getValue();
-			$minPlayer = (int)$response->getSlider()->getValue();
+			$teamMode = $response->getToggle()->getValue();
 			$startWhenFull = $response->getToggle()->getValue();
 
-			$arena->setConfig($arena->getConfigManager()
+			$config = $arena->getConfigManager()
 				->setEnable($enable)
 				->setGraceTimer($graceTimer)
 				->enableSpectator($spectatorMode)
-				->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $minPlayer)
 				->startOnFull($startWhenFull)
-				->saveArena(), true);
+				->saveArena();
 
-			$player->sendMessage(TC::getTranslation($player, 'behaviour-setup-complete', ["{ARENA_NAME}", $arena->getMapName()]));
+			if($teamMode){
+				$form = new CustomForm(TC::getTranslation($player, 'team-setup-1'), [
+					new Slider(TC::getTranslation($player, 'team-setup-2'), 1, 16, 1.0, (int)$config->getConfig()->get('players-per-team', 3)),
+					new Slider(TC::getTranslation($player, 'team-setup-3'), 1, 16, 1.0, (int)$config->getConfig()->get('minimum-teams', 2)),
+					new Slider(TC::getTranslation($player, 'team-setup-4'), 1, 16, 1.0, (int)$config->getConfig()->get('maximum-teams', 3)),
+					new Input(TC::getTranslation($player, 'team-setup-5'), '0;1;2;3', implode($config->getConfig()->get("team-colours", []))),
+				], function(Player $player, CustomFormResponse $response) use ($config, $arena): void{
+					$maxPlayer = (int)$response->getSlider()->getValue();
+					$minTeams = (int)$response->getSlider()->getValue();
+					$maxTeams = (int)$response->getSlider()->getValue();
+					$input = $response->getInput()->getValue();
 
-			$this->cleanupEvent($player);
+					$data = [];
+					foreach(explode(';', $input) as $values){
+						if(!is_numeric($values)){
+							$player->sendMessage(TC::getTranslation($player, 'team-error-1'));
+							$this->cleanupEvent($player);
+
+							return;
+						}
+
+						$data[] = (int)$values;
+					}
+
+					if(count($data) < $maxTeams){
+						$player->sendMessage(TC::getTranslation($player, 'team-error-2'));
+						$this->cleanupEvent($player);
+
+						return;
+					}
+
+					$config->setTeamMode(true)
+						->setTeamData($maxPlayer, $minTeams >= $maxTeams ? $maxTeams : $minTeams, $maxTeams, $data)
+						->saveArena();
+
+					$this->cleanupEvent($player);
+
+					$player->sendMessage(TC::getTranslation($player, 'behaviour-setup-complete', ["{ARENA_NAME}" => $arena->getMapName()]));
+				}, function(Player $player): void{
+					$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
+
+					$this->cleanupEvent($player);
+				});
+			}else{
+				$form = new CustomForm(TC::getTranslation($player, 'solo-setup-1'), [
+					new Slider(TC::getTranslation($player, 'solo-setup-2'), 1, 16, 1.0, $arena->getMinPlayer()),
+					new Slider(TC::getTranslation($player, 'solo-setup-3'), 1, 16, 1.0, $arena->getMaxPlayer()),
+				], function(Player $player, CustomFormResponse $response) use ($config, $arena): void{
+					$minPlayer = (int)$response->getSlider()->getValue();
+					$maxPlayer = (int)$response->getSlider()->getValue();
+
+					$config->setTeamMode(false)
+						->setPlayersCount($maxPlayer > $minPlayer ? $maxPlayer : $minPlayer, $minPlayer)
+						->saveArena();
+
+					$this->cleanupEvent($player);
+
+					$player->sendMessage(TC::getTranslation($player, 'behaviour-setup-complete', ["{ARENA_NAME}" => $arena->getMapName()]));
+				}, function(Player $player): void{
+					$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
+
+					$this->cleanupEvent($player);
+				});
+			}
+
+			$player->sendForm($form);
 		}, function(Player $player): void{
 			$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 

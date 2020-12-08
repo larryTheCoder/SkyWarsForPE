@@ -231,7 +231,7 @@ class ArenaImpl extends ArenaData {
 		$player->getInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();
 
-		if($this->getPlayerManager()->teamMode){
+		if($this->getPlayerManager()->teamMode && isset($this->originalNametag[$player->getName()])){
 			$player->setNameTag($this->originalNametag[$player->getName()]);
 			unset($this->originalNametag[$player->getName()]);
 		}
@@ -260,6 +260,13 @@ class ArenaImpl extends ArenaData {
 		}
 
 		parent::leaveArena($player, $onQuit);
+	}
+
+	/**
+	 * @param Player $player
+	 */
+	public function onSpectatorSelection(Player $player): void{
+		$this->getPlugin()->getPanel()->showSpectatorPanel($player, $this);
 	}
 
 	public function refillChests(): void{

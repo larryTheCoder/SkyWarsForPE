@@ -178,6 +178,20 @@ abstract class Arena implements ShutdownSequence {
 	}
 
 	/**
+	 * @param Player $player
+	 */
+	public function onKitSelection(Player $player): void{
+		// NOOP
+	}
+
+	/**
+	 * @param Player $player
+	 */
+	public function onSpectatorSelection(Player $player): void{
+		// NOOP
+	}
+
+	/**
 	 * Return the object where the players are being queued into
 	 * the arena, this storage unit stores player and spectators.
 	 *
@@ -454,6 +468,10 @@ abstract class Arena implements ShutdownSequence {
 
 	public static function getSpectatorItem(): Item{
 		return ItemFactory::get(ItemIds::PAPER)->setCustomName("§r§eTeleport to player");
+	}
+
+	public static function getKitSelector(): Item{
+		return ItemFactory::get(ItemIds::NETHER_STAR)->setCustomName("§r§aKits selection");
 	}
 
 	public function getScoreboard(): Scoreboard{

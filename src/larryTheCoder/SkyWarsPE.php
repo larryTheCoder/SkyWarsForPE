@@ -55,34 +55,27 @@ use pocketmine\utils\{Config, MainLogger, TextFormat};
  */
 class SkyWarsPE extends PluginBase {
 
-	const CONFIG_VERSION = 3;
+	private const CONFIG_VERSION = 3;
+	private const LOCALE_VERSION = 6;
 
 	/** @var SkyWarsPE|null */
-	public static $instance;
-
-	/** @var Config */
-	public $msg;
+	private static $instance;
 
 	/** @var SkyWarsCommand */
-	public $cmd;
-	/** @var EconomyAPI|null */
-	public $economy;
+	private $command;
+	/** @var bool */
+	private $crashed = true;
 
+	/** @var EconomyAPI|null */
+	private $economy;
 	/** @var ArenaManager */
 	private $arenaManager;
 	/** @var ArenaCage */
 	private $cage;
-
-	/** @var bool */
-	public $disabled;
 	/** @var FormManager */
-	public $panel;
+	private $panel;
 	/** @var PedestalManager */
-	public $pedestalManager;
-
-	public static function getInstance(): ?SkyWarsPE{
-		return self::$instance;
-	}
+	private $pedestalManager;
 
 	public function onLoad(): void{
 		self::$instance = $this;
@@ -112,7 +105,7 @@ class SkyWarsPE extends PluginBase {
 		foreach(glob($this->getDataFolder() . "language/*.yml") as $file){
 			$locale = new Config($file, Config::YAML);
 			$localeCode = basename($file, ".yml");
-			if($locale->get("config-version") < 5 && ($resource = $this->getResource($file)) !== null){
+			if($locale->get("config-version") < self::LOCALE_VERSION && ($resource = $this->getResource($file)) !== null){
 				$this->getServer()->getLogger()->info(Settings::$prefix . "§cLanguage '" . $localeCode . "' is old, using new one");
 				$this->saveResource("language/" . $localeCode . ".yml", true);
 
@@ -122,9 +115,6 @@ class SkyWarsPE extends PluginBase {
 			TranslationContainer::getInstance()->addTranslation($localeCode, $locale);
 		}
 	}
-
-	/** @var bool */
-	private $crashed = true;
 
 	public function onEnable(): void{
 		if(\Phar::running(true) === ""){
@@ -137,8 +127,6 @@ class SkyWarsPE extends PluginBase {
 
 			$this->getServer()->getLogger()->warning("You are using an experimental version of SkyWarsForPE. This build may seem to work but it will eventually crash your server soon.");
 		}
-		if($this->disabled) return;
-
 		$this->getServer()->getLogger()->info(Settings::$prefix . "§eStarting SkyWarsForPE modules...");
 
 		$this->checkPlugins();
@@ -150,7 +138,7 @@ class SkyWarsPE extends PluginBase {
 
 		LootGenerator::init();
 
-		$this->cmd = new SkyWarsCommand($this);
+		$this->command = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager();
 		$this->panel = new FormManager($this);
 		$this->cage = new ArenaCage($this);
@@ -206,12 +194,31 @@ class SkyWarsPE extends PluginBase {
 		}
 	}
 
+	public static function getInstance(): ?SkyWarsPE{
+		return self::$instance;
+	}
+
 	public function getArenaManager(): ArenaManager{
 		return $this->arenaManager;
 	}
 
 	public function getCage(): ArenaCage{
 		return $this->cage;
+	}
+
+	public function getPanel(): FormManager{
+		return $this->panel;
+	}
+
+	public function getPedestals(): PedestalManager{
+		return $this->pedestalManager;
+	}
+
+	/**
+	 * @return EconomyAPI|null
+	 */
+	public function getEconomy(){
+		return $this->economy;
 	}
 
 	public function onDisable(): void{
@@ -232,6 +239,6 @@ class SkyWarsPE extends PluginBase {
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool{
-		return $this->cmd->onCommand($sender, $command, $args);
+		return $this->command->onCommand($sender, $command, $args);
 	}
 }

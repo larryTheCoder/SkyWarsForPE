@@ -37,6 +37,7 @@ use larryTheCoder\arena\api\translation\TranslationContainer;
 use larryTheCoder\arena\logger\CombatEntry;
 use larryTheCoder\arena\logger\CombatLogger;
 use larryTheCoder\database\SkyWarsDatabase;
+use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
@@ -248,7 +249,7 @@ class EventListener extends ArenaListener {
 	public function onPlayerExecuteCommand(PlayerCommandPreprocessEvent $event): void{
 		$player = $event->getPlayer();
 
-		if(!in_array(strtolower($event->getMessage()), ['sw', 'skywars'], true)
+		if(!in_array(strtolower($event->getMessage()), Settings::$acceptedCommand, true)
 			&& $this->arena->getStatus() === ArenaState::STATE_ARENA_RUNNING
 			&& !$player->hasPermission("sw.command.bypass")){
 			$player->sendMessage(TranslationContainer::getTranslation($player, 'arena-command-forbidden'));

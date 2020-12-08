@@ -150,4 +150,26 @@ class ConfigManager {
 
 		return $this;
 	}
+
+	public function setTeamMode(bool $isTeam): ConfigManager{
+		$this->config->set("arena-mode", $isTeam ? 1 : 0);
+
+		return $this;
+	}
+
+	/**
+	 * @param int $maxPlayer
+	 * @param int $minTeams
+	 * @param int $maxTeams
+	 * @param int[] $teamColours
+	 * @return ConfigManager
+	 */
+	public function setTeamData(int $maxPlayer, int $minTeams, int $maxTeams, array $teamColours): ConfigManager{
+		$this->config->setNested("team-settings.players-per-team", $maxPlayer);
+		$this->config->setNested("team-settings.minimum-teams", $minTeams);
+		$this->config->setNested("team-settings.maximum-teams", $maxTeams);
+		$this->config->setNested("team-settings.team-colours", $teamColours);
+
+		return $this;
+	}
 }

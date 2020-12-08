@@ -33,7 +33,6 @@ namespace larryTheCoder\arena\api\listener;
 use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\ArenaImpl;
-use larryTheCoder\SkyWarsPE;
 use pocketmine\entity\Human;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -278,16 +277,21 @@ abstract class BasicListener implements Listener {
 		$p = $e->getPlayer();
 
 		if(($arena = $this->getArena($e->getPlayer())) !== null){
-			$status = $arena->getStatus();
 			$item = $p->getInventory()->getItemInHand();
-			if($status === ArenaState::STATE_WAITING || $status === ArenaState::STATE_STARTING){
-				if($item->equals(Arena::getLeaveItem())){
-					$arena->leaveArena($p);
 
-					$e->setCancelled();
-				}
-			}elseif($arena->getPlayerManager()->isSpectator($p) && $item->equals(Arena::getSpectatorItem())){
-				SkyWarsPE::getInstance()->panel->showSpectatorPanel($p, $arena);
+			// Unsafe method, hopefully the code will prevent these?
+			if($item->equals(Arena::getLeaveItem())){
+				$arena->leaveArena($p);
+
+				$e->setCancelled();
+			}elseif($item->equals(Arena::getKitSelector())){
+				$arena->onKitSelection($p);
+
+				$e->setCancelled();
+			}elseif($item->equals(Arena::getSpectatorItem())){
+				$arena->onSpectatorSelection($p);
+
+				$e->setCancelled();
 			}
 
 			if(!$e->isCancelled() && $arena->getEventListener()->onPlayerInteractEvent($e)){
