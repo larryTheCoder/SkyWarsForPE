@@ -4,7 +4,7 @@
 ###########################################################################################
 ---
 # No reason to edit this
-config-version: 6
+config-version: 7
 
 low-permission: "&eHmm, some new command, too bad its not available yet."
 no-permission: "&cYou don't have the right permission to do this."
@@ -147,6 +147,12 @@ scoreboard-state-4: "This section will be used the player has died."
 
 scoreboard-success: "&aSuccessfully setup the arena scoreboard configuration."
 
+kit-selection-1: "Select your kit."
+kit-selection-2: "Select one of the kits below."
+
+kit-removed: "%prefix&cYou removed your current kit"
+kit-selected: "%prefix&aYou have selected the &e{KIT_NAME}&a kit!"
+
 # Kill message
 death-message-void: "&7- &e{PLAYER} &cwere killed by void"
 death-message-suicide: "&7- &e{PLAYER} &cjust committed suicide."
@@ -175,7 +181,7 @@ settings-help: "&2/sw settings &l&5»&r&f Setup or modify the arena."
 setlobby-help: "&2/sw setlobby &l&5»&r&f Set the main lobby for the plugin."
 about-help: "&2/sw about &l&5»&r&f About and notes from author."
 npc-help: "&2/sw npc &l&5»&r&f Create an NPC for TopWinners."
-kit-help: "&2/sw kit &l&5»&r&f Show all of the available kits."
+list-help: "&2/sw list &l&5»&r&f List all running arenas in the server."
 
 # Command false usage help message
 start-usage: "&6Usage: &2/sw start &b[Arena Name]."

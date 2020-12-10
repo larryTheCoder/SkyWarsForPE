@@ -42,6 +42,7 @@ use larryTheCoder\database\SkyWarsDatabase;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
+use pocketmine\item\Potion;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
@@ -471,7 +472,7 @@ abstract class Arena implements ShutdownSequence {
 	}
 
 	public static function getKitSelector(): Item{
-		return ItemFactory::get(ItemIds::NETHER_STAR)->setCustomName("§r§aKits selection");
+		return ItemFactory::get(ItemIds::POTION, Potion::LEAPING)->setCustomName("§r§aKits selection");
 	}
 
 	public function getScoreboard(): Scoreboard{

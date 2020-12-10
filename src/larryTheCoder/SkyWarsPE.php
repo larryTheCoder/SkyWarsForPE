@@ -33,6 +33,7 @@ use larryTheCoder\commands\SkyWarsCommand;
 use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\panel\FormManager;
 use larryTheCoder\utils\{fireworks\entity\FireworksRocket,
+	KitManager,
 	LootGenerator,
 	npc\FakeHuman,
 	npc\PedestalManager,
@@ -56,7 +57,7 @@ use pocketmine\utils\{Config, MainLogger, TextFormat};
 class SkyWarsPE extends PluginBase {
 
 	private const CONFIG_VERSION = 3;
-	private const LOCALE_VERSION = 6;
+	private const LOCALE_VERSION = 7;
 
 	/** @var SkyWarsPE|null */
 	private static $instance;
@@ -76,6 +77,8 @@ class SkyWarsPE extends PluginBase {
 	private $panel;
 	/** @var PedestalManager */
 	private $pedestalManager;
+	/** @var KitManager|null */
+	private $kitManager = null;
 
 	public function onLoad(): void{
 		self::$instance = $this;
@@ -117,21 +120,22 @@ class SkyWarsPE extends PluginBase {
 	}
 
 	public function onEnable(): void{
+		$server = $this->getServer();
 		if(\Phar::running(true) === ""){
 			if(!class_exists("poggit\libasynql\libasynql")){
 				$this->getLogger()->error("libasynql library not found! Please refer to https://github.com/poggit/libasynql and install this first!");
-				$this->getServer()->getPluginManager()->disablePlugin($this);
+				$server->getPluginManager()->disablePlugin($this);
 
 				return;
 			}
 
-			$this->getServer()->getLogger()->warning("You are using an experimental version of SkyWarsForPE. This build may seem to work but it will eventually crash your server soon.");
+			$server->getLogger()->warning("You are using an experimental version of SkyWarsForPE. This build may seem to work but it will eventually crash your server soon.");
 		}
-		$this->getServer()->getLogger()->info(Settings::$prefix . "§eStarting SkyWarsForPE modules...");
+		$server->getLogger()->info(Settings::$prefix . "§eStarting SkyWarsForPE modules...");
 
 		$this->checkPlugins();
 
-		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+		$server->getPluginManager()->registerEvents(new EventListener($this), $this);
 
 		SkyWarsDatabase::getInstance()->createContext($this->getConfig()->get("database"));
 		SkyWarsDatabase::loadLobby();
@@ -143,6 +147,12 @@ class SkyWarsPE extends PluginBase {
 		$this->panel = new FormManager($this);
 		$this->cage = new ArenaCage($this);
 
+		if($server->getPluginManager()->getPlugin("EasyKits") !== null){
+			$this->kitManager = new KitManager();
+
+			$server->getLogger()->info(Settings::$prefix . TextFormat::GREEN . "EasyKits plugin found! The plugin will use start using it now.");
+		}
+
 		Entity::registerEntity(FireworksRocket::class, true, ["Firework", "minecraft:firework_rocket"]);
 		Entity::registerEntity(FakeHuman::class, true, ["FakeHuman", "skywars:npc"]);
 
@@ -151,7 +161,7 @@ class SkyWarsPE extends PluginBase {
 
 		$this->crashed = false;
 
-		$this->getServer()->getLogger()->info(Settings::$prefix . TextFormat::GREEN . "SkyWarsForPE has been enabled");
+		$server->getLogger()->info(Settings::$prefix . TextFormat::GREEN . "SkyWarsForPE has been enabled");
 	}
 
 	private function loadHumans(): void{
@@ -212,6 +222,10 @@ class SkyWarsPE extends PluginBase {
 
 	public function getPedestals(): PedestalManager{
 		return $this->pedestalManager;
+	}
+
+	public function getKitManager(): ?KitManager{
+		return $this->kitManager;
 	}
 
 	/**

@@ -22,6 +22,10 @@ The core itself uses a very basic principle in which it is async-capable, perfor
 This is the example of my work if you want to commission me, my prices are vary from $50-$200 in which depends on what
 type of work do you want me to do.
 
+## How to download?
+I personally recommend you to download .phar builds in our poggit builds, it is easier to keep track which version
+you are using that encountered a bug. Download link is [available here](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE). 
+
 ## Implemented features:
 - Asynchronous world loading/unloading. (Technically just fast)
 - GUI handled arena setup and settings menu.
@@ -30,6 +34,7 @@ type of work do you want me to do.
 - Faster load startup and less load on the server.
 - Arenas worlds compressed in Bzip2 format to ensure more disk storage/volumes.
 - NPC top winners, these NPC has fully written all over again to not crash.
+- Added kits compatibility with [EasyKits](https://github.com/AndreasHGK/EasyKits) plugin.
 - Mysql/Sqlite operations is asynchronous by libasynql
 - All the player stats will be stored centrally in sql/mysql database.
 - Scoreboard has been implemented, it can be configured in [scoreboard.yml](https://github.com/larryTheCoder/SkyWarsForPE/blob/master/resources/scoreboard.yml).
@@ -41,6 +46,11 @@ type of work do you want me to do.
 
 ## Configuration
 This section is to be done.
+
+## Using EasyKits for SkyWarsForPE.
+This is fairly easy, your kit will automatically be listed in the kit selection item. However,
+the kit will **only be listed** if the permission were set to `sw.internal`. Other than that, you're done configuring
+the kits for this plugin.
 
 ## Commands
 

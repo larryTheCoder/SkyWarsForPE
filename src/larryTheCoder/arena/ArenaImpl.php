@@ -134,6 +134,7 @@ class ArenaImpl extends ArenaData {
 
 	public function startArena(): void{
 		$pm = $this->getPlayerManager();
+		$kitManager = SkyWarsPE::getInstance()->getKitManager();
 
 		foreach($pm->getAlivePlayers() as $player){
 			// Set the player gamemode first
@@ -149,6 +150,10 @@ class ArenaImpl extends ArenaData {
 			if($player->getAttributeMap() != null){
 				$player->setHealth(Settings::$joinHealth);
 				$player->setFood(20);
+			}
+
+			if($kitManager !== null){
+				$kitManager->claimKit($player);
 			}
 		}
 
@@ -196,6 +201,10 @@ class ArenaImpl extends ArenaData {
 			"{TOTAL_PLAYERS}" => count($pm->getAlivePlayers()),
 			"{MAX_SIZE}"      => $this->maximumPlayers,
 		]);
+
+		if($this->getPlugin()->getKitManager() !== null){
+			$player->getInventory()->setItem(0, self::getKitSelector());
+		}
 	}
 
 	public function stopArena(): void{
@@ -262,6 +271,17 @@ class ArenaImpl extends ArenaData {
 		}
 
 		parent::leaveArena($player, $onQuit);
+	}
+
+	/**
+	 * @param Player $player
+	 */
+	public function onKitSelection(Player $player): void{
+		$kitManager = SkyWarsPE::getInstance()->getKitManager();
+
+		if($kitManager !== null){
+			$kitManager->sendKits($player);
+		}
 	}
 
 	/**

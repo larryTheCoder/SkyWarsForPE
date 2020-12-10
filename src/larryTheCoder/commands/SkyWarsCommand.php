@@ -110,9 +110,6 @@ final class SkyWarsCommand {
 					if($sender->hasPermission("sw.command.stats")){
 						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'stats-help'));
 					}
-					if($sender->hasPermission("sw.command.reload")){
-						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'reload-help'));
-					}
 					if($sender->hasPermission("sw.command.create")){
 						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'create-help'));
 					}
@@ -127,9 +124,6 @@ final class SkyWarsCommand {
 					}
 					if($sender->hasPermission("sw.command.npc")){
 						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'npc-help'));
-					}
-					if($sender->hasPermission("sw.command.kit")){
-						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'kit-help'));
 					}
 					if($sender->hasPermission("sw.command.cage")){
 						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'cage-help'));
@@ -163,7 +157,7 @@ final class SkyWarsCommand {
 						$this->consoleSender($sender);
 					}elseif(isset($args[1])){
 						$this->plugin->getPanel()->showStatsPanel($sender, $args[1]);
-					} else {
+					}else{
 						$this->plugin->getPanel()->showStatsPanel($sender, $sender);
 					}
 
