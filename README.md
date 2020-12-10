@@ -49,8 +49,12 @@ This section is to be done.
 
 ## Using EasyKits for SkyWarsForPE.
 This is fairly easy, your kit will automatically be listed in the kit selection item. However,
-the kit will **only be listed** if the permission were set to `sw.internal`. Other than that, you're done configuring
+the kit will **only be listed** if the permission were set to `sw.internal.*`. Other than that, you're done configuring
 the kits for this plugin.
+
+You can use this permission to only allows specific players to access this kit (i.e `sw.internal.*`). For an example,
+you can set Player A to only access this kit with permission `sw.internal.kit-a`, and Player B, `sw.internal.kit-b`.
+Player A cannot access Player's B kit and vice versa. 
 
 ## Commands
 

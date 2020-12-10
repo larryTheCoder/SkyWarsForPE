@@ -472,7 +472,7 @@ abstract class Arena implements ShutdownSequence {
 	}
 
 	public static function getKitSelector(): Item{
-		return ItemFactory::get(ItemIds::POTION, Potion::LEAPING)->setCustomName("§r§aKits selection");
+		return ItemFactory::get(ItemIds::BOOK)->setCustomName("§r§aKits selection");
 	}
 
 	public function getScoreboard(): Scoreboard{

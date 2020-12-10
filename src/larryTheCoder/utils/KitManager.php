@@ -81,19 +81,23 @@ class KitManager implements Listener {
 				$player->sendMessage(TC::getTranslation($player, 'kit-removed'));
 
 				unset($this->selectedKits[$player->getName()]);
-			}else{
+			}elseif($player->hasPermission($kit->getPermission())){
 				$player->sendMessage(TC::getTranslation($player, 'kit-selected', ["{KIT_NAME}" => $kit->getName()]));
 
 				$this->selectedKits[$player->getName()] = $kit;
+			}else{
+				$player->sendMessage(TC::getTranslation($player, 'kit-no-permission', ["{KIT_NAME}" => $kit->getName()]));
 			}
 		});
 
 		$selectedKit = $this->selectedKits[$player->getName()] ?? null;
 		foreach($kits as $kit){
 			if($selectedKit !== null && $selectedKit->getName() === $kit->getName()){
-				$form->append(TextFormat::GRAY . $kit->getName() . "\n" . TextFormat::GREEN . "Selected kit");
+				$form->append($kit->getName() . "\n" . TextFormat::GREEN . "Selected kit");
+			}elseif($player->hasPermission($kit->getPermission())){
+				$form->append($kit->getName());
 			}else{
-				$form->append(TextFormat::GRAY . $kit->getName());
+				$form->append(TextFormat::RED . $kit->getName());
 			}
 		}
 
@@ -110,7 +114,7 @@ class KitManager implements Listener {
 		foreach($kits as $kit){
 			// Filter a kit to use only a specific permission.
 			// This is to ensure that the kit we are using are for SW game only.
-			if($kit->getPermission() === "sw.internal"){
+			if(preg_match("#sw\.internal\.([A-Za-z0-9_]*)#", $kit->getPermission(), $matches) > 0){
 				$availKits[] = $kit;
 			}
 		}

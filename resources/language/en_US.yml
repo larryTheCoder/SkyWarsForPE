@@ -153,6 +153,8 @@ kit-selection-2: "Select one of the kits below."
 kit-removed: "%prefix&cYou removed your current kit"
 kit-selected: "%prefix&aYou have selected the &e{KIT_NAME}&a kit!"
 
+kit-no-permission: "$prefix&cYou do not have the permission to select &e{KIT_NAME}&a kit!"
+
 # Kill message
 death-message-void: "&7- &e{PLAYER} &cwere killed by void"
 death-message-suicide: "&7- &e{PLAYER} &cjust committed suicide."
