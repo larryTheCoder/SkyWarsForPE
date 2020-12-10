@@ -92,6 +92,8 @@ class CustomForm extends Form {
 	}
 
 	final public function handleResponse(Player $player, $data): void{
+		FormQueue::removeForm($player);
+
 		if($data === null){
 			if($this->onClose !== null){
 				($this->onClose)($player);

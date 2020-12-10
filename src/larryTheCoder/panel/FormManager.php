@@ -44,6 +44,7 @@ use larryTheCoder\forms\elements\Input;
 use larryTheCoder\forms\elements\Label;
 use larryTheCoder\forms\elements\Slider;
 use larryTheCoder\forms\elements\Toggle;
+use larryTheCoder\forms\FormQueue;
 use larryTheCoder\forms\MenuForm;
 use larryTheCoder\forms\ModalForm;
 use larryTheCoder\SkyWarsPE;
@@ -113,7 +114,7 @@ class FormManager implements Listener {
 			$player->sendMessage(TC::getTranslation($player, "panel-cancelled"));
 		});
 
-		$player->sendForm($form);
+		FormQueue::sendForm($player, $form);
 	}
 
 	public function showStatsPanel(Player $player, string $target): void{
@@ -134,7 +135,7 @@ class FormManager implements Listener {
 			], function(Player $player, CustomFormResponse $response): void{
 			});
 
-			$player->sendForm($form);
+			FormQueue::sendForm($player, $form);
 		});
 	}
 
@@ -226,7 +227,7 @@ class FormManager implements Listener {
 						}
 					}, TC::getTranslation($player, 'setup-arena-spawn-3'), TC::getTranslation($player, 'setup-arena-spawn-4'));
 
-				$player->sendForm($form);
+				FormQueue::sendForm($player, $form);
 			});
 
 			Server::getInstance()->getAsyncPool()->submitTask($task);
@@ -234,7 +235,7 @@ class FormManager implements Listener {
 			$pl->sendMessage(TC::getTranslation($pl, 'panel-cancelled'));
 		});
 
-		$player->sendForm($form);
+		FormQueue::sendForm($player, $form);
 	}
 
 	public function showSettingPanel(Player $player): void{
@@ -299,7 +300,7 @@ class FormManager implements Listener {
 				$this->cleanupEvent($player);
 			});
 
-			$player->sendForm($form);
+			FormQueue::sendForm($player, $form);
 		});
 		$form->setOnClose(function(Player $player): void{
 			$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
@@ -307,7 +308,7 @@ class FormManager implements Listener {
 			$this->cleanupEvent($player);
 		});
 
-		$player->sendForm($form);
+		FormQueue::sendForm($player, $form);
 	}
 
 	private function arenaBehaviour(Player $player, ArenaImpl $arena): void{
@@ -397,14 +398,14 @@ class FormManager implements Listener {
 				});
 			}
 
-			$player->sendForm($form);
+			FormQueue::sendForm($player, $form);
 		}, function(Player $player): void{
 			$player->sendMessage(TC::getTranslation($player, 'panel-cancelled'));
 
 			$this->cleanupEvent($player);
 		});
 
-		$player->sendForm($form);
+		FormQueue::sendForm($player, $form);
 	}
 
 	private function joinSignBehaviour(Player $player, ArenaImpl $arena): void{
@@ -431,7 +432,7 @@ class FormManager implements Listener {
 			$this->cleanupEvent($player);
 		});
 
-		$player->sendForm($form);
+		FormQueue::sendForm($player, $form);
 	}
 
 	public function setupSpawn(Player $player, ArenaImpl $arena): void{
@@ -501,7 +502,7 @@ class FormManager implements Listener {
 				$player->sendMessage(TC::getTranslation($player, 'arena-delete', ["{ARENA}" => $data->getMapName()]));
 			}, TC::getTranslation($p, 'arena-delete-1'), TC::getTranslation($p, 'arena-delete-2'));
 
-		$p->sendForm($form);
+		FormQueue::sendForm($p, $form);
 	}
 
 	private function setupScoreboard(Player $player, ArenaImpl $arena, int $id = -1): void{
@@ -534,7 +535,7 @@ class FormManager implements Listener {
 				$this->cleanupEvent($player);
 			});
 
-			$player->sendForm($form);
+			FormQueue::sendForm($player, $form);
 
 			return;
 		}
@@ -615,7 +616,7 @@ class FormManager implements Listener {
 			$this->cleanupEvent($player);
 		});
 
-		$player->sendForm($form);
+		FormQueue::sendForm($player, $form);
 	}
 
 	/**
@@ -690,7 +691,7 @@ class FormManager implements Listener {
 				$this->plugin->getCage()->setPlayerCage($player, $cages[$selected->getValue()]);
 			});
 
-			$player->sendForm($form);
+			FormQueue::sendForm($player, $form);
 		});
 	}
 

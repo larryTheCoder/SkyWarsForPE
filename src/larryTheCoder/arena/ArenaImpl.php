@@ -163,7 +163,9 @@ class ArenaImpl extends ArenaData {
 
 		$this->startedTime = time();
 
-		$this->setFlags(self::ARENA_INVINCIBLE_PERIOD, true);
+		if($this->arenaGraceTime > 0){
+			$this->setFlags(self::ARENA_INVINCIBLE_PERIOD, true);
+		}
 	}
 
 	public function getTimeStarted(): int{

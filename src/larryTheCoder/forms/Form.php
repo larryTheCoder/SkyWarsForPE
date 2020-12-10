@@ -34,9 +34,11 @@ use Closure;
 use function array_merge;
 
 abstract class Form implements \pocketmine\form\Form {
+
 	protected const TYPE_MODAL = "modal";
 	protected const TYPE_MENU = "form";
 	protected const TYPE_CUSTOM_FORM = "custom_form";
+
 	/** @var string */
 	private $title;
 	/** @var Closure|null */

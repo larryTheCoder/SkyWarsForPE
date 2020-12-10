@@ -113,6 +113,8 @@ class ModalForm extends Form {
 	}
 
 	final public function handleResponse(Player $player, $data): void{
+		FormQueue::removeForm($player);
+
 		if(!is_bool($data)){
 			throw new FormValidationException("Expected bool, got " . gettype($data));
 		}

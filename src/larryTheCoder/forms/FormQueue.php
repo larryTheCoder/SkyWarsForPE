@@ -1,8 +1,8 @@
 <?php
-/**
+/*
  * Adapted from the Wizardry License
  *
- * Copyright (c) 2015-2018 larryTheCoder and contributors
+ * Copyright (c) 2015-2020 larryTheCoder and contributors
  *
  * Permission is hereby granted to any persons and/or organizations
  * using this software to copy, modify, merge, publish, and distribute it.
@@ -26,49 +26,28 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace larryTheCoder\task;
+declare(strict_types = 1);
 
-use pocketmine\level\particle\GenericParticle;
-use pocketmine\level\Position;
-use pocketmine\math\Vector3;
-use pocketmine\scheduler\Task;
+namespace larryTheCoder\forms;
 
-class ParticleFlowTask extends Task {
+use pocketmine\Player;
 
-	/** @var Position */
-	private $location;
-	/** @var int */
-	private $time = 0;
-	/** @var float */
-	private $aroundHelix = 0;
-	/** @var int */
-	private $particleID;
+class FormQueue {
 
-	public function __construct(Position $loc, int $particleID){
-		$this->location = $loc;
-		$this->particleID = $particleID;
-	}
+	/** @var true[] */
+	private static $players = [];
 
-	/**
-	 * Actions to execute when run
-	 *
-	 * @param int $currentTick
-	 *
-	 * @return void
-	 */
-	public function onRun(int $currentTick){
-		$loc = $this->location;
-		$x = sin(-0.39269908169872414 * $this->time) * -0.5;
-		$y = 0.01 * $this->aroundHelix;
-		$z = cos(-0.39269908169872414 * $this->time) * -0.5;
-		$v = new Vector3($x, $y, $z);
-		$loc2 = $loc->add($v);
-		++$this->time;
-		++$this->aroundHelix;
-		if($this->aroundHelix >= 100){
-			$this->aroundHelix = 0.0;
+	public static function sendForm(Player $player, Form $form): void{
+		if(isset(self::$players[$player->getName()])){
+			return;
 		}
 
-		$this->location->getLevel()->addParticle(new GenericParticle($loc2, $this->particleID));
+		$player->sendForm($form);
+
+		self::$players[$player->getName()] = true;
+	}
+
+	public static function removeForm(Player $player): void{
+		unset(self::$players[$player->getName()]);
 	}
 }
