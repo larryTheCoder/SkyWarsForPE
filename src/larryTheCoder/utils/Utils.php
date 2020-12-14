@@ -57,6 +57,13 @@ class Utils {
 	/** @var int[][] */
 	public static $helixMathMap = [];
 
+	public static function oldRenameRecursive(string $file = "config.yml"): void{
+		$dataFolder = SkyWarsPE::getInstance()->getDataFolder();
+
+		if(file_exists($dataFolder . $file . ".old")) self::oldRenameRecursive($file . ".old");
+		rename($dataFolder . $file, $dataFolder . $file . ".old");
+	}
+
 	public static function sendDebug(string $log): void{
 		MainLogger::getLogger()->debug("SW-DEBUG: " . $log);
 	}

@@ -57,7 +57,7 @@ use pocketmine\utils\{Config, MainLogger, TextFormat};
 class SkyWarsPE extends PluginBase {
 
 	private const CONFIG_VERSION = 3;
-	private const LOCALE_VERSION = 7;
+	private const LOCALE_VERSION = 8;
 
 	/** @var SkyWarsPE|null */
 	private static $instance;
@@ -108,11 +108,15 @@ class SkyWarsPE extends PluginBase {
 		foreach(glob($this->getDataFolder() . "language/*.yml") as $file){
 			$locale = new Config($file, Config::YAML);
 			$localeCode = basename($file, ".yml");
-			if($locale->get("config-version") < self::LOCALE_VERSION && ($resource = $this->getResource($file)) !== null){
-				$this->getServer()->getLogger()->info(Settings::$prefix . "§cLanguage '" . $localeCode . "' is old, using new one");
+
+			if($locale->get("config-version") < self::LOCALE_VERSION && file_exists($this->getFile() . "resources/language/" . $localeCode . ".yml")){
+				$this->getServer()->getLogger()->info(Settings::$prefix . "§cLanguage '" . $localeCode . "' is outdated, saving a newer ones.");
+
+				Utils::oldRenameRecursive("language/" . $localeCode . ".yml");
+
 				$this->saveResource("language/" . $localeCode . ".yml", true);
 
-				fclose($resource);
+				$locale->reload();
 			}
 
 			TranslationContainer::getInstance()->addTranslation($localeCode, $locale);

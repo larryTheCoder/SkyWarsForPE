@@ -4,7 +4,7 @@
 ###########################################################################################
 ---
 # No reason to edit this
-config-version: 7
+config-version: 8
 
 low-permission: "&eHmm, some new command, too bad its not available yet."
 no-permission: "&cYou don't have the right permission to do this."
@@ -26,6 +26,10 @@ arena-startup: "&6Game starting in {TIME} seconds"
 arena-no-invincible: "&cYou are no longer invincible."
 arena-chest-refilled: "&eChests has been refilled!"
 arena-command-forbidden: "You cannot execute any command while in game."
+arena-moderation-on: "%prefix&aYou will now receiving all messages from the arenas."
+arena-moderation-off: "%prefix&cYou will no longer receiving messages from the arenas."
+
+moderation-pre-enable: "%prefix&aYou will now receiving all messages from the arenas. Use /sw moderation to disable this option."
 
 # Arena titles and subtitles translations
 countdown-cancel-title: "&cNot enough players"
@@ -153,7 +157,7 @@ kit-selection-2: "Select one of the kits below."
 kit-removed: "%prefix&cYou removed your current kit"
 kit-selected: "%prefix&aYou have selected the &e{KIT_NAME}&a kit!"
 
-kit-no-permission: "$prefix&cYou do not have the permission to select &e{KIT_NAME}&a kit!"
+kit-no-permission: "%prefix&cYou do not have the permission to select &e{KIT_NAME}&c kit!"
 
 # Kill message
 death-message-void: "&7- &e{PLAYER} &cwere killed by void"
@@ -189,6 +193,7 @@ list-help: "&2/sw list &l&5»&r&f List all running arenas in the server."
 start-usage: "&6Usage: &2/sw start &b[Arena Name]."
 stop-usage: "&6Usage: &2/sw start &b[Arena Name]."
 join-usage: "&6Usage: &2/sw start &b[Arena Name]."
+moderation-usage: "&6Usage: &2/sw moderation &b[On/Off]"
 
 setup-wrong-world-1: "&cYou are not in the right arena world, teleport back to level {ARENA_WORLD}"
 setup-wrong-world-2: "&cYou cannot perform this action in the arena world!"

@@ -33,6 +33,7 @@ use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\translation\TranslationContainer;
 use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\database\SkyWarsDatabase;
+use larryTheCoder\EventListener;
 use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
@@ -149,6 +150,24 @@ final class SkyWarsCommand {
 					}else{
 						$this->plugin->getPanel()->showSettingPanel($sender);
 					}
+					break;
+				case "moderation":
+					if(!$sender->hasPermission('sw.moderation')){
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
+					}elseif(!isset($args[1])){
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'moderation-usage'));
+					}else{
+						if(strtolower($args[1]) === "on"){
+							$sender->sendMessage(TranslationContainer::getTranslation($sender, 'arena-moderation-on'));
+
+							EventListener::$moderators[$sender->getName()] = true;
+						}else{
+							$sender->sendMessage(TranslationContainer::getTranslation($sender, 'arena-moderation-off'));
+
+							EventListener::$moderators[$sender->getName()] = false;
+						}
+					}
+
 					break;
 				case "stats":
 					if(!$sender->hasPermission("sw.command.stats")){

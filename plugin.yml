@@ -1,6 +1,6 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsPE
-version: "3.1.30-BETA"
+version: "3.1.32-BETA"
 api: 3.0.0+ALPHA9
 author: larryTheCoder
 website: https://github.com/larryTheCoder/SkyWarsForPE
@@ -16,51 +16,39 @@ commands:
     permission: sw.command
 permissions:
   sw.command.lobby:
-    description: back to main lobby
+    description: Teleport player back to main lobby.
     default: true
-  sw.acces:
-    description: access the game intrance
-    default: true
-  sw.editlobby:
-    description: prevent players from edit lobby
+  sw.moderation:
+    description: SkyWars moderation permission, allow moderation in-game.
     default: op
-  sw.sign:
-    description: join using signs 
-    default: true
   sw.command:
-    description: allow player to use all skywars command
+    description: Allow player to use all skywars command
     default: true
     children:
-     sw.command.random:
-        description: Randomly teleport to a game
+      sw.command.random:
+        description: Randomly teleport to a game.
         default: true
-     sw.command.help:
-        description: get SkyWars help menu
+      sw.command.help:
+        description: SkyWars help menu.
         default: true
-     sw.command.setlobby:
-        description: set SkyWars main lobby
+      sw.command.setlobby:
+        description: Set SkyWars main lobby location.
         default: op
-     sw.command.create:
-        description: create a SkyWars arenas
+      sw.command.create:
+        description: Create a new SkyWars arena.
         default: op
-     sw.command.reload:
-        description: reload skywars plugin
+      sw.command.start:
+        description: Start a SkyWars arena
         default: op
-     sw.command.start:
-        description: start a game
+      sw.command.stop:
+        description: Stop a SkyWars arena
         default: op
-     sw.command.stop:
-        description: stop a game
+      sw.command.set:
+        description: Settings an arena.
         default: op
-     sw.command.delete:
-        description: delete a arena
-        default: op
-     sw.command.set:
-        description: set an arena
-        default: op
-     sw.command.join:
-        description: join to arena
+      sw.command.join:
+        description: Join to an arena.
         default: true
-     sw.command.kick:
-        description: kick a player from game
+      sw.command.kick:
+        description: Kick a player from an arena.
         default: op

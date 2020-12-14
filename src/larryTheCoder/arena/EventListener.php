@@ -251,7 +251,7 @@ class EventListener extends ArenaListener {
 
 		if(!in_array(strtolower($event->getMessage()), Settings::$acceptedCommand, true)
 			&& $this->arena->getStatus() === ArenaState::STATE_ARENA_RUNNING
-			&& !$player->hasPermission("sw.command.bypass")){
+			&& !$player->hasPermission("sw.moderation")){
 			$player->sendMessage(TranslationContainer::getTranslation($player, 'arena-command-forbidden'));
 		}
 	}
