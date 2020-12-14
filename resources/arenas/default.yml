@@ -40,6 +40,9 @@ team-settings:
   # The minimum number of players needed
   # for the arena to start it.
   minimum-teams: 2
+  # Isolated cages, meaning that the cages set will be isolated
+  # than the other players, if false, the cage the team in will be used.
+  isolated-cages: true
   # Team colour pickup, only these colours will be chosen for in game colour modes,
   # Other than that, it will consider incomplete.
   # These are the numbers of each team, configured from top to bottom as team spawn.
@@ -57,7 +60,7 @@ team-settings:
   #		13: DARK_GREEN,
   #		14: RED,
   #		15: BLACK,
-  team-colours: [0, 1, 2]
+  team-colours: [ 0, 1, 2 ]
 
 # Lobby settings
 # [Game-API related features]

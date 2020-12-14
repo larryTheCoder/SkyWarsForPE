@@ -50,6 +50,7 @@ class ArenaCage {
 
 	public function __construct(SkyWarsPE $plugin){
 		$this->plugin = $plugin;
+
 		$this->loadCage();
 	}
 

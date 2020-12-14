@@ -96,7 +96,7 @@ class SkyWarsPE extends PluginBase {
 		$this->saveResource("config.yml");
 		$this->saveResource("arenas/default.yml");
 		$this->saveResource("looting-tables.json");
-		$this->saveResource("language/en_US.yml", true);
+		$this->saveResource("language/en_US.yml");
 
 		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
 		if($cfg->get("config-version") !== SkyWarsPE::CONFIG_VERSION){
