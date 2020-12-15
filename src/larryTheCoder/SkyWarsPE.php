@@ -37,15 +37,17 @@ use larryTheCoder\utils\{fireworks\entity\FireworksRocket,
 	LootGenerator,
 	npc\FakeHuman,
 	npc\PedestalManager,
+	permission\PluginPermission,
 	Settings,
 	Utils
 };
-use larryTheCoder\utils\cage\ArenaCage;
+use larryTheCoder\utils\cage\CageManager;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
 use pocketmine\plugin\{PluginBase};
+use pocketmine\Server;
 use pocketmine\utils\{Config, MainLogger, TextFormat};
 
 /**
@@ -57,7 +59,8 @@ use pocketmine\utils\{Config, MainLogger, TextFormat};
 class SkyWarsPE extends PluginBase {
 
 	private const CONFIG_VERSION = 3;
-	private const LOCALE_VERSION = 8;
+	private const LOCALE_VERSION = 9;
+	private const CAGES_VERSION = 2;
 
 	/** @var SkyWarsPE|null */
 	private static $instance;
@@ -71,8 +74,6 @@ class SkyWarsPE extends PluginBase {
 	private $economy;
 	/** @var ArenaManager */
 	private $arenaManager;
-	/** @var ArenaCage */
-	private $cage;
 	/** @var FormManager */
 	private $panel;
 	/** @var PedestalManager */
@@ -94,26 +95,43 @@ class SkyWarsPE extends PluginBase {
 		Utils::ensureDirectory("arenas/");
 		Utils::ensureDirectory("arenas/worlds");
 		$this->saveResource("config.yml");
+		$this->saveResource("cages.yml");
 		$this->saveResource("arenas/default.yml");
 		$this->saveResource("looting-tables.json");
 		$this->saveResource("language/en_US.yml");
 
+		// Load config file first.
 		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
 		if($cfg->get("config-version") !== SkyWarsPE::CONFIG_VERSION){
-			rename($this->getDataFolder() . "config.yml", $this->getDataFolder() . "config.yml.old");
+			Server::getInstance()->getLogger()->info(Settings::$prefix . TextFormat::YELLOW . "Your config is outdated. saving a newer config file.");
+
+			Utils::oldRenameRecursive();
 			$this->saveResource("config.yml");
+
+			$cfg->reload();
 		}
 		Settings::init(new Config($this->getDataFolder() . "config.yml", Config::YAML));
+
+		// Then load cages file.
+		$cfg = new Config($this->getDataFolder() . "cages.yml", Config::YAML);
+		if($cfg->get('version-id') < SkyWarsPE::CAGES_VERSION){
+			Server::getInstance()->getLogger()->info(Settings::$prefix . TextFormat::YELLOW . "Your cages config is outdated. saving a newer cages config.");
+
+			Utils::oldRenameRecursive("cages.yml");
+			$this->saveResource("cages.yml");
+
+			$cfg->reload();
+		}
+		CageManager::init($cfg);
 
 		foreach(glob($this->getDataFolder() . "language/*.yml") as $file){
 			$locale = new Config($file, Config::YAML);
 			$localeCode = basename($file, ".yml");
 
 			if($locale->get("config-version") < self::LOCALE_VERSION && file_exists($this->getFile() . "resources/language/" . $localeCode . ".yml")){
-				$this->getServer()->getLogger()->info(Settings::$prefix . "§cLanguage '" . $localeCode . "' is outdated, saving a newer ones.");
+				$this->getServer()->getLogger()->info(Settings::$prefix . TextFormat::YELLOW . "§cLanguage '" . $localeCode . "' is outdated, saving a newer locale config.");
 
 				Utils::oldRenameRecursive("language/" . $localeCode . ".yml");
-
 				$this->saveResource("language/" . $localeCode . ".yml", true);
 
 				$locale->reload();
@@ -140,6 +158,7 @@ class SkyWarsPE extends PluginBase {
 		$this->checkPlugins();
 
 		$server->getPluginManager()->registerEvents(new EventListener($this), $this);
+		$server->getPluginManager()->registerEvents(PluginPermission::getInstance(), $this);
 
 		SkyWarsDatabase::getInstance()->createContext($this->getConfig()->get("database"));
 		SkyWarsDatabase::loadLobby();
@@ -149,7 +168,6 @@ class SkyWarsPE extends PluginBase {
 		$this->command = new SkyWarsCommand($this);
 		$this->arenaManager = new ArenaManager();
 		$this->panel = new FormManager($this);
-		$this->cage = new ArenaCage($this);
 
 		if($server->getPluginManager()->getPlugin("EasyKits") !== null){
 			$this->kitManager = new KitManager();
@@ -214,10 +232,6 @@ class SkyWarsPE extends PluginBase {
 
 	public function getArenaManager(): ArenaManager{
 		return $this->arenaManager;
-	}
-
-	public function getCage(): ArenaCage{
-		return $this->cage;
 	}
 
 	public function getPanel(): FormManager{

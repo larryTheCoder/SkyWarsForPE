@@ -182,12 +182,13 @@ final class SkyWarsCommand {
 
 					break;
 				case "cage":
+				case "cages":
 					if(!$sender->hasPermission("sw.command.cage")){
 						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
 					}elseif(!$sender instanceof Player){
 						$this->consoleSender($sender);
 					}else{
-						$this->plugin->getPanel()->setupNPCCoordinates($sender);
+						$this->plugin->getPanel()->showChooseCage($sender);
 					}
 					break;
 				case "npc":

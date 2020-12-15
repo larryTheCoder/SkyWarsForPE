@@ -6,13 +6,16 @@
 # This is the cages yaml file for SkyWarsForPE!
 # This can be used to decorate the spawn-pedestals
 # The version of cages-yml
-version-id: 1
+version-id: 2
 
 # The cages section
-# This is an example of how the cage will be
-# look Like every layers
+# This is an example of how your cage structure will look like
+# The cages "key" name must be unique, it doesn't matter what name you put in this key.
 cages:
-  # This
+  # This is your default cages config, you can setup your own custom cage
+  # for cosmetic purposes. Permission will be ignored if "cage-default" is set to true.
+  # In such cases where users like you want to break this plugin, there is a failsafe when default cages
+  # not found in this list, which the plugin will prepares its own default cage.
   default:
     # The cage name
     cage-name: "Default"
@@ -36,9 +39,9 @@ cages:
     # The cage name
     cage-name: "Modern"
     # The cage permission
-    permission: ""
+    permission: "sw.cages.modern"
     # The cage price
-    cage-price: 0
+    cage-price: 500
     # The floor type of block
     floor: GLASS
     # The lower middle of block

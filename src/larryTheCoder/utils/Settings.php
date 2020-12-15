@@ -38,7 +38,7 @@ class Settings {
 	/** @var string */
 	public static $lang = "";
 	/** @var string */
-	public static $prefix = "";
+	public static $prefix = '§d[§eSkyWars§d] §a';
 	/** @var int */
 	public static $joinHealth = 20;
 	/** @var string[] */

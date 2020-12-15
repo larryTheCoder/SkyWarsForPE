@@ -1,6 +1,6 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsPE
-version: "3.1.32-BETA"
+version: "3.1.33-BETA"
 api: 3.0.0+ALPHA9
 author: larryTheCoder
 website: https://github.com/larryTheCoder/SkyWarsForPE
@@ -52,3 +52,6 @@ permissions:
       sw.command.kick:
         description: Kick a player from an arena.
         default: op
+      sw.command.cage:
+        description: Allow players to access kit selection form.
+        default: true

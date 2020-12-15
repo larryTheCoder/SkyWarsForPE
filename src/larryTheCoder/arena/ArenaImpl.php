@@ -41,6 +41,7 @@ use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\task\SkyWarsTask;
 use larryTheCoder\database\SkyWarsDatabase;
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\cage\CageManager as CageHandler;
 use larryTheCoder\utils\ConfigManager;
 use larryTheCoder\utils\LootGenerator;
 use larryTheCoder\utils\Settings;
@@ -183,7 +184,7 @@ class ArenaImpl extends ArenaData {
 		$player->setGamemode(Player::ADVENTURE);
 
 		// Build up the cage object.
-		$cage = $this->getPlugin()->getCage()->getPlayerCage($player);
+		$cage = CageHandler::getInstance()->getPlayerCage($player);
 		$spawnLoc = $this->getCageManager()->getCage($player);
 
 		$this->toRemove[$player->getName()] = $cage->build(Position::fromObject($spawnLoc, $this->getLevel()));

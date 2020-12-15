@@ -42,7 +42,6 @@ use larryTheCoder\database\SkyWarsDatabase;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
-use pocketmine\item\Potion;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;

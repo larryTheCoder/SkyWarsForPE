@@ -7,7 +7,7 @@
 
 [![Poggit-CI](https://poggit.pmmp.io/ci.shield/larryTheCoder/SkyWarsForPE/SkyWarsForPE)](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE) [![Donate](https://img.shields.io/badge/donate-PayPal-yellow.svg?style=flat-square)](http://www.paypal.me/Permeable)
 
-    Powered by Open Sourced code.
+    Powered by Open Sourced code, Our code comrade.
     Its time to burn those old fancy paid plugins and beat them in face!
 
 ## Introduction
@@ -22,9 +22,16 @@ The core itself uses a very basic principle in which it is async-capable, perfor
 This is the example of my work if you want to commission me, my prices are vary from $50-$200 in which depends on what
 type of work do you want me to do.
 
+*Well it would be nice if you star this project if it helps your server :)*
+
 ## How to download?
 I personally recommend you to download .phar builds in our poggit builds, it is easier to keep track which version
 you are using that encountered a bug. Download link is [available here](https://poggit.pmmp.io/ci/larryTheCoder/SkyWarsForPE/SkyWarsForPE). 
+
+### Running from source
+Running the code from source is not recommended. However, you can run this plugin from source with [DeVirion](https://poggit.pmmp.io/ci/poggit/devirion/DEVirion/dev:33).
+After installing DeVirion in `/plugins` path. Download [libasynql](https://poggit.pmmp.io/ci/poggit/libasynql/libasynql/dev:137) binaries, make sure it is in `master` branch and not `4.0`.
+Copy libasynql in `/virions` folder, and the plugin will start normally.
 
 ## Implemented features:
 - Asynchronous world loading/unloading. (Technically just fast)
@@ -45,9 +52,10 @@ you are using that encountered a bug. Download link is [available here](https://
 - Aesthetics sound effects in-game. 
 
 ## Configuration
-This section is to be done.
+Our [wikipage](https://github.com/larryTheCoder/SkyWarsForPE/wiki) will be updated frequently, so check out the page for more useful
+tips on how to configure the arena and so on. 
 
-## Using EasyKits for SkyWarsForPE.
+### Using EasyKits for SkyWarsForPE.
 This is fairly easy, your kit will automatically be listed in the kit selection item. However,
 the kit will **only be listed** if the permission were set to `sw.internal.*`. Other than that, you're done configuring
 the kits for this plugin.

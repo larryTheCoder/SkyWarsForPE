@@ -54,8 +54,8 @@ class LootGenerator {
 	}
 
 	/**
-	 * Attempt to generate item loot tables from a given data. This function is can uses internal
-	 * loot tables or external looting tables (Special thanks to @XenialDan).
+	 * Attempt to generate item loot tables from a given data. This function can use either internal
+	 * looting tables or external looting tables (Special thanks to @XenialDan).
 	 *
 	 * @param bool $useNatural
 	 * @return Item[]

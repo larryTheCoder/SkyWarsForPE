@@ -48,6 +48,7 @@ use larryTheCoder\forms\FormQueue;
 use larryTheCoder\forms\MenuForm;
 use larryTheCoder\forms\ModalForm;
 use larryTheCoder\SkyWarsPE;
+use larryTheCoder\utils\cage\CageManager;
 use larryTheCoder\utils\PlayerData;
 use larryTheCoder\utils\Settings;
 use pocketmine\block\Slab;
@@ -668,31 +669,38 @@ class FormManager implements Listener {
 	}
 
 	/**
-	 * Show to player the panel cages.
-	 * Decide their own private spawn pedestals
+	 * Send this player a cage selection form. They can choose what
+	 * cages they want to use for next game.
 	 *
 	 * @param Player $player
 	 */
 	public function showChooseCage(Player $player): void{
-		SkyWarsDatabase::getPlayerEntry($player, function(?PlayerData $pd) use ($player){
-			$form = new MenuForm("§cChoose Your Cage", "§aVarieties of cages available!");
+		$form = new MenuForm(TC::getTranslation($player, 'cage-selection-1'), TC::getTranslation($player, 'cage-selection-2'));
 
-			$cages = [];
-			foreach($this->plugin->getCage()->getCages() as $cage){
-				if((is_array($pd->cages) && !in_array(strtolower($cage->getCageName()), $pd->cages)) && $cage->getPrice() !== 0){
-					$form->append("§8" . $cage->getCageName() . "\n§e[Price $" . $cage->getPrice() . "]");
+		$selectedCage = CageManager::getInstance()->getPlayerCage($player);
+
+		$cages = [];
+		foreach(CageManager::getInstance()->getCages() as $cage){
+			if($selectedCage !== null && $selectedCage->getId() === $cage->getId()){
+				$form->append(TC::getTranslation($player, 'cage-selected', ["{CAGE_NAME}" => $cage->getCageName()]));
+			}elseif($cage->getPrice() > 0){
+				if(!$player->hasPermission($cage->getCagePermission())){
+					$form->append(TC::getTranslation($player, 'cage-buy', ["{CAGE_NAME}" => $cage->getCageName()]));
 				}else{
-					$form->append("§8" . $cage->getCageName() . "\n§aBought");
+					$form->append(TC::getTranslation($player, 'cage-bought', ["{CAGE_NAME}" => $cage->getCageName(), "{CAGE_PRICE}" => $cage->getPrice()]));
 				}
-				$cages[] = $cage;
+			}else{
+				$form->append(TC::getTranslation($player, 'cage-select', ["{CAGE_NAME}" => $cage->getCageName()]));
 			}
 
-			$form->setOnSubmit(function(Player $player, Button $selected) use ($cages): void{
-				$this->plugin->getCage()->setPlayerCage($player, $cages[$selected->getValue()]);
-			});
+			$cages[] = $cage;
+		}
 
-			FormQueue::sendForm($player, $form);
+		$form->setOnSubmit(function(Player $player, Button $selected) use ($cages): void{
+			CageManager::getInstance()->setPlayerCage($player, $cages[$selected->getValue()]);
 		});
+
+		FormQueue::sendForm($player, $form);
 	}
 
 	private function setMagicWand(Player $p): void{

@@ -4,7 +4,7 @@
 ###########################################################################################
 ---
 # No reason to edit this
-config-version: 8
+config-version: 9
 
 low-permission: "&eHmm, some new command, too bad its not available yet."
 no-permission: "&cYou don't have the right permission to do this."
@@ -198,6 +198,21 @@ moderation-usage: "&6Usage: &2/sw moderation &b[On/Off]"
 setup-wrong-world-1: "&cYou are not in the right arena world, teleport back to level {ARENA_WORLD}"
 setup-wrong-world-2: "&cYou cannot perform this action in the arena world!"
 world-teleport: "&aTeleporting you back to main world."
+
+cage-selection-1: "§8Cages selection form."
+cage-selection-2: "§aVarieties of cages available!"
+
+cage-selected: "§8{CAGE_NAME}\n§aSelected Cage"
+cage-buy: "§8{CAGE_NAME}\n§a[Price ${CAGE_PRICE}]"
+cage-bought: "§8{CAGE_NAME}\n§aCage Bought"
+case-select: "§8{CAGE_NAME}\n§aSelect Cage"
+
+cage-error-chosen: "&cYou already have bought this cage!"
+cage-chosen: "%prefix&aYou have chosen cage &e{CAGE_NAME}."
+
+economy-error: "&cThis feature is disabled due to no EconomyAPI plugin installed."
+economy-no-money: "&cYou don't have enough money to buy this"
+economy-internal: "&cCannot process your payment. Try again later"
 
 # Panel messages
 panel-cancelled: "&cYour request has been cancelled."

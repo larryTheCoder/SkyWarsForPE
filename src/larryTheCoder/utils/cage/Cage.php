@@ -28,17 +28,19 @@
 
 namespace larryTheCoder\utils\cage;
 
-use larryTheCoder\utils\Utils;
 use pocketmine\block\Block;
 use pocketmine\level\Position;
 
 /**
- * The cage main class
+ * The main cage class that is responsible in handling player's
+ * cages. It is responsible in building cages blocks to a specific location.
  *
- * Class Cage
  * @package larryTheCoder\cages
  */
 class Cage {
+
+	/** @var int */
+	private static $id = 0;
 
 	/** @var Block[] */
 	private $parts;
@@ -46,17 +48,28 @@ class Cage {
 	private $cageName;
 	/** @var int */
 	private $value;
+	/** @var string */
+	private $permission;
+	/** @var int */
+	private $identifier;
 
 	/**
-	 * Cage constructor.
 	 * @param string $name
 	 * @param int $value
+	 * @param string $permission
 	 * @param Block[] $parts
 	 */
-	public function __construct(string $name, int $value, array $parts){
+	public function __construct(string $name, int $value, string $permission, array $parts){
 		$this->parts = $parts;
 		$this->cageName = $name;
+		$this->permission = $permission;
 		$this->value = $value;
+
+		$this->identifier = self::$id++;
+	}
+
+	public function getId(): int{
+		return $this->identifier;
 	}
 
 	/**
@@ -64,8 +77,6 @@ class Cage {
 	 * @return Position[]
 	 */
 	public function build(Position $locate): array{
-		Utils::sendDebug("Building at position: {$locate->__toString()}");
-
 		$loc = clone $locate;
 		$this->clearObstacle(clone $locate);
 
@@ -110,6 +121,13 @@ class Cage {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCagePermission(): string{
+		return $this->permission;
 	}
 
 	/**

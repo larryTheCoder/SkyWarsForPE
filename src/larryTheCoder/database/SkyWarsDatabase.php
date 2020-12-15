@@ -104,7 +104,7 @@ class SkyWarsDatabase {
 	 */
 	public static function setPlayerData(Player $player, PlayerData $playerData): void{
 		self::getInstance()->database->executeChange('data.changeOffset', [
-			'dataOffset' => base64_encode(implode("%", $playerData->cages)) . ":" . base64_encode(implode("%", $playerData->kitId)),
+			'dataOffset' => implode(" ", $playerData->permissions),
 			'playerName' => $player->getName(),
 		]);
 	}
@@ -229,15 +229,7 @@ class SkyWarsDatabase {
 		$data->death = $rows['deaths'];
 		$data->wins = $rows['wins'];
 		$data->lost = $rows['lost'];
-
-		if(isset($rows["data"])){
-			$erData = explode(":", $rows["data"]);
-			$cages = explode("%", base64_decode($erData[0]));
-			$kits = explode("%", base64_decode($erData[1]));
-
-			$data->cages = $cages;
-			$data->kitId = $kits;
-		}
+		$data->permissions = isset($rows['data']) ? explode(" ", $rows['data']) : [];
 
 		return $data;
 	}

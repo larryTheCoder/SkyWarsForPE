@@ -44,11 +44,9 @@ class PlayerData {
 	/** @var integer */
 	public $time = 0;
 	/** @var string[] */
-	public $cages = [];
-	/** @var string[] */
-	public $kitId = [];
+	public $permissions;
 
 	public function __toString(){
-		return "PlayerData(player= " . $this->player . ",kill=" . $this->kill . ",death=" . $this->death . ",wins=" . $this->wins . ",lost=" . $this->lost . ", " . implode(":", $this->cages) . ", time=" . $this->time . ") ";
+		return "PlayerData(player= " . $this->player . ",kill=" . $this->kill . ",death=" . $this->death . ",wins=" . $this->wins . ",lost=" . $this->lost . ",permissions=" . implode(":", $this->permissions) . ", time=" . $this->time . ") ";
 	}
 }
