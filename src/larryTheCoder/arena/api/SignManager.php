@@ -117,7 +117,7 @@ class SignManager implements Listener, ShutdownSequence {
 
 		$qm = $this->arena->getQueueManager();
 
-		if($this->signPosition === null || !$b->equals($this->signPosition)){
+		if(!$b->equals($this->signPosition)){
 			return;
 		}
 
@@ -149,9 +149,12 @@ class SignManager implements Listener, ShutdownSequence {
 	}
 
 	public function processSign(): void{
-		// Do not perform anything if the tile is null
+		// Do not perform anything if the tile is null or the level is null.
 
-		$signTile = $this->signPosition->getLevel()->getTile($this->signPosition);
+		$level = $this->signPosition->getLevel();
+		if($level === null) return;
+
+		$signTile = $level->getTile($this->signPosition);
 
 		if(!($signTile instanceof Sign)) return;
 
