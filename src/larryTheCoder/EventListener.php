@@ -127,7 +127,7 @@ class EventListener extends BasicListener implements Listener {
 			foreach(self::$moderators as $playerName => $indicator){
 				$moderator = Server::getInstance()->getPlayer($playerName);
 
-				if($indicator && $moderator->isOnline() && $playerName !== $player->getName()){
+				if($indicator && $moderator !== null && $moderator->isOnline() && $playerName !== $player->getName()){
 					$moderator->sendMessage(TextFormat::GRAY . $arena->getMapName() . " > " . $event->getFormat());
 				}
 			}
