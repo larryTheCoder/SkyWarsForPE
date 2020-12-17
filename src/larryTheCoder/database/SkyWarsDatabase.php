@@ -137,40 +137,40 @@ class SkyWarsDatabase {
 	/**
 	 * Add players kills into the entry.
 	 *
-	 * @param Player $player
+	 * @param string $playerName
 	 */
-	public static function addKills(Player $player): void{
-		self::getInstance()->database->executeChange('data.addKills', ["playerName" => $player->getName()]);
+	public static function addKills(string $playerName): void{
+		self::getInstance()->database->executeChange('data.addKills', ["playerName" => $playerName]);
 	}
 
 	/**
 	 * Add player's death entry into database, since death and lose shares the same info,
 	 * we will add both of them into the entry.
 	 *
-	 * @param Player $player
+	 * @param string $playerName
 	 */
-	public static function addDeaths(Player $player): void{
-		self::getInstance()->database->executeChange('data.addDeaths', ["playerName" => $player->getName()]);
+	public static function addDeaths(string $playerName): void{
+		self::getInstance()->database->executeChange('data.addDeaths', ["playerName" => $playerName]);
 	}
 
 	/**
 	 * Add player's win entry into database.
 	 *
-	 * @param Player $player
+	 * @param string $playerName
 	 */
-	public static function addWins(Player $player): void{
-		self::getInstance()->database->executeChange('data.addWins', ["playerName" => $player->getName()]);
+	public static function addWins(string $playerName): void{
+		self::getInstance()->database->executeChange('data.addWins', ["playerName" => $playerName]);
 	}
 
 	/**
 	 * Add played since entry into database.
 	 *
-	 * @param Player $player
+	 * @param string $playerName
 	 * @param int $lastPlayed
 	 */
-	public static function addPlayedSince(Player $player, int $lastPlayed): void{
+	public static function addPlayedSince(string $playerName, int $lastPlayed): void{
 		self::getInstance()->database->executeChange('data.addTimer', [
-			"playerName" => $player->getName(),
+			"playerName" => $playerName,
 			"playerTime" => $lastPlayed,
 		]);
 	}

@@ -237,7 +237,7 @@ class ArenaImpl extends ArenaData {
 				}
 			}
 		}elseif($this->startedTime !== -1){
-			SkyWarsDatabase::addPlayedSince($player, time() - $this->startedTime);
+			SkyWarsDatabase::addPlayedSince($player->getName(), time() - $this->startedTime);
 		}
 
 		$player->getInventory()->clearAll();

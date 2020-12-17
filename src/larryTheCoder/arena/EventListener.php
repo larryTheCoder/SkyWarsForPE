@@ -180,7 +180,7 @@ class EventListener extends ArenaListener {
 
 				$pm->addKills($entry->attackFrom);
 
-				SkyWarsDatabase::addKills($pm->getOriginPlayer($entry->attackFrom));
+				SkyWarsDatabase::addKills($entry->attackFrom);
 			}else{
 				$pm->broadcastToPlayers(self::getDeathMessageById($event->getCause()), false, [
 					"{PLAYER}" => $pm->getOriginName($player->getName(), $player->getName()),
@@ -235,8 +235,8 @@ class EventListener extends ArenaListener {
 			}
 		}
 
-		SkyWarsDatabase::addDeaths($player);
-		SkyWarsDatabase::addPlayedSince($player, time() - $this->arena->startedTime);
+		SkyWarsDatabase::addDeaths($player->getName());
+		SkyWarsDatabase::addPlayedSince($player->getName(), time() - $this->arena->startedTime);
 
 		$player->getInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();

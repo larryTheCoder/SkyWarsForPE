@@ -81,7 +81,7 @@ class SkyWarsTask extends ArenaTickTask {
 			Utils::addSound($pm->getAllPlayers(), "random.levelup");
 
 			foreach($pm->getAlivePlayers() as $player){
-				SkyWarsDatabase::addWins($player);
+				SkyWarsDatabase::addWins($player->getName());
 
 				$player->sendMessage(TextFormat::GREEN . "Congratulations! You have won the match.");
 
