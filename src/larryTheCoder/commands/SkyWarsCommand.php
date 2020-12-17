@@ -30,6 +30,7 @@
 namespace larryTheCoder\commands;
 
 use larryTheCoder\arena\api\Arena;
+use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\translation\TranslationContainer;
 use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\database\SkyWarsDatabase;
@@ -141,6 +142,43 @@ final class SkyWarsCommand {
 						$this->plugin->getPanel()->setupArena($sender);
 					}
 
+					break;
+				case "forcestart":
+				case "start":
+				case "fs":
+					$manager = $this->plugin->getArenaManager();
+					if(!$sender->hasPermission('sw.command.forcestart')){
+						$sender->sendMessage(TranslationContainer::getTranslation($sender, 'no-permission'));
+						break;
+					}elseif(!$sender instanceof Player){
+						if(isset($args[1])){
+							$arena = $manager->getArena($args[1]);
+						}else{
+							$sender->sendMessage(TranslationContainer::getTranslation($sender, 'start-usage'));
+							break;
+						}
+					}else{
+						$arena = $manager->getPlayerArena($sender);
+						if(isset($args[1])){
+							$arena = $manager->getArena($args[1]);
+						}elseif($arena === null){
+							$sender->sendMessage(TranslationContainer::getTranslation($sender, 'start-usage'));
+							break;
+						}
+					}
+
+					if($arena === null){
+						$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-not-exist'));
+						break;
+					}elseif($arena->hasFlags(Arena::ARENA_OFFLINE_MODE)){
+						$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-hibernation'));
+					}elseif($arena->getStatus() < ArenaState::STATE_ARENA_RUNNING){
+						$arena->setStatus(ArenaState::STATE_ARENA_RUNNING);
+
+						$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-started', ["{ARENA}" => $arena->getMapName()]));
+					}else{
+						$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-running'));
+					}
 					break;
 				case "settings":
 					if(!$sender->hasPermission('sw.command.set')){

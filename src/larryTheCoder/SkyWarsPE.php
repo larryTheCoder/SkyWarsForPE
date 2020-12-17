@@ -58,8 +58,8 @@ use pocketmine\utils\{Config, MainLogger, TextFormat};
  */
 class SkyWarsPE extends PluginBase {
 
-	private const CONFIG_VERSION = 3;
-	private const LOCALE_VERSION = 9;
+	private const CONFIG_VERSION = 4;
+	private const LOCALE_VERSION = 10;
 	private const CAGES_VERSION = 2;
 
 	/** @var SkyWarsPE|null */

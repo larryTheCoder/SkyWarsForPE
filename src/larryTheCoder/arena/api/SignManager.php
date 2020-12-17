@@ -33,12 +33,15 @@ namespace larryTheCoder\arena\api;
 use larryTheCoder\arena\api\impl\ArenaState;
 use larryTheCoder\arena\api\impl\ShutdownSequence;
 use larryTheCoder\arena\api\translation\TranslationContainer;
+use pocketmine\block\BlockIds;
 use pocketmine\block\StainedGlass;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\level\Position;
+use pocketmine\math\Vector3;
+use pocketmine\Server;
 use pocketmine\tile\Sign;
 use pocketmine\utils\TextFormat;
 
@@ -47,8 +50,14 @@ use pocketmine\utils\TextFormat;
  */
 class SignManager implements Listener, ShutdownSequence {
 
-	/** @var Position */
+	/** @var bool */
+	public static $blockStatus = true;
+
+	/** @var Vector3 */
 	private $signPosition;
+	/** @var string */
+	private $signLevelName;
+
 	/** @var Arena */
 	private $arena;
 	/** @var string */
@@ -68,8 +77,8 @@ class SignManager implements Listener, ShutdownSequence {
 		$this->arena = $arena;
 		$this->prefix = $prefix;
 
-
-		$this->signPosition = $tilePosition;
+		$this->signPosition = $tilePosition->asVector3();
+		$this->signLevelName = $tilePosition->getLevel()->getFolderName();
 	}
 
 	private static function toReadable(Arena $arena): string{
@@ -117,7 +126,7 @@ class SignManager implements Listener, ShutdownSequence {
 
 		$qm = $this->arena->getQueueManager();
 
-		if(!$b->equals($this->signPosition)){
+		if(!$b->equals($this->signPosition) || $b->getLevel()->getFolderName() !== $this->signLevelName){
 			return;
 		}
 
@@ -149,9 +158,8 @@ class SignManager implements Listener, ShutdownSequence {
 	}
 
 	public function processSign(): void{
-		// Do not perform anything if the tile is null or the level is null.
-
-		$level = $this->signPosition->getLevel();
+		// Always retrieve freshly new level, in case it was unloaded last time.
+		$level = Server::getInstance()->getLevelByName($this->signLevelName);
 		if($level === null) return;
 
 		$signTile = $level->getTile($this->signPosition);
@@ -187,29 +195,44 @@ class SignManager implements Listener, ShutdownSequence {
 		}
 
 		// Block statuses.
-		$level = $this->signPosition->getLevel();
+		if(self::$blockStatus){
+			$block = $this->getBlockStatus();
+			$signBlock = $signTile->getBlock();
 
-		$block = $this->getBlockStatus();
-		$sign = $signTile->getBlock();
-		$vec = $sign->getSide($sign->getDamage() ^ 0x01);
-		if($level->getBlock($vec)->getId() === $block->getId() && $level->getBlock($vec)->getDamage() === $block->getDamage()){
-			return;
+			if($signBlock->getId() === BlockIds::WALL_SIGN){
+				$statusBlock = $signBlock->getSide($signBlock->getDamage() ^ 0x01);
+				if($level->getBlock($statusBlock)->getId() === $block->getId() && $level->getBlock($statusBlock)->getDamage() === $block->getDamage()){
+					return;
+				}
+
+				$level->setBlock($statusBlock, $block);
+			}
 		}
-
-		$level->setBlock($vec, $block);
 	}
 
 	public function onBlockBreakEvent(BlockBreakEvent $event): void{
 		$block = $event->getBlock();
 
-		if($block->equals($this->signPosition)) $event->setCancelled();
+		if($block->getLevel()->getFolderName() === $this->signLevelName){
+			$level = $block->getLevel();
 
-		$signTile = $this->signPosition->getLevel()->getTile($this->signPosition);
-		if(!($signTile instanceof Sign)) return;
-		$sign = $signTile->getBlock();
-
-		$vec = $sign->getSide($sign->getDamage() ^ 0x01);
-		if($block->equals($vec)) $event->setCancelled();
+			if($block->equals($this->signPosition)){
+				$event->setCancelled();
+			}else{
+				$signBlock = $level->getBlock($this->signPosition);
+				if($signBlock->getId() === BlockIds::WALL_SIGN){
+					$statusBlock = $signBlock->getSide($signBlock->getDamage() ^ 0x01);
+					if($block->equals($statusBlock)){
+						$event->setCancelled();
+					}
+				}elseif($signBlock->getId() === BlockIds::SIGN_POST){
+					$blockUnder = $signBlock->getSide(Vector3::SIDE_DOWN);
+					if($block->equals($blockUnder)){
+						$event->setCancelled();
+					}
+				}
+			}
+		}
 	}
 
 	private function getBlockStatus(): StainedGlass{

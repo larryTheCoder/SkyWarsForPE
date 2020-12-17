@@ -4,7 +4,7 @@
 ###########################################################################################
 ---
 # No reason to edit this
-config-version: 9
+config-version: 10
 
 low-permission: "&eHmm, some new command, too bad its not available yet."
 no-permission: "&cYou don't have the right permission to do this."
@@ -14,6 +14,7 @@ arena-running: "&cThe arena is currently running!"
 arena-delete: "&cDeleted the arena &d{ARENA}."
 arena-exists: "&cThe arena with that name already exists!"
 arena-not-exist: "&cThe arena doesn't exists!"
+arena-hibernation: "&cThe arena is currently in hibernation mode!"
 
 message-disconnected: "&6{PLAYER}&c has disconnected."
 message-left: "&6{PLAYER}&c has left the game.."
@@ -205,7 +206,7 @@ cage-selection-2: "§aVarieties of cages available!"
 cage-selected: "§8{CAGE_NAME}\n§aSelected Cage"
 cage-buy: "§8{CAGE_NAME}\n§a[Price ${CAGE_PRICE}]"
 cage-bought: "§8{CAGE_NAME}\n§aCage Bought"
-case-select: "§8{CAGE_NAME}\n§aSelect Cage"
+cage-select: "§8{CAGE_NAME}\n§aSelect Cage"
 
 cage-error-chosen: "&cYou already have bought this cage!"
 cage-chosen: "%prefix&aYou have chosen cage &e{CAGE_NAME}."

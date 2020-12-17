@@ -5,7 +5,7 @@
 ---
 # Config version node. Unique Config name.
 # No reason to edit this
-config-version: 3
+config-version: 4
 
 # General in-game configuration.
 general:
@@ -24,6 +24,9 @@ general:
   # Sure that player can use the command in game
   # and making sure that no cheat while in game.
   accepted-cmd: "leave:stats:kits"
+  # Enable block statuses, it can be disabled if you do not want
+  # this feature enabled.
+  enable-block-status: false
 
 # Database configuration for SkyWars.
 database:

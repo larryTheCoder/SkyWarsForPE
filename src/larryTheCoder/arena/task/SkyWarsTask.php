@@ -86,6 +86,8 @@ class SkyWarsTask extends ArenaTickTask {
 				$player->sendMessage(TextFormat::GREEN . "Congratulations! You have won the match.");
 
 				$arena->unsetPlayer($player);
+
+				$player->getInventory()->setItem(8, Arena::getLeaveItem());
 			}
 		}elseif($this->timeElapsed === 5){
 			// Execute various commands, this will be ran outside arena match.

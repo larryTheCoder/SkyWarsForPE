@@ -28,6 +28,7 @@
 
 namespace larryTheCoder\utils;
 
+use larryTheCoder\arena\api\SignManager;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 
@@ -54,6 +55,7 @@ class Settings {
 		self::$prefix = str_replace("&", "§", $general['prefix']);
 		self::$joinHealth = $general['join-health'];
 		self::$acceptedCommand = array_merge(explode(":", $general['accepted-cmd']), ['sw', 'skywars']);
+		SignManager::$blockStatus = (bool)$general['enable-block-status'];
 
 		# ============ GENERALS CONFIG ============
 
