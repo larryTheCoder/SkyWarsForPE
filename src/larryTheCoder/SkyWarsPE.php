@@ -76,8 +76,8 @@ class SkyWarsPE extends PluginBase {
 	private $arenaManager;
 	/** @var FormManager */
 	private $panel;
-	/** @var PedestalManager */
-	private $pedestalManager;
+	/** @var PedestalManager|null */
+	private $pedestalManager = null;
 	/** @var KitManager|null */
 	private $kitManager = null;
 
@@ -238,7 +238,7 @@ class SkyWarsPE extends PluginBase {
 		return $this->panel;
 	}
 
-	public function getPedestals(): PedestalManager{
+	public function getPedestals(): ?PedestalManager{
 		return $this->pedestalManager;
 	}
 
@@ -260,7 +260,9 @@ class SkyWarsPE extends PluginBase {
 			Utils::unLoadGame();
 			SkyWarsDatabase::shutdown();
 
-			$this->pedestalManager->closeAll();
+			if($this->pedestalManager !== null){
+				$this->pedestalManager->closeAll();
+			}
 
 			$this->getServer()->getLogger()->info(Settings::$prefix . TextFormat::RED . 'SkyWarsForPE has disabled');
 		}catch(\Throwable $error){

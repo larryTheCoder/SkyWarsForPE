@@ -109,7 +109,15 @@ class FakeHuman extends Human {
 	}
 
 	private function fetchData(): void{
-		$object = SkyWarsPE::getInstance()->getPedestals()->getPedestalObject($this->levelPedestal);
+		$pedestal = SkyWarsPE::getInstance()->getPedestals();
+		if($pedestal === null && !$this->isFlaggedForDespawn()){
+			$this->flagForDespawn();
+
+			return;
+		}
+
+		$object = $pedestal->getPedestalObject($this->levelPedestal);
+
 
 		// Send the skin (Only use the .dat skin data)
 		if(file_exists(Server::getInstance()->getDataPath() . "players/" . strtolower($object[0]) . ".dat")){
