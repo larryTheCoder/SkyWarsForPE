@@ -277,6 +277,8 @@ abstract class Arena implements ShutdownSequence {
 		$task = new AsyncDirectoryDelete([$this->lobbyLevel, $this->level], function(){
 			$this->setFlags(self::ARENA_OFFLINE_MODE, true);
 
+			$this->level = null;
+			$this->lobbyLevel = null;
 			$this->deleteTimeout = 0;
 		});
 		Server::getInstance()->getAsyncPool()->submitTask($task);

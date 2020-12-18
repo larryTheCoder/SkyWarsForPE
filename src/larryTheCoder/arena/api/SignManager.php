@@ -213,9 +213,8 @@ class SignManager implements Listener, ShutdownSequence {
 	public function onBlockBreakEvent(BlockBreakEvent $event): void{
 		$block = $event->getBlock();
 
-		if($block->getLevel()->getFolderName() === $this->signLevelName){
-			$level = $block->getLevel();
-
+		// How the hell this event hold a reference to unloaded level???
+		if(($level = $block->getLevel()) !== null && $level->getFolderName() === $this->signLevelName){
 			if($block->equals($this->signPosition)){
 				$event->setCancelled();
 			}else{
