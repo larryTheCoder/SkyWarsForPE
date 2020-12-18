@@ -1,0 +1,229 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+---
+# No reason to edit this
+config-version: 10
+
+low-permission: "&eХм, какая-то новая команда, жаль, что она еще не доступна!"
+no-permission: "&cУ вас нет на это разрешения!"
+
+# Arena-Game behaviour language.
+arena-running: "&cАрена в настоящее время запущена!"
+arena-delete: "&cУдалена арена &d{ARENA}!"
+arena-exists: "&cАрена с таким названием уже существует!"
+arena-not-exist: "&cАрены не существует!"
+arena-hibernation: "&cАрена в данный момент находится в режиме гибернации!"
+
+message-disconnected: "&6{PLAYER}&c отключился!"
+message-left: "&6{PLAYER}&c покинул игру!"
+
+arena-disabled: "&cАрена временно отключена, попробуйте позже!"
+arena-crashed: "&cАрена сломалась! Попросите владельца сервера проверить журналы сервера!"
+arena-in-queue: "&6Вы стоите в очереди на {ARENA_NAME}, пожалуйста подождите!"
+arena-join: "&6{PLAYER}&e присоединился к матчу (&b{TOTAL_PLAYERS}&e/&b{MAX_SIZE}&e)"
+arena-startup: "&6Игра начнется через {TIME} сек!"
+arena-no-invincible: "&cТы теперь уязвим!"
+arena-chest-refilled: "&eСундуки были вновь наполнены!"
+arena-command-forbidden: "Вы не можете выполнить ни одной команды во время игры!"
+arena-moderation-on: "%prefix&aТеперь вы будете получать все сообщения с арен!"
+arena-moderation-off: "%prefix&cВы больше не будете получать сообщения с арен!"
+
+moderation-pre-enable: "%prefix&aТеперь вы будете получать все сообщения с арен. Используйте /sw moderation, чтобы отключить эту опцию!"
+
+# Arena titles and subtitles translations
+countdown-cancel-title: "&cНе хватает игроков!"
+countdown-cancel-subtitle: "&cОбратный отсчет был отменен!"
+countdown-starting-title: "&6Старт через"
+countdown-starting-subtitle: ""
+countdown-started-title: "&cМатч начался!"
+countdown-started-subtitle: ""
+
+died-title: "&c&lТЫ УМЕР!"
+died-subtitle: "&7Теперь вы зритель!"
+
+# Command messages, Here the messages
+arena-unavailable: "&cНет доступной арены, пожалуйста, попробуйте еще раз позже!"
+arena-started: "&aСтарт арены &d{ARENA}!"
+main-lobby-set: "&aУспешно установите это место как лобби СкайВарс!"
+no-world: "&cК сожалению, у вас не осталось никаких миров, чтобы создать арену!"
+command-setlobby-inarena: "&cВы не можете выполнить эту команду на арене!"
+use-in-arena: "&cПожалуйста, используйте эту команду на арене!"
+
+stats-1: "&a{PLAYER} статистика"
+stats-2: "&6Ник: &f{DATA}"
+stats-3: "&6Убийства: &f{DATA}"
+stats-4: "&6Смерти: &f{DATA}"
+stats-5: "&6К/Д: &f{DATA}"
+stats-6: "&6Победы: &f{DATA}"
+stats-7: "&6Поражения: &f{DATA}"
+
+setup-choose-arena: "&aСначала выберите свою арену!"
+
+settings-arena-1: "Настройки для арены {ARENA_NAME}"
+settings-arena-2: "Настройка спавна арены"
+settings-arena-3: "Настройка спавна зрителя"
+settings-arena-4: "Настройка поведения арены"
+settings-arena-5: "Установить поведение таблички арены"
+settings-arena-6: "Установить позицию таблички арены"
+settings-arena-7: "Настройки табла игры"
+settings-arena-8: "Редактировать этот мир"
+settings-arena-9: "&cУдалить эту арену!"
+
+behaviour-setup-1: "Настройки арены!"
+behaviour-setup-2: "&eВключить арену?"
+behaviour-setup-3: "&eУстановить время неуязвимости"
+behaviour-setup-4: "&eВключить режим зриетля?"
+behaviour-setup-5: "&eВключить командный режим?"
+behaviour-setup-6: "&eЗапуск при заполнении?"
+
+team-setup-1: 'Настройки командного режима'
+team-setup-2: 'Игроки в команде'
+team-setup-3: 'Минимум команд'
+team-setup-4: 'Максимум команд'
+team-setup-5: 'Цвета команд'
+
+team-error-1: '&cОшибка настройки команды, должна быть целым числом в диапазоне 0-15 и разделена `;`'
+team-error-2: '&cВаш настроенные командный цвет(а) меньше, чем ваши максимальные команды.'
+
+solo-setup-1: "Настройки соло команд"
+solo-setup-2: "Минимум игроков"
+solo-setup-3: "Максимум игроков"
+
+behaviour-setup-complete: "&aУспешно обновлена арена &e{ARENA_NAME}"
+
+behaviour-sign-1: "&eНастройка таблички арены"
+behaviour-sign-2: "&aДобро пожаловать в настройку таблички арены. Во-первых, прежде чем вы что-либо сделаете, вам, возможно, потребуется знать..."
+behaviour-sign-3: "&eСтатусы строки\n&a &b &c = вы можете использовать цвет с &\n%alive = количество игроков в игре\n%dead = количество погибших игроков\n%status = статус игры\n%world = название мира арены\n%max = максимальное количество игроков на арене"
+behaviour-sign-4: "&aSign Placeholder 1"
+behaviour-sign-5: "&aSign Placeholder 2"
+behaviour-sign-6: "&aSign Placeholder 3"
+behaviour-sign-7: "&aSign Placeholder 4"
+behaviour-sign-complete: "&aУспешно обновленные строки таблички арены для &e{ARENA_NAME}"
+
+setup-arena-spawn: "Теперь вы можете настроить позиции спавна арены, использовать Огненный стержень и сломать блок, чтобы установить позицию, изменения, сделанные в этом мире, будут отброшены!"
+setup-arena-spectator: "Теперь вы можете установить позицию зрителя арены, использовать Огненный стержень и сломать блок, чтобы установить эту позицию, изменения, сделанные в этом мире, будут отброшены!"
+setup-arena-joinsign: "Теперь вы можете настроить позицию знака Arena join, использовать Огненный стержень и сломать блок, чтобы установить эту позицию!"
+setup-npc: "Теперь вы можете настроить позицию NPC, использовать Огненный стержень и сломать блок, чтобы установить эту позицию!"
+edit-world: "Теперь вы можете безопасно редактировать этот мир, любые изменения в этом мире будут сохранены!"
+
+arena-delete-1: "&cУдалить"
+arena-delete-2: "Отменить"
+arena-delete-confirm: "&cВы уверены, что выполните это действие? Удаление арены приведет к удалению конфигурации арены и вашего мира!"
+
+setup-scoreboard: ""
+
+spectator-select1: "Выберите имя игрока"
+spectator-select2: "Выберите игрока для просмотра"
+spectator-exit: "&cВыход"
+spectator-not-ingame: "&cВы больше не на арене!"
+spectator-player-left: "&cЭтого игрока больше нет на арене!"
+
+setup-arena-1: "&5Настройки СкайВарс!"
+setup-arena-2: "&6Название вашей Арены!"
+setup-arena-3: "&6Выберите свой мир для арены!"
+setup-arena-4: "&eМаксимум игроков"
+setup-arena-5: "&eМинимум игроков"
+setup-arena-6: "&7Режим зрителя"
+setup-arena-7: "&7Запуск при заполнении"
+
+setup-arena-spawn-1: "Настроить спавн?"
+setup-arena-spawn-2: "&aВозможно, вам придется настроить положение спавна арены, чтобы система могла включить арену намного быстрее!"
+setup-arena-spawn-3: "Настроить спавн арены!"
+setup-arena-spawn-4: "&cНастроить позже!"
+
+setup-later: "&aВы можете настроить это позже with /sw settings"
+
+no-data: "&cЭтот игрок не существует в базе данных!"
+
+form-error-1: 'Запрошенный вами идентификатор недействителен, и вы не можете выполнить эту команду'
+
+scoreboard-button-1: "Экран ожидания игры"
+scoreboard-button-2: "Экран игры"
+scoreboard-button-3: "Экран конца игры"
+scoreboard-button-4: "Экран зрителя"
+scoreboard-button-5: "Выход"
+
+scoreboard-state-1: "Этот раздел будет использоваться во время состояния ожидания!"
+scoreboard-state-2: "Этот раздел будет использоваться после запуска арены, но без каких-либо команд!"
+scoreboard-state-3: "Этот раздел будет использоваться, когда игра закончится!"
+scoreboard-state-4: "Этот раздел будет использоваться после смерти игрока!"
+
+scoreboard-success: "&aУспешно настроена конфигурация табла арены!"
+
+kit-selection-1: "Выберите свой кит!"
+kit-selection-2: "Выберите один из приведенных ниже китов!"
+
+kit-removed: "%prefix&cВы удалили свой текущий кит"
+kit-selected: "%prefix&aВы выбрали &e{KIT_NAME}&a кит!"
+
+kit-no-permission: "%prefix&cУ вас нет разрешения на выбор &e{KIT_NAME}&c кита!"
+
+# Kill message
+death-message-void: "&7- &e{PLAYER} &cбыл убит пропастью"
+death-message-suicide: "&7- &e{PLAYER} &cтолько что покончил с собой!"
+death-message-suffocated: "&7- &e{PLAYER} &cзадохнулся насмерть!"
+death-message-burned: "&7- &e{PLAYER} &cбыл сожжен заживо!"
+death-message-catused: "&7- &e{PLAYER} &cубит кактусом. Серьезно?"
+death-message-fall: "&7- &e{PLAYER} &cпришлось упасть с неба!"
+death-message-toasted: "&7- &e{PLAYER} &cбыл поджарен лавой"
+death-message-drowned: "&7- &e{PLAYER} &cутонул"
+death-message-nature: "&7- &e{PLAYER} &cпогиб своей смертью"
+death-message-explode: "&7- &e{PLAYER} &cвзорвался на куски"
+death-message-magic: "&7- &e{PLAYER} &cбыл убит какой-то магией"
+death-message-unknown: "&7- &e{PLAYER} является членом иллюминатов"
+death-message: "&7- &e{PLAYER} &cбыл убит &e{KILLER}"
+
+# Command help message
+help-main: "&cПожалуйста, используйте /sw help для получения списка команд"
+lobby-help: "&2/sw leave &l&5»&r&f Телепортация в лобби!"
+random-help: "&2/sw random &l&5»&r&f Случайным образом телепортироваться на арену!"
+stats-help: "&2/sw stats &l&5»&r&f Показать свой игровой статус!"
+reload-help: "&2/sw reload &l&5»&r&f Перезагрузите плагин, сделать новый старт!"
+create-help: "&2/sw create &l&5»&r&f Создать новую арену!"
+cage-help: "&2/sw cage &l&5»&r&f Установите свои собственные клетки!"
+join-help: "&2/sw join &b[Arena Name] &l&5»&r&f Присоединиться к арене!"
+settings-help: "&2/sw settings &l&5»&r&f Натсройка и модификация арен!"
+setlobby-help: "&2/sw setlobby &l&5»&r&f Установить главное лобби для плагина!"
+about-help: "&2/sw about &l&5»&r&f Об авторе и заметки от автора!"
+npc-help: "&2/sw npc &l&5»&r&f Создать NPC для Топ победителей!"
+list-help: "&2/sw list &l&5»&r&f Показать список всех запущенных арен на сервере!"
+
+# Command false usage help message
+start-usage: "&6Использовать: &2/sw start &b[Arena Name]!"
+stop-usage: "&6Использовать: &2/sw start &b[Arena Name]!"
+join-usage: "&6Использовать: &2/sw start &b[Arena Name]!"
+moderation-usage: "&6Использовать: &2/sw moderation &b[On/Off]"
+
+setup-wrong-world-1: "&cВы находитесь не в том мире арены, телепортируйтесь обратно в мир {ARENA_WORLD}"
+setup-wrong-world-2: "&cВы не можете выполнить это действие в мире арены!"
+world-teleport: "&aТелепортирую тебя обратно в главный мир!"
+
+cage-selection-1: "§8Меню выбора клеток!"
+cage-selection-2: "§aРазновидности клеток имеются!"
+
+cage-selected: "§8{CAGE_NAME}\n§aВыбранная клетка"
+cage-buy: "§8{CAGE_NAME}\n§a[Цена: ${CAGE_PRICE}]"
+cage-bought: "§8{CAGE_NAME}\n§aКлетка куплена"
+cage-select: "§8{CAGE_NAME}\n§aВыбрать клетку"
+
+cage-error-chosen: "&cВы уже купили эту клетку!"
+cage-chosen: "%prefix&aВы выбрали клетку &e{CAGE_NAME}!"
+
+economy-error: "&cЭта функция отключена из-за отсутствия установленного плагина EconomyAPI!"
+economy-no-money: "&cУ вас нет достаточно денег, чтобы купить это"
+economy-internal: "&cНе удается обработать ваш платеж. Попробуйте еще раз позже"
+
+# Panel messages
+panel-cancelled: "&cВаш запрос был отменен!"
+panel-choose-cage: "&aВы выбрали клетку, &d{CAGE}"
+panel-join-spect: "&aМесто появления зрителя было отмечено!"
+panel-join-sign: "&aМестоположение таблички арены было установлено!"
+panel-spawn-pos: "&aУстановлено место спавна &e#{COUNT}!"
+panel-spawn-set: "&eУспешно отмечено место спавна!"
+
+# Top winners
+top-winner-1: "&r&lЛучший победитель #{VAL}"
+top-winner-2: "&r&2{PLAYER}"
+top-winner-3: "&r&7{WINS} побед(ы)"
