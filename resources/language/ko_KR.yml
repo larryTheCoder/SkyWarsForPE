@@ -1,1 +1,229 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+---
+# No reason to edit this
+config-version: 10
 
+low-permission: "&e새로운 명령어인 것 같습니다. 현재는 사용할 수 없습니다."
+no-permission: "&c이 기능을 사용할 권한이 없습니다."
+
+# Arena-Game behaviour language.
+arena-running: "&c그 게임은 이미 시작되었습니다!"
+arena-delete: "&c게임 &d{ARENA}을 삭제하였습니다."
+arena-exists: "&c그 이름의 게임은 이미 존재합니다!"
+arena-not-exist: "&c그 게임은 존재하지 않습니다!"
+arena-hibernation: "&c그 게임은 현재 저장 작업 중입니다."
+
+message-disconnected: "&6{PLAYER}&c님의 접속이 끊어졌습니다."
+message-left: "&6{PLAYER}&c님이 게임을 나갔습니다."
+
+arena-disabled: "&c그 게임은 일시적으로 비활성화되었습니다. 잠시 후 다시 시도하세요."
+arena-crashed: "&c그 게임에서 충돌이 발생했습니다! 관리자에게 문의해 주십시오."
+arena-in-queue: "&6스카이워즈 {ARENA_NAME}에 참가하는 중입니다... 잠시만 기다리세요."
+arena-join: "&6{PLAYER}&e님이 게임에 참가했습니다 (&b{TOTAL_PLAYERS}&e/&b{MAX_SIZE}&e)"
+arena-startup: "&6게임이 {TIME} 초 후 시작됩니다"
+arena-no-invincible: "&c당신은 더이상 무적이 아닙니다."
+arena-chest-refilled: "&e상자가 다시 채워졌습니다!"
+arena-command-forbidden: "게임 플레이 중에는 명령어를 사용할 수 없습니다."
+arena-moderation-on: "%prefix&a이제부터 게임에서 발생하는 모든 메세지를 표시합니다."
+arena-moderation-off: "%prefix&c이제부터 게임에서 발생하는 메세지를 표시하지 않습니다."
+
+moderation-pre-enable: "%prefix&a게임에서부터의 모든 메세지를 표시합니다. /sw moderation 명령어로 비활성화 할 수 있습니다."
+
+# Arena titles and subtitles translations
+countdown-cancel-title: "&c플레이어가 부족합니다"
+countdown-cancel-subtitle: "&c카운트다운이 취소됩니다"
+countdown-starting-title: "&6시작까지 남은 시간: "
+countdown-starting-subtitle: ""
+countdown-started-title: "&c게임 시작!"
+countdown-started-subtitle: ""
+
+died-title: "&c&l죽었습니다!"
+died-subtitle: "&7당신은 이제 관전자입니다."
+
+# Command messages, Here the messages
+arena-unavailable: "&c플레이 할 수 있는 게임이 없습니다. 잠시 후 다시 시도하세요."
+arena-started: "&a스카이워즈 &d{ARENA}를 시작했습니다."
+main-lobby-set: "&a현재 위치를 스카이워즈 로비로 지정했습니다."
+no-world: "&c게임을 만들기 위한 월드가 남아있지 않습니다"
+command-setlobby-inarena: "&c게임 중에는 이 명령어를 실행할 수 없습니다!"
+use-in-arena: "&c게임 중에만 이 명령어를 사용할 수 있습니다."
+
+stats-1: "&a{PLAYER}'의 프로필"
+stats-2: "&6이름: &f{DATA}"
+stats-3: "&6킬: &f{DATA}"
+stats-4: "&6사망: &f{DATA}"
+stats-5: "&6킬뎃: &f{DATA}"
+stats-6: "&6승리: &f{DATA}"
+stats-7: "&6패배: &f{DATA}"
+
+setup-choose-arena: "&a게임을 선택해 주세요."
+
+settings-arena-1: "스카이워즈 {ARENA_NAME} 설정을 시작합니다"
+settings-arena-2: "게임 스폰 설정"
+settings-arena-3: "관전자 스폰 설정"
+settings-arena-4: "게임 행동 설정"
+settings-arena-5: "게임 표지판 위치 설정"
+settings-arena-6: "게임 표지판 위치 설정"
+settings-arena-7: "스코어보드 설정"
+settings-arena-8: "월드 수정"
+settings-arena-9: "&c게임 삭제"
+
+behaviour-setup-1: "게임 설정"
+behaviour-setup-2: "&e게임을 활성화합니까?"
+behaviour-setup-3: "&e무적 모드 시간"
+behaviour-setup-4: "&e관전자 모드를 활성화합니까?"
+behaviour-setup-5: "&e팀 모드를 활성화합니까?"
+behaviour-setup-6: "&e인원이 꽉 찼을때만 시작합니까?"
+
+team-setup-1: '팀 모드 설정'
+team-setup-2: '팀별 플레이어 수'
+team-setup-3: '최소 팀'
+team-setup-4: '최대 팀'
+team-setup-5: '팀 색깔'
+
+team-error-1: '&c팀 설정 중 오류가 발생했습니다. 0-15 사이의 정수여야 하며, ';'으로 분리되어야 합니다.'
+team-error-2: '&c설정한 팀 색깔이 최대 팀 수보다 적습니다'
+
+solo-setup-1: "솔로 팀 설정"
+solo-setup-2: "최소 플레이어"
+solo-setup-3: "최대 플레이어"
+
+behaviour-setup-complete: "&a성공적으로 스카이워즈 &e{ARENA_NAME}를 업데이트했습니다"
+
+behaviour-sign-1: "&e행동 설정"
+behaviour-sign-2: "&a표지판 설정에 오신것을 환영합니다. 본인이 아래의 내용이 무엇인지 모른다면, 수정하는 것을 추천하지 않습니다."
+behaviour-sign-3: "&eStatus lines\n&a &b &c = & 으로 색깔을 사용할 수 있습니다\n%alive = 게임 플레이 중인 플레이어입니다.\n%dead = 사망한 플레이어 수 입니다.\n%status = 게임 상태입니다.\n%world = 게임의 월드 이름입니다.\n%max = 게임의 최대 인원 수 입니다."
+behaviour-sign-4: "&a표지판 첫번째 줄"
+behaviour-sign-5: "&a표지판 두번째 줄"
+behaviour-sign-6: "&a표지판 세번째 줄"
+behaviour-sign-7: "&a표지판 네번째 줄"
+behaviour-sign-complete: "&e{ARENA_NAME}&a의 표지판을 성공적으로 업데이트하였습니다! "
+
+setup-arena-spawn: "You can now setup the arena spawn positions, use the blaze rod and break a block to set the position, changes made in this world will be discarded."
+setup-arena-spectator: "You can now setup the arena spectator position, use the blaze rod and break a block to set the position, changes made in this world will be discarded."
+setup-arena-joinsign: "You can now setup the arena join sign position, use the blaze rod and break a block to set the position."
+setup-npc: "You can now setup the NPC position, use the blaze rod and break a block to set the position."
+edit-world: "You can now edit this world safely, any changes in this world will be saved."
+
+arena-delete-1: "&c삭제"
+arena-delete-2: "취소"
+arena-delete-confirm: "&cAre you sure to perform this action? Deleting an arena will delete your arena config and your world!"
+
+setup-scoreboard: ""
+
+spectator-select1: "Select Player Name"
+spectator-select2: "Select a player to spectate"
+spectator-exit: "&cExit"
+spectator-not-ingame: "&cYou are no longer in the arena."
+spectator-player-left: "&cThat player is no longer in the arena."
+
+setup-arena-1: "&5SkyWars Setup."
+setup-arena-2: "&6The name of your Arena."
+setup-arena-3: "&6Select your Arena level."
+setup-arena-4: "&eMaximum players"
+setup-arena-5: "&eMinimum players"
+setup-arena-6: "&7Spectator mode"
+setup-arena-7: "&7Start on full"
+
+setup-arena-spawn-1: "Setup spawn?"
+setup-arena-spawn-2: "&aYou may need to setup arena's spawn position so system could enable the arena much faster."
+setup-arena-spawn-3: "Setup arena spawn."
+setup-arena-spawn-4: "&cSetup later."
+
+setup-later: "&aYou can setup this later with /sw settings"
+
+no-data: "&cThat player does not exists in the database!"
+
+form-error-1: 'The id you have requested is invalid, unable to perform this command'
+
+scoreboard-button-1: "Waiting display"
+scoreboard-button-2: "In game display"
+scoreboard-button-3: "Ending game display"
+scoreboard-button-4: "Spectator display"
+scoreboard-button-5: "Exit"
+
+scoreboard-state-1: "This section will be used during waiting state."
+scoreboard-state-2: "This section will be used when the arena has started but without any teams."
+scoreboard-state-3: "This section will be used when the game has finished."
+scoreboard-state-4: "This section will be used the player has died."
+
+scoreboard-success: "&aSuccessfully setup the arena scoreboard configuration."
+
+kit-selection-1: "Select your kit."
+kit-selection-2: "Select one of the kits below."
+
+kit-removed: "%prefix&cYou removed your current kit"
+kit-selected: "%prefix&aYou have selected the &e{KIT_NAME}&a kit!"
+
+kit-no-permission: "%prefix&cYou do not have the permission to select &e{KIT_NAME}&c kit!"
+
+# Kill message
+death-message-void: "&7- &e{PLAYER} &cwere killed by void"
+death-message-suicide: "&7- &e{PLAYER} &cjust committed suicide."
+death-message-suffocated: "&7- &e{PLAYER} &csuffocated to death."
+death-message-burned: "&7- &e{PLAYER} &cwere burned to death."
+death-message-catused: "&7- &e{PLAYER} &ckilled by a cactus. Silly?"
+death-message-fall: "&7- &e{PLAYER} &chad fall from the sky."
+death-message-toasted: "&7- &e{PLAYER} &cwere toasted by lava"
+death-message-drowned: "&7- &e{PLAYER} &cwere drowned"
+death-message-nature: "&7- &e{PLAYER} &cwere killed by nature"
+death-message-explode: "&7- &e{PLAYER} &cexploded to pieces"
+death-message-magic: "&7- &e{PLAYER} &cwere killed by some kind of magic"
+death-message-unknown: "&7- &e{PLAYER} is a member of the illuminati"
+death-message: "&7- &e{PLAYER} &cwere killed by &e{KILLER}"
+
+# Command help message
+help-main: "&cPlease use /sw help for a list of commands"
+lobby-help: "&2/sw leave &l&5»&r&f Teleport to lobby."
+random-help: "&2/sw random &l&5»&r&f Randomly teleport to an arena."
+stats-help: "&2/sw stats &l&5»&r&f Show your game status."
+reload-help: "&2/sw reload &l&5»&r&f Reload the plugin, make new start."
+create-help: "&2/sw create &l&5»&r&f Create a new arena."
+cage-help: "&2/sw cage &l&5»&r&f Set your custom cages."
+join-help: "&2/sw join &b[Arena Name] &l&5»&r&f Join to the arena."
+settings-help: "&2/sw settings &l&5»&r&f Setup or modify the arena."
+setlobby-help: "&2/sw setlobby &l&5»&r&f Set the main lobby for the plugin."
+about-help: "&2/sw about &l&5»&r&f About and notes from author."
+npc-help: "&2/sw npc &l&5»&r&f Create an NPC for TopWinners."
+list-help: "&2/sw list &l&5»&r&f List all running arenas in the server."
+
+# Command false usage help message
+start-usage: "&6Usage: &2/sw start &b[Arena Name]."
+stop-usage: "&6Usage: &2/sw start &b[Arena Name]."
+join-usage: "&6Usage: &2/sw start &b[Arena Name]."
+moderation-usage: "&6Usage: &2/sw moderation &b[On/Off]"
+
+setup-wrong-world-1: "&cYou are not in the right arena world, teleport back to level {ARENA_WORLD}"
+setup-wrong-world-2: "&cYou cannot perform this action in the arena world!"
+world-teleport: "&aTeleporting you back to main world."
+
+cage-selection-1: "§8Cages selection form."
+cage-selection-2: "§aVarieties of cages available!"
+
+cage-selected: "§8{CAGE_NAME}\n§aSelected Cage"
+cage-buy: "§8{CAGE_NAME}\n§a[Price ${CAGE_PRICE}]"
+cage-bought: "§8{CAGE_NAME}\n§aCage Bought"
+cage-select: "§8{CAGE_NAME}\n§aSelect Cage"
+
+cage-error-chosen: "&cYou already have bought this cage!"
+cage-chosen: "%prefix&aYou have chosen cage &e{CAGE_NAME}."
+
+economy-error: "&cThis feature is disabled due to no EconomyAPI plugin installed."
+economy-no-money: "&cYou don't have enough money to buy this"
+economy-internal: "&cCannot process your payment. Try again later"
+
+# Panel messages
+panel-cancelled: "&cYour request has been cancelled."
+panel-choose-cage: "&aYou chosen the cage, &d{CAGE}"
+panel-join-spect: "&aSpectator spawn location has been marked."
+panel-join-sign: "&aJoin sign location has been marked."
+panel-spawn-pos: "&aMarked spawn location &e#{COUNT}."
+panel-spawn-set: "&eSuccessfully marked the spawn locations."
+
+# Top winners
+top-winner-1: "&r&lTop winner #{VAL}"
+top-winner-2: "&r&2{PLAYER}"
+top-winner-3: "&r&7{WINS} Victories"
