@@ -1,0 +1,229 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+---
+# No reason to edit this
+config-version: 10
+
+low-permission: "&e새로운 명령어인 것 같습니다. 현재는 사용할 수 없습니다."
+no-permission: "&c이 기능을 사용할 권한이 없습니다."
+
+# Arena-Game behaviour language.
+arena-running: "&c그 게임은 이미 시작되었습니다!"
+arena-delete: "&c게임 &d{ARENA}을 삭제하였습니다."
+arena-exists: "&c그 이름의 게임은 이미 존재합니다!"
+arena-not-exist: "&c그 게임은 존재하지 않습니다!"
+arena-hibernation: "&c그 게임은 현재 저장 작업 중입니다."
+
+message-disconnected: "&6{PLAYER}&c님의 접속이 끊어졌습니다."
+message-left: "&6{PLAYER}&c님이 게임을 나갔습니다."
+
+arena-disabled: "&c그 게임은 일시적으로 비활성화되었습니다. 잠시 후 다시 시도하세요."
+arena-crashed: "&c그 게임에서 충돌이 발생했습니다! 관리자에게 문의해 주십시오."
+arena-in-queue: "&6스카이워즈 {ARENA_NAME}에 참가하는 중입니다... 잠시만 기다리세요."
+arena-join: "&6{PLAYER}&e님이 게임에 참가했습니다 (&b{TOTAL_PLAYERS}&e/&b{MAX_SIZE}&e)"
+arena-startup: "&6게임이 {TIME} 초 후 시작됩니다"
+arena-no-invincible: "&c당신은 더이상 무적이 아닙니다."
+arena-chest-refilled: "&e상자가 다시 채워졌습니다!"
+arena-command-forbidden: "게임 플레이 중에는 명령어를 사용할 수 없습니다."
+arena-moderation-on: "%prefix&a이제부터 게임에서 발생하는 모든 메세지를 표시합니다."
+arena-moderation-off: "%prefix&c이제부터 게임에서 발생하는 메세지를 표시하지 않습니다."
+
+moderation-pre-enable: "%prefix&a게임에서부터의 모든 메세지를 표시합니다. /sw moderation 명령어로 비활성화 할 수 있습니다."
+
+# Arena titles and subtitles translations
+countdown-cancel-title: "&c플레이어가 부족합니다"
+countdown-cancel-subtitle: "&c카운트다운이 취소됩니다"
+countdown-starting-title: "&6시작까지 남은 시간: "
+countdown-starting-subtitle: ""
+countdown-started-title: "&c게임 시작!"
+countdown-started-subtitle: ""
+
+died-title: "&c&l죽었습니다!"
+died-subtitle: "&7당신은 이제 관전자입니다."
+
+# Command messages, Here the messages
+arena-unavailable: "&c플레이 할 수 있는 게임이 없습니다. 잠시 후 다시 시도하세요."
+arena-started: "&a스카이워즈 &d{ARENA}를 시작했습니다."
+main-lobby-set: "&a현재 위치를 스카이워즈 로비로 지정했습니다."
+no-world: "&c게임을 만들기 위한 월드가 남아있지 않습니다"
+command-setlobby-inarena: "&c게임 중에는 이 명령어를 실행할 수 없습니다!"
+use-in-arena: "&c게임 중에만 이 명령어를 사용할 수 있습니다."
+
+stats-1: "&a{PLAYER}'의 프로필"
+stats-2: "&6이름: &f{DATA}"
+stats-3: "&6킬: &f{DATA}"
+stats-4: "&6사망: &f{DATA}"
+stats-5: "&6킬뎃: &f{DATA}"
+stats-6: "&6승리: &f{DATA}"
+stats-7: "&6패배: &f{DATA}"
+
+setup-choose-arena: "&a게임을 선택해 주세요."
+
+settings-arena-1: "스카이워즈 {ARENA_NAME} 설정을 시작합니다"
+settings-arena-2: "게임 스폰 설정"
+settings-arena-3: "관전자 스폰 설정"
+settings-arena-4: "게임 행동 설정"
+settings-arena-5: "게임 표지판 위치 설정"
+settings-arena-6: "게임 표지판 위치 설정"
+settings-arena-7: "스코어보드 설정"
+settings-arena-8: "월드 수정"
+settings-arena-9: "&c게임 삭제"
+
+behaviour-setup-1: "게임 설정"
+behaviour-setup-2: "&e게임을 활성화합니까?"
+behaviour-setup-3: "&e무적 모드 시간"
+behaviour-setup-4: "&e관전자 모드를 활성화합니까?"
+behaviour-setup-5: "&e팀 모드를 활성화합니까?"
+behaviour-setup-6: "&e인원이 꽉 찼을때만 시작합니까?"
+
+team-setup-1: '팀 모드 설정'
+team-setup-2: '팀별 플레이어 수'
+team-setup-3: '최소 팀'
+team-setup-4: '최대 팀'
+team-setup-5: '팀 색깔'
+
+team-error-1: '&c팀 설정 중 오류가 발생했습니다. 0-15 사이의 정수여야 하며, ';'으로 분리되어야 합니다.'
+team-error-2: '&c설정한 팀 색깔이 최대 팀 수보다 적습니다'
+
+solo-setup-1: "솔로 팀 설정"
+solo-setup-2: "최소 플레이어"
+solo-setup-3: "최대 플레이어"
+
+behaviour-setup-complete: "&a성공적으로 스카이워즈 &e{ARENA_NAME}를 업데이트했습니다"
+
+behaviour-sign-1: "&e행동 설정"
+behaviour-sign-2: "&a표지판 설정에 오신것을 환영합니다. 본인이 아래의 내용이 무엇인지 모른다면, 수정하는 것을 추천하지 않습니다."
+behaviour-sign-3: "&eStatus lines\n&a &b &c = & 으로 색깔을 사용할 수 있습니다\n%alive = 게임 플레이 중인 플레이어입니다.\n%dead = 사망한 플레이어 수 입니다.\n%status = 게임 상태입니다.\n%world = 게임의 월드 이름입니다.\n%max = 게임의 최대 인원 수 입니다."
+behaviour-sign-4: "&a표지판 첫번째 줄"
+behaviour-sign-5: "&a표지판 두번째 줄"
+behaviour-sign-6: "&a표지판 세번째 줄"
+behaviour-sign-7: "&a표지판 네번째 줄"
+behaviour-sign-complete: "&e{ARENA_NAME}&a의 표지판을 성공적으로 업데이트하였습니다! "
+
+setup-arena-spawn: "이제 게임의 스폰 지점을 설정할 수 있습니다. 블레이즈 막대기로 스폰될 위치를 부수세요. 지금 이 월드에서는 스폰 설정 외에 다른것은 하더라도 저장되지 않습니다."
+setup-arena-spectator: "이제 게임의 관전자 스폰 지점을 설정할 수 있습니다. 블레이즈 막대기로 스폰될 위치를 부수세요. 지금 이 월드에서는 스폰 설정 외에 다른것은 하더라도 저장되지 않습니다."
+setup-arena-joinsign: "이제 게임의 참가 표지판을 설정할 수 있습니다. 블레이즈 막대기로 해당 위치를 부수세요."
+setup-npc: "이제 NPC의 스폰 지점을 설정할 수 있습니다. 블레이즈 막대기로 스폰될 위치를 부수세요."
+edit-world: "이제 이 월드를 안전하게 수정할 수 있습니다. 모든 내용이 자동으로 저장됩니다."
+
+arena-delete-1: "&c삭제"
+arena-delete-2: "취소"
+arena-delete-confirm: "&c정말로 삭제하시겠습니까? 게임을 삭제하면 관련 설정과 월드가 모두 삭제됩니다!"
+
+setup-scoreboard: ""
+
+spectator-select1: "플레이어 선택"
+spectator-select2: "관전할 플레이어를 선택하세요"
+spectator-exit: "&c나가기"
+spectator-not-ingame: "&c당신은 게임을 플레이 중이지 않습니다."
+spectator-player-left: "&c그 플레이어는 게임을 플레이 중이지 않습니다."
+
+setup-arena-1: "&5스카이워즈 설정"
+setup-arena-2: "&6게임 이름"
+setup-arena-3: "&6게임 월드 선택"
+setup-arena-4: "&e최대 플레이어"
+setup-arena-5: "&e최소 플레이어"
+setup-arena-6: "&7관전 모드"
+setup-arena-7: "&7인원이 꽉 찼을때만 시작"
+
+setup-arena-spawn-1: "스폰을 설정하시겠습니까?"
+setup-arena-spawn-2: "&a게임을 활성화하려면 스폰을 설정해야 합니다."
+setup-arena-spawn-3: "게임 스폰 설정"
+setup-arena-spawn-4: "&c나중에 설정하기"
+
+setup-later: "&a언제든지 /sw settings 명령어를 통해 다시 설정할 수 있습니다"
+
+no-data: "&c그 플레이어는 데이터베이스에 등록되어 있지 않습니다!"
+
+form-error-1: '요청하신 ID가 올바르지 않습니다. 이 명령어를 실행할 수 없습니다.'
+
+scoreboard-button-1: "대기 중"
+scoreboard-button-2: "게임 중"
+scoreboard-button-3: "게임 종료 후"
+scoreboard-button-4: "관전자"
+scoreboard-button-5: "나가기"
+
+scoreboard-state-1: "이 내용은 게임 대기 상태에서 표시됩니다"
+scoreboard-state-2: "이 내용은 게임이 팀 없이 시작된 상태에서 표시됩니다"
+scoreboard-state-3: "이 내용은 게임이 종료되었을 때 표시됩니다"
+scoreboard-state-4: "이 내용은 플레이어가 죽었을 때 표시됩니다"
+
+scoreboard-success: "&a게임의 스코어보드를 성공적으로 설정하였습니다"
+
+kit-selection-1: "키트 선택"
+kit-selection-2: "키트를 선택해 주세요."
+
+kit-removed: "%prefix&c현재 키트를 삭제했습니다"
+kit-selected: "%prefix&e{KIT_NAME}&a 키트를 선택했습니다!"
+
+kit-no-permission: "%prefix&e{KIT_NAME}&c 키트를 선택할 권한이 없습니다!"
+
+# Kill message
+death-message-void: "&7- &e{PLAYER}&c님이 세계 밖으로 떨어졌습니다"
+death-message-suicide: "&7- &e{PLAYER}&c님이 자살하였습니다"
+death-message-suffocated: "&7- &e{PLAYER}&c님이 질식하였습니다"
+death-message-burned: "&7- &e{PLAYER} &cwere burned to death."
+death-message-catused: "&7- &e{PLAYER}&c님이 찔려 죽었습니다"
+death-message-fall: "&7- &e{PLAYER}&c님이 높은 곳에서 떨어졌습니다"
+death-message-toasted: "&7- &e{PLAYER}&c님이 용암 속에 빠졌습니다"
+death-message-drowned: "&7- &e{PLAYER}&c님이 익사하였습니다"
+death-message-nature: "&7- &e{PLAYER}&c님이 자연사했습니다"
+death-message-explode: "&7- &e{PLAYER}&c님이 폭발하였습니다"
+death-message-magic: "&7- &e{PLAYER}&c님이 마법에 의해 죽었습니다"
+death-message-unknown: "&7- &e{PLAYER}&c님이 알 수 없는 이유로 죽었습니다"
+death-message: "&7- &e{PLAYER}&c님이 &e{KILLER}&c에 의해 죽었습니다"
+
+# Command help message
+help-main: "&c/sw help 명령어로 도움말을 확인하세요."
+lobby-help: "&2/sw leave &l&5»&r&f 로비로 이동합니다"
+random-help: "&2/sw random &l&5»&r&f 랜덤으로 게임에 참가합니다"
+stats-help: "&2/sw stats &l&5»&r&f 당신의 게임 전적을 보여줍니다"
+reload-help: "&2/sw reload &l&5»&r&f 플러그인을 다시 불러옵니다"
+create-help: "&2/sw create &l&5»&r&f 새로운 게임을 만듭니다"
+cage-help: "&2/sw cage &l&5»&r&f 당신의 케이지를 선택합니다"
+join-help: "&2/sw join &b[Arena Name] &l&5»&r&f 게임에 참가합니다"
+settings-help: "&2/sw settings &l&5»&r&f 게임을 설정하거나 수정합니다"
+setlobby-help: "&2/sw setlobby &l&5»&r&f 플러그인의 메인 로비를 설정합니다"
+about-help: "&2/sw about &l&5»&r&f 제작자의 정보입니다."
+npc-help: "&2/sw npc &l&5»&r&f 승리자 NPC를 생성합니다"
+list-help: "&2/sw list &l&5»&r&f 서버에서 실행되고 있는 게임 목록을 표시합니다"
+
+# Command false usage help message
+start-usage: "&6사용법: &2/sw start &b[게임 이름]."
+stop-usage: "&6사용법: &2/sw start &b[게임 이름]."
+join-usage: "&6사용법: &2/sw start &b[게임 이름]."
+moderation-usage: "&6사용법: &2/sw moderation &b[On/Off]"
+
+setup-wrong-world-1: "&c당신은 올바른 월드에 있지 않습니다. {ARENA_WORLD} 월드로 돌아갑니다."
+setup-wrong-world-2: "&c게임 월드에서는 설정을 열 수 없습니다!"
+world-teleport: "&a메인 월드로 돌아갑니다."
+
+cage-selection-1: "§8케이지 선택 메뉴"
+cage-selection-2: "§a다양한 케이지를 선택할 수 있습니다!"
+
+cage-selected: "§8{CAGE_NAME}\n§a케이지를 선택했습니다"
+cage-buy: "§8{CAGE_NAME}\n§a[가격 ${CAGE_PRICE}]"
+cage-bought: "§8{CAGE_NAME}\n§a구매함"
+cage-select: "§8{CAGE_NAME}\n§a케이지 선택"
+
+cage-error-chosen: "&c이미 그 케이지를 소유하고 있습니다!"
+cage-chosen: "%prefix&e{CAGE_NAME}&a 케이지를 선택했습니다."
+
+economy-error: "&cEconomyAPI를 찾을 수 없기에 이 기능은 비활성화되었습니다."
+economy-no-money: "&c이것을 사기에 돈이 부족합니다"
+economy-internal: "&c결제를 진행할 수 없습니다. 잠시 후 다시 시도하세요."
+
+# Panel messages
+panel-cancelled: "&c요청이 취소되었습니다."
+panel-choose-cage: "&a케이지 &d{CAGE}&a를 선택했습니다.
+panel-join-spect: "&a관전자 스폰 위치가 기록되었습니다."
+panel-join-sign: "&a참가 표지판 위치가 기록되었습니다."
+panel-spawn-pos: "&a스폰 위치 &e#{COUNT}&a를 설정했습니다."
+panel-spawn-set: "&e스폰 위치를 성공적으로 기록했습니다."
+
+# Top winners
+top-winner-1: "&r&l순위 #{VAL}"
+top-winner-2: "&r&2{PLAYER}"
+top-winner-3: "&r&7{WINS}회 승리"
