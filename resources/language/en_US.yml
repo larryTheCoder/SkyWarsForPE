@@ -13,24 +13,24 @@ no-permission: "&cYou don't have the right permission to do this."
 arena-running: "&cThe arena is currently running!"
 arena-delete: "&cDeleted the arena &d{ARENA}."
 arena-exists: "&cThe arena with that name already exists!"
-arena-not-exist: "&cThe arena doesn't exists!"
+arena-not-exist: "&cThe arena doesn't exist!"
 arena-hibernation: "&cThe arena is currently in hibernation mode!"
 
 message-disconnected: "&6{PLAYER}&c has disconnected."
-message-left: "&6{PLAYER}&c has left the game.."
+message-left: "&6{PLAYER}&c has left the game..."
 
 arena-disabled: "&cThe arena is temporarily disabled, try again later."
-arena-crashed: "&cThe arena has crashed! Ask server owner to check server logs."
+arena-crashed: "&cThe arena has crashed! Ask the server owner to check server logs."
 arena-in-queue: "&6You are now queuing for {ARENA_NAME}, please wait."
 arena-join: "&6{PLAYER}&e has joined the match (&b{TOTAL_PLAYERS}&e/&b{MAX_SIZE}&e)"
 arena-startup: "&6Game starting in {TIME} seconds"
 arena-no-invincible: "&cYou are no longer invincible."
-arena-chest-refilled: "&eChests has been refilled!"
+arena-chest-refilled: "&eChests have been refilled!"
 arena-command-forbidden: "You cannot execute any command while in game."
-arena-moderation-on: "%prefix&aYou will now receiving all messages from the arenas."
-arena-moderation-off: "%prefix&cYou will no longer receiving messages from the arenas."
+arena-moderation-on: "%prefix&aYou will now receive all messages from the arenas."
+arena-moderation-off: "%prefix&cYou will no longer receive messages from the arenas."
 
-moderation-pre-enable: "%prefix&aYou will now receiving all messages from the arenas. Use /sw moderation to disable this option."
+moderation-pre-enable: "%prefix&aYou will now receive all messages from the arenas. Use /sw moderation to disable this option."
 
 # Arena titles and subtitles translations
 countdown-cancel-title: "&cNot enough players"
@@ -69,13 +69,13 @@ settings-arena-5: "Set Join Sign Behaviour"
 settings-arena-6: "Set Join Sign Location"
 settings-arena-7: "Setup Scoreboard"
 settings-arena-8: "Edit this world"
-settings-arena-9: "&cDelete this arena."
+settings-arena-9: "&cDelete this arena"
 
 behaviour-setup-1: "Arena settings."
 behaviour-setup-2: "&eEnable the arena?"
 behaviour-setup-3: "&eSet Invincible Timer"
 behaviour-setup-4: "&eEnable Spectator Mode?"
-behaviour-setup-5: "&eEnable team mode?"
+behaviour-setup-5: "&eEnable Team mode?"
 behaviour-setup-6: "&eStart when full?"
 
 team-setup-1: 'Setup team mode'
@@ -85,7 +85,7 @@ team-setup-4: 'Maximum teams'
 team-setup-5: 'Team colours'
 
 team-error-1: '&cTeam configuration error, must be an integer in range of 0-15 and separated by `;`'
-team-error-2: '&cYour configured team colour(s) is lesser than your maximum teams.'
+team-error-2: '&cYour configured team colour(s) is less than your maximum teams.'
 
 solo-setup-1: "Solo team setup"
 solo-setup-2: "Minimum players"
@@ -121,8 +121,8 @@ spectator-not-ingame: "&cYou are no longer in the arena."
 spectator-player-left: "&cThat player is no longer in the arena."
 
 setup-arena-1: "&5SkyWars Setup."
-setup-arena-2: "&6The name of your Arena."
-setup-arena-3: "&6Select your Arena level."
+setup-arena-2: "&6The name of your Arena"
+setup-arena-3: "&6Select your Arena level"
 setup-arena-4: "&eMaximum players"
 setup-arena-5: "&eMinimum players"
 setup-arena-6: "&7Spectator mode"
@@ -131,13 +131,13 @@ setup-arena-7: "&7Start on full"
 setup-arena-spawn-1: "Setup spawn?"
 setup-arena-spawn-2: "&aYou may need to setup arena's spawn position so system could enable the arena much faster."
 setup-arena-spawn-3: "Setup arena spawn."
-setup-arena-spawn-4: "&cSetup later."
+setup-arena-spawn-4: "&cSetup later"
 
 setup-later: "&aYou can setup this later with /sw settings"
 
-no-data: "&cThat player does not exists in the database!"
+no-data: "&cThat player does not exist in the database!"
 
-form-error-1: 'The id you have requested is invalid, unable to perform this command'
+form-error-1: 'The ID you have requested is invalid, unable to perform this command'
 
 scoreboard-button-1: "Waiting display"
 scoreboard-button-2: "In game display"
@@ -146,7 +146,7 @@ scoreboard-button-4: "Spectator display"
 scoreboard-button-5: "Exit"
 
 scoreboard-state-1: "This section will be used during waiting state."
-scoreboard-state-2: "This section will be used when the arena has started but without any teams."
+scoreboard-state-2: "This section will be used when the arena has started without any teams."
 scoreboard-state-3: "This section will be used when the game has finished."
 scoreboard-state-4: "This section will be used the player has died."
 
@@ -161,32 +161,32 @@ kit-selected: "%prefix&aYou have selected the &e{KIT_NAME}&a kit!"
 kit-no-permission: "%prefix&cYou do not have the permission to select &e{KIT_NAME}&c kit!"
 
 # Kill message
-death-message-void: "&7- &e{PLAYER} &cwere killed by void"
+death-message-void: "&7- &e{PLAYER} &cwas killed by void"
 death-message-suicide: "&7- &e{PLAYER} &cjust committed suicide."
-death-message-suffocated: "&7- &e{PLAYER} &csuffocated to death."
-death-message-burned: "&7- &e{PLAYER} &cwere burned to death."
+death-message-suffocated: "&7- &e{PLAYER} &cwas suffocated to death."
+death-message-burned: "&7- &e{PLAYER} &cwas burned to death."
 death-message-catused: "&7- &e{PLAYER} &ckilled by a cactus. Silly?"
-death-message-fall: "&7- &e{PLAYER} &chad fall from the sky."
-death-message-toasted: "&7- &e{PLAYER} &cwere toasted by lava"
-death-message-drowned: "&7- &e{PLAYER} &cwere drowned"
-death-message-nature: "&7- &e{PLAYER} &cwere killed by nature"
+death-message-fall: "&7- &e{PLAYER} &cfell from the sky."
+death-message-toasted: "&7- &e{PLAYER} &cwas toasted by lava"
+death-message-drowned: "&7- &e{PLAYER} &cwas drowned"
+death-message-nature: "&7- &e{PLAYER} &cwas killed by nature"
 death-message-explode: "&7- &e{PLAYER} &cexploded to pieces"
-death-message-magic: "&7- &e{PLAYER} &cwere killed by some kind of magic"
-death-message-unknown: "&7- &e{PLAYER} is a member of the illuminati"
-death-message: "&7- &e{PLAYER} &cwere killed by &e{KILLER}"
+death-message-magic: "&7- &e{PLAYER} &cwas killed by some kind of magic"
+death-message-unknown: "&7- &e{PLAYER} is a member of the Illuminati"
+death-message: "&7- &e{PLAYER} &cwas killed by &e{KILLER}"
 
 # Command help message
 help-main: "&cPlease use /sw help for a list of commands"
 lobby-help: "&2/sw leave &l&5»&r&f Teleport to lobby."
 random-help: "&2/sw random &l&5»&r&f Randomly teleport to an arena."
 stats-help: "&2/sw stats &l&5»&r&f Show your game status."
-reload-help: "&2/sw reload &l&5»&r&f Reload the plugin, make new start."
+reload-help: "&2/sw reload &l&5»&r&f Reload the plugin, make a new start."
 create-help: "&2/sw create &l&5»&r&f Create a new arena."
 cage-help: "&2/sw cage &l&5»&r&f Set your custom cages."
 join-help: "&2/sw join &b[Arena Name] &l&5»&r&f Join to the arena."
 settings-help: "&2/sw settings &l&5»&r&f Setup or modify the arena."
 setlobby-help: "&2/sw setlobby &l&5»&r&f Set the main lobby for the plugin."
-about-help: "&2/sw about &l&5»&r&f About and notes from author."
+about-help: "&2/sw about &l&5»&r&f About and notes from the author."
 npc-help: "&2/sw npc &l&5»&r&f Create an NPC for TopWinners."
 list-help: "&2/sw list &l&5»&r&f List all running arenas in the server."
 
@@ -212,8 +212,8 @@ cage-error-chosen: "&cYou already have bought this cage!"
 cage-chosen: "%prefix&aYou have chosen cage &e{CAGE_NAME}."
 
 economy-error: "&cThis feature is disabled due to no EconomyAPI plugin installed."
-economy-no-money: "&cYou don't have enough money to buy this"
-economy-internal: "&cCannot process your payment. Try again later"
+economy-no-money: "&cYou don't have enough money to buy this."
+economy-internal: "&cCannot process your payment. Try again later."
 
 # Panel messages
 panel-cancelled: "&cYour request has been cancelled."
