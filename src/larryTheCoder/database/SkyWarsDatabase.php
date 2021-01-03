@@ -41,10 +41,14 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
+use poggit\libasynql\SqlError;
 use RuntimeException;
 
 class SkyWarsDatabase {
 	use SingletonTrait;
+
+	/** @var \Closure */
+	private static $emptyStatement;
 
 	/** @var DataConnector */
 	private $database;
@@ -53,6 +57,11 @@ class SkyWarsDatabase {
 	private $vector3 = null;
 	/** @var string|null */
 	private $levelName = null;
+
+	public function __construct(){
+		self::$emptyStatement = static function(): void{
+		};
+	}
 
 	/**
 	 * @param string[] $config
@@ -73,7 +82,11 @@ class SkyWarsDatabase {
 	 * @param Player $player
 	 */
 	public static function createPlayer(Player $player): void{
-		self::getInstance()->database->executeChange('data.createData', ["playerName" => $player->getName()]);
+		self::getInstance()->database->executeChange('data.createData', [
+			"playerName" => $player->getName(),
+		], self::$emptyStatement, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+		});
 	}
 
 	/**
@@ -93,6 +106,8 @@ class SkyWarsDatabase {
 			}
 
 			$onComplete(self::parsePlayerRow($rows[0]));
+		}, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
 		});
 	}
 
@@ -106,7 +121,9 @@ class SkyWarsDatabase {
 		self::getInstance()->database->executeChange('data.changeOffset', [
 			'dataOffset' => implode(" ", $playerData->permissions),
 			'playerName' => $player->getName(),
-		]);
+		], self::$emptyStatement, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+		});
 	}
 
 	/**
@@ -131,7 +148,11 @@ class SkyWarsDatabase {
 			}
 
 			$onComplete($data);
-		}, $onError);
+		}, static function(SqlError $result) use ($onError): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+
+			$onError();
+		});
 	}
 
 	/**
@@ -140,7 +161,11 @@ class SkyWarsDatabase {
 	 * @param string $playerName
 	 */
 	public static function addKills(string $playerName): void{
-		self::getInstance()->database->executeChange('data.addKills', ["playerName" => $playerName]);
+		self::getInstance()->database->executeChange('data.addKills', [
+			"playerName" => $playerName,
+		],  self::$emptyStatement, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+		});
 	}
 
 	/**
@@ -150,7 +175,11 @@ class SkyWarsDatabase {
 	 * @param string $playerName
 	 */
 	public static function addDeaths(string $playerName): void{
-		self::getInstance()->database->executeChange('data.addDeaths', ["playerName" => $playerName]);
+		self::getInstance()->database->executeChange('data.addDeaths', [
+			"playerName" => $playerName,
+		], self::$emptyStatement, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+		});
 	}
 
 	/**
@@ -159,7 +188,11 @@ class SkyWarsDatabase {
 	 * @param string $playerName
 	 */
 	public static function addWins(string $playerName): void{
-		self::getInstance()->database->executeChange('data.addWins', ["playerName" => $playerName]);
+		self::getInstance()->database->executeChange('data.addWins', [
+			"playerName" => $playerName,
+		], self::$emptyStatement, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+		});
 	}
 
 	/**
@@ -172,7 +205,9 @@ class SkyWarsDatabase {
 		self::getInstance()->database->executeChange('data.addTimer', [
 			"playerName" => $playerName,
 			"playerTime" => $lastPlayed,
-		]);
+		], self::$emptyStatement, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+		});
 	}
 
 	public static function setLobby(Position $position): void{
@@ -181,9 +216,11 @@ class SkyWarsDatabase {
 			"lobbyY"    => $position->getFloorY(),
 			"lobbyZ"    => $position->getFloorZ(),
 			"worldName" => $position->getLevel()->getFolderName(),
-		], function(int $rowsAffected) use ($position): void{
+		], function() use ($position): void{
 			self::getInstance()->levelName = $position->getLevel()->getFolderName();
 			self::getInstance()->vector3 = $position->asVector3();
+		}, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
 		});
 	}
 
@@ -214,6 +251,8 @@ class SkyWarsDatabase {
 				self::getInstance()->vector3 = new Vector3(intval($rows[0]["lobbyX"]) + .5, intval($rows[0]["lobbyY"]) + .5, intval($rows[0]["lobbyZ"]) + .5);
 				self::getInstance()->levelName = $level->getFolderName();
 			}
+		}, static function(SqlError $result): void{
+			SkyWarsPE::getInstance()->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
 		});
 	}
 

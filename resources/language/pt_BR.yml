@@ -1,0 +1,229 @@
+###########################################################################################
+# This is a YML file. Be careful when editing. Check your edits in a YAML checker like    #
+# the one at http://yaml-online-parser.appspot.com                                        #
+###########################################################################################
+---
+# No reason to edit this
+config-version: 10
+
+low-permission: "&eAlgum comando novo? Uma pena que ainda não esteja disponível."
+no-permission: "&cVocê não tem a permissão certa para fazer isso."
+
+# Arena-Game behaviour language.
+arena-running: "&cA arena está em uma partida no momento!"
+arena-delete: "&cArena &d{ARENA} foi deletada."
+arena-exists: "&cA arena com esse nome já existe!"
+arena-not-exist: "&cA arena não existe!"
+arena-hibernation: "&cA arena está atualmente em modo de hibernação!"
+
+message-disconnected: "&6{PLAYER}&c foi desconectado(a)."
+message-left: "&6{PLAYER}&c saiu do jogo.."
+
+arena-disabled: "&cA arena está temporariamente desativada, tente novamente mais tarde."
+arena-crashed: "&cA arena quebrou! Peça ao proprietário do servidor para verificar os logs do servidor."
+arena-in-queue: "&6Você está na fila de {ARENA_NAME}, por favor espere."
+arena-join: "&6{PLAYER}&e juntou-se à partida (&b{TOTAL_PLAYERS}&e/&b{MAX_SIZE}&e)"
+arena-startup: "&6Jogo começando em {TIME} segundos"
+arena-no-invincible: "&cVocê não é mais invencível."
+arena-chest-refilled: "&eOs baús foram recarregados!"
+arena-command-forbidden: "Você não pode executar nenhum comando durante o jogo."
+arena-moderation-on: "%prefix&aAgora você receberá todas as mensagens das arenas."
+arena-moderation-off: "%prefix&cVocê não receberá mais mensagens das arenas."
+
+moderation-pre-enable: "%prefix&aAgora você receberá todas as mensagens das arenas. Use /sw moderation para desabilitar esta opção."
+
+# Arena titles and subtitles translations
+countdown-cancel-title: "&cJogadores insuficientes"
+countdown-cancel-subtitle: "&cA contagem regressiva foi cancelada."
+countdown-starting-title: "&6Começando em"
+countdown-starting-subtitle: ""
+countdown-started-title: "&cPartida iniciada!"
+countdown-started-subtitle: ""
+
+died-title: "&c&lVOCÊ MORREU!"
+died-subtitle: "&7Você agora é um espectador."
+
+# Command messages, Here the messages
+arena-unavailable: "&cSem arena disponível, por favor, tente novamente mais tarde."
+arena-started: "&aComeçou a arena &d{ARENA}."
+main-lobby-set: "&aDefinido com sucesso este local como lobby SkyWars."
+no-world: "&cDesculpe, você não tem mais mundos para criar uma arena."
+command-setlobby-inarena: "&cVocê não pode executar este comando em uma arena!"
+use-in-arena: "&cPor favor, use este comando na arena"
+
+stats-1: "&aStatus de {PLAYER}'"
+stats-2: "&6Nome: &f{DATA}"
+stats-3: "&6Baixas: &f{DATA}"
+stats-4: "&6Mortes: &f{DATA}"
+stats-5: "&6Proporção entre Baixas/Mortes: &f{DATA}"
+stats-6: "&6Vitórias: &f{DATA}"
+stats-7: "&6Perdas: &f{DATA}"
+
+setup-choose-arena: "&aEscolha sua arena primeiro."
+
+settings-arena-1: "Configuração para arena {ARENA_NAME}"
+settings-arena-2: "Configurar os Spawns da Arena"
+settings-arena-3: "Configurar Spawn do espectador"
+settings-arena-4: "Configurar comportamento da arena"
+settings-arena-5: "Configurar o comportamento da placa"
+settings-arena-6: "Definir localização da placa"
+settings-arena-7: "Configuração do placar"
+settings-arena-8: "Edite este mundo"
+settings-arena-9: "&cExclua esta arena."
+
+behaviour-setup-1: "Configuração das arenas."
+behaviour-setup-2: "&eHabilitar a arena?"
+behaviour-setup-3: "&eDefinir cronômetro invencível"
+behaviour-setup-4: "&eAtivar modo espectador?"
+behaviour-setup-5: "&eAtivar modo equipe?"
+behaviour-setup-6: "&eComeçar quando estiver cheio?"
+
+team-setup-1: 'Ajustes do modo equipe'
+team-setup-2: 'Jogadores por equipe'
+team-setup-3: 'Número de equipes mínimos'
+team-setup-4: 'Número de equipes máximas'
+team-setup-5: 'Cores do time'
+
+team-error-1: '&cErro de configuração da equipe, deve ser um número inteiro no intervalo de 0-15 e separado por `;`'
+team-error-2: '&cAs cores de sua equipe configuradas são menores do que o máximo de suas equipes.'
+
+solo-setup-1: "Ajustes do modo solo"
+solo-setup-2: "Número mínimo de jogadores"
+solo-setup-3: "Número máximo de jogadores"
+
+behaviour-setup-complete: "&aArena atualizada com sucesso &e{ARENA_NAME}"
+
+behaviour-sign-1: "&eAjustes do comportamento da placa"
+behaviour-sign-2: "&aBem-vindo a configuração do comportamento da placa. Antes de fazer qualquer coisa, você precisa conhecer estes"
+behaviour-sign-3: "&eLinhas de status\nVocê pode usar cores\nUse o símbolo de porcentagem antes das variáveis para elas funcionarem\nalive é a quantidade de jogadores vivos no jogo\ndead é a quantidade de jogadores mortos\nstatus é o status do jogo\nworld é o nome do mundo da arena\nmax é o máximo de jogadores por arena"
+behaviour-sign-4: "&aLinha 1 da placa"
+behaviour-sign-5: "&aLinha 2 da placa"
+behaviour-sign-6: "&aLinha 3 da placa"
+behaviour-sign-7: "&aLinha 4 da placa"
+behaviour-sign-complete: "&aLinhas da placa atualizadas com sucesso para &e{ARENA_NAME}"
+
+setup-arena-spawn: "Agora você pode configurar as posições de spawn da arena, use a haste de chama e quebre um bloco para definir a posição, as alterações feitas neste mundo serão descartadas."
+setup-arena-spectator: "Agora você pode configurar a posição do espectador da arena, use a haste de chama e quebre um bloco para definir a posição, as alterações feitas neste mundo serão descartadas."
+setup-arena-joinsign: "Agora você pode configurar a posição da placa de entrada da arena, use a haste de chama e quebre um bloco para definir a posição dele."
+setup-npc: "Agora você pode configurar a posição do NPC, use a haste de chama e quebre um bloco para definir a posição dele."
+edit-world: "Agora você pode editar este mundo com segurança, todas as mudanças neste mundo serão salvas."
+
+arena-delete-1: "&cDeletar"
+arena-delete-2: "Cancelar"
+arena-delete-confirm: "&cTem certeza de que deseja realizar esta ação? Excluir uma arena excluirá sua configuração de arena e seu mundo!"
+
+setup-scoreboard: ""
+
+spectator-select1: "Selecione o nome do jogador"
+spectator-select2: "Selecione um jogador para assistir"
+spectator-exit: "&cSair"
+spectator-not-ingame: "&cVocê não está mais na arena."
+spectator-player-left: "&cEsse jogador não está mais na arena."
+
+setup-arena-1: "&5Configurações do SkyWars."
+setup-arena-2: "&6O nome da sua Arena."
+setup-arena-3: "&6Selecione o mundo de sua Arena."
+setup-arena-4: "&eNúmero máximo de jogadores"
+setup-arena-5: "&eNúmero mínimo de jogadores"
+setup-arena-6: "&7Modo expectador"
+setup-arena-7: "&7Começar quando cheio"
+
+setup-arena-spawn-1: "Configurar spawn?"
+setup-arena-spawn-2: "&aVocê pode precisar configurar a posição do spawn da arena para que o sistema possa habilitar a arena muito mais rápido."
+setup-arena-spawn-3: "Configurar spawn de arena."
+setup-arena-spawn-4: "&cConfigurar depois."
+
+setup-later: "&aVocê pode configurar isso mais tarde com /sw settings"
+
+no-data: "&cEsse jogador não existe no banco de dados!"
+
+form-error-1: 'O ID que você solicitou é inválido, incapaz de executar este comando'
+
+scoreboard-button-1: "Exibição do placar durante a espera"
+scoreboard-button-2: "Exibição do placar em jogo"
+scoreboard-button-3: "Exibição do placar no fim do jogo"
+scoreboard-button-4: "Exibição do placar como espectador"
+scoreboard-button-5: "Sair"
+
+scoreboard-state-1: "Esta seção será usada durante o estado de espera."
+scoreboard-state-2: "Esta seção será usada quando a arena for iniciada, mas sem nenhuma equipe."
+scoreboard-state-3: "Esta seção será usada quando o jogo terminar."
+scoreboard-state-4: "Esta seção será usada se o jogador morrer."
+
+scoreboard-success: "&aConfigurado com sucesso a configuração do placar da arena."
+
+kit-selection-1: "Selecione seu kit."
+kit-selection-2: "Selecione um dos kits abaixo."
+
+kit-removed: "%prefix&cVocê removeu seu kit atual"
+kit-selected: "%prefix&aVocê selecionou o kit &e{KIT_NAME}&a!"
+
+kit-no-permission: "%prefix&cVocê não tem permissão para selecionar o kit &e{KIT_NAME}&c!"
+
+# Kill message
+death-message-void: "&7- &e{PLAYER} &cfoi morto pelo void"
+death-message-suicide: "&7- &e{PLAYER} &cse suicidou."
+death-message-suffocated: "&7- &e{PLAYER} &cfoi sufocado até a morte."
+death-message-burned: "&7- &e{PLAYER} &cfoi queimado até a morte."
+death-message-catused: "&7- &e{PLAYER} &cmorreu pelo cacto"
+death-message-fall: "&7- &e{PLAYER} &ccaiu do céu."
+death-message-toasted: "&7- &e{PLAYER} &cfoi torrado pela lava"
+death-message-drowned: "&7- &e{PLAYER} &cse afogou"
+death-message-nature: "&7- &e{PLAYER} &cfoi morto pela natureza"
+death-message-explode: "&7- &e{PLAYER} &cexplodiu em pedaços"
+death-message-magic: "&7- &e{PLAYER} &cfoi morto por algum tipo de magia"
+death-message-unknown: "&7- &e{PLAYER} é um membro do illuminati"
+death-message: "&7- &e{PLAYER} &foi morto por &e{KILLER}"
+
+# Command help message
+help-main: "&cPor favor, use /sw help para a lista de comandos"
+lobby-help: "&2/sw leave &l&5»&r&f Teleporta para o lobby."
+random-help: "&2/sw random &l&5»&r&f Teleporta aleatoriamente para uma arena."
+stats-help: "&2/sw stats &l&5»&r&f Mostra o seu status no jogo."
+reload-help: "&2/sw reload &l&5»&r&f Recarrega o plugin, faça tudo do início."
+create-help: "&2/sw create &l&5»&r&f Cria uma nova arena."
+cage-help: "&2/sw cage &l&5»&r&f Defina suas gaiolas personalizadas."
+join-help: "&2/sw join &b[Nome da arena]."
+settings-help: "&2/sw settings &l&5»&r&f Configure ou modifique a arena."
+setlobby-help: "&2/sw setlobby &l&5»&r&f Defina o lobby principal do plugin."
+about-help: "&2/sw about &l&5»&r&f Sobre e notas do autor."
+npc-help: "&2/sw npc &l&5»&r&f Cria um NPC dos TopVencedores."
+list-help: "&2/sw list &l&5»&r&f Lista todas as arenas em execução no servidor."
+
+# Command false usage help message
+start-usage: "&6Use: &2/sw start &b[Nome da arena]."
+stop-usage: "&6Use: &2/sw start &b[Nome da arena]."
+join-usage: "&6Use: &2/sw start &b[Nome da arena]."
+moderation-usage: "&6Use: &2/sw moderation &b[On/Off]"
+
+setup-wrong-world-1: "&cVocê não está na arena certa, teleporte-se de volta ao mundo {ARENA_WORLD}"
+setup-wrong-world-2: "&cVocê não pode realizar esta ação no mundo da arena!"
+world-teleport: "&aTeleportando você de volta para o mundo principal."
+
+cage-selection-1: "§8Formulário de seleção de gaiolas."
+cage-selection-2: "§aVariedades de gaiolas disponíveis!"
+
+cage-selected: "§cGaiola §8{CAGE_NAME}§c selecionada\n"
+cage-buy: "§8{CAGE_NAME}\n§a[Preço ${CAGE_PRICE}]"
+cage-bought: "§8{CAGE_NAME}\n§aComprar gaiola"
+case-select: "§8{CAGE_NAME}\n§aSelecione a gaiola"
+
+cage-error-chosen: "&cVocê já comprou esta gaiola!"
+cage-chosen: "%prefix&aVocê escolheu a gaiola &e{CAGE_NAME}."
+
+economy-error: "&cEste recurso está desativado porque não há o plug-in EconomyAPI instalado."
+economy-no-money: "&cVocê não tem dinheiro suficiente para comprar isso"
+economy-internal: "&cNão é possível processar seu pagamento. Tente mais tarde"
+
+# Panel messages
+panel-cancelled: "&cSua solicitação foi cancelada."
+panel-choose-cage: "&aVocê escolheu a gaiola, &d{CAGE}"
+panel-join-spect: "&aSpawn do espectador marcado."
+panel-join-sign: "&aLocal da placa marcado."
+panel-spawn-pos: "&aLocal do spawn marcado, há &e#{COUNT} &a spawns."
+panel-spawn-set: "&eMarcou com sucesso os locais de spawn."
+
+# Top winners
+top-winner-1: "&r&lTopVencedores #{VAL}"
+top-winner-2: "&r&2{PLAYER}"
+top-winner-3: "&r&7{WINS} Vitórias"

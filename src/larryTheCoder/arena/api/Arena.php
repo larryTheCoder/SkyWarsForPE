@@ -402,7 +402,7 @@ abstract class Arena implements ShutdownSequence {
 
 		foreach($this->getPlayerManager()->getAllPlayers() as $p2) $p2->hidePlayer($player);
 
-		$player->setGamemode(Player::ADVENTURE);
+		$player->setGamemode(Player::SPECTATOR);
 		self::sendAdventureSettings($player);
 	}
 

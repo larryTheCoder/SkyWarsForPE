@@ -43,7 +43,7 @@ use pocketmine\utils\Config;
  */
 class ScoreFilter extends Internal {
 
-	/** @var ScoreHud */
+	/** @var ScoreHud|null */
 	public $scoreboard = null;
 
 	public function __construct(Arena $arena, Config $defaultConf){
@@ -51,7 +51,10 @@ class ScoreFilter extends Internal {
 
 		// TODO: Check for v6.0, event driven scoreboards, wooo. For now lets stick to v5.2.0
 		//       which is literally discarding or ignoring this plugin functionality.
-		$this->scoreboard = Server::getInstance()->getPluginManager()->getPlugin("ScoreHud");
+		$scoreboard = Server::getInstance()->getPluginManager()->getPlugin("ScoreHud");
+		if($scoreboard !== null && $scoreboard instanceof ScoreHud){
+			$this->scoreboard = $scoreboard;
+		}
 	}
 
 	public function removePlayer(Player $player): void{

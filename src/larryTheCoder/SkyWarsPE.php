@@ -103,6 +103,7 @@ class SkyWarsPE extends PluginBase {
 		$this->saveResource("language/es_ES.yml");
 		$this->saveResource("language/ko_KR.yml");
 		$this->saveResource("language/ru_RU.yml");
+		$this->saveResource("language/pt_BR.yml");
 
 		// Load config file first.
 		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
