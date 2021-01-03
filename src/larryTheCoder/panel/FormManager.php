@@ -51,6 +51,7 @@ use larryTheCoder\SkyWarsPE;
 use larryTheCoder\utils\cage\CageManager;
 use larryTheCoder\utils\PlayerData;
 use larryTheCoder\utils\Settings;
+use larryTheCoder\worker\LevelAsyncPool;
 use pocketmine\block\Slab;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -231,7 +232,7 @@ class FormManager implements Listener {
 				FormQueue::sendForm($player, $form);
 			});
 
-			Server::getInstance()->getAsyncPool()->submitTask($task);
+			LevelAsyncPool::getAsyncPool()->submitTask($task);
 		}, function(Player $pl): void{
 			$pl->sendMessage(TC::getTranslation($pl, 'panel-cancelled'));
 		});
@@ -665,7 +666,7 @@ class FormManager implements Listener {
 			$onComplete($level);
 		});
 
-		Server::getInstance()->getAsyncPool()->submitTask($task);
+		LevelAsyncPool::getAsyncPool()->submitTask($task);
 	}
 
 	/**
@@ -685,9 +686,9 @@ class FormManager implements Listener {
 				$form->append(TC::getTranslation($player, 'cage-selected', ["{CAGE_NAME}" => $cage->getCageName()]));
 			}elseif($cage->getPrice() > 0){
 				if(!$player->hasPermission($cage->getCagePermission())){
-					$form->append(TC::getTranslation($player, 'cage-buy', ["{CAGE_NAME}" => $cage->getCageName()]));
+					$form->append(TC::getTranslation($player, 'cage-buy', ["{CAGE_NAME}" => $cage->getCageName(), "{CAGE_PRICE}" => $cage->getPrice()]));
 				}else{
-					$form->append(TC::getTranslation($player, 'cage-bought', ["{CAGE_NAME}" => $cage->getCageName(), "{CAGE_PRICE}" => $cage->getPrice()]));
+					$form->append(TC::getTranslation($player, 'cage-bought', ["{CAGE_NAME}" => $cage->getCageName()]));
 				}
 			}else{
 				$form->append(TC::getTranslation($player, 'cage-select', ["{CAGE_NAME}" => $cage->getCageName()]));
@@ -815,7 +816,7 @@ class FormManager implements Listener {
 						$this->cleanupEvent($player, true);
 					});
 
-					Server::getInstance()->getAsyncPool()->submitTask($task);
+					LevelAsyncPool::getAsyncPool()->submitTask($task);
 			}
 
 			$event->setCancelled();
@@ -829,7 +830,7 @@ class FormManager implements Listener {
 			$arena->setFlags(ArenaImpl::ARENA_IN_SETUP_MODE, false);
 
 			if($cleanWorld && ($level = Server::getInstance()->getLevelByName($arena->getLevelName())) !== null){
-				Server::getInstance()->getAsyncPool()->submitTask(new AsyncDirectoryDelete([$level]));
+				LevelAsyncPool::getAsyncPool()->submitTask(new AsyncDirectoryDelete([$level]));
 			}
 		}
 
@@ -837,7 +838,7 @@ class FormManager implements Listener {
 			$holdIndex = $this->lastHoldIndex[$player->getName()][0];
 			$lastItem = $this->lastHoldIndex[$player->getName()][1];
 
-			$player->getInventory()->setItem(0, $lastItem);
+			$player->getInventory()->setItem(0, $lastItem ?? ItemFactory::get(ItemIds::AIR));
 			$player->getInventory()->setHeldItemIndex($holdIndex);
 
 			unset($this->lastHoldIndex[$player->getName()]);

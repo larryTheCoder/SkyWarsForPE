@@ -39,6 +39,7 @@ use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
 use larryTheCoder\arena\api\task\CompressionAsyncTask;
 use larryTheCoder\arena\api\utils\QueueManager;
 use larryTheCoder\database\SkyWarsDatabase;
+use larryTheCoder\worker\LevelAsyncPool;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -281,7 +282,7 @@ abstract class Arena implements ShutdownSequence {
 			$this->lobbyLevel = null;
 			$this->deleteTimeout = 0;
 		});
-		Server::getInstance()->getAsyncPool()->submitTask($task);
+		LevelAsyncPool::getAsyncPool()->submitTask($task);
 
 		$this->deleteTimeout = 30;
 	}
@@ -335,7 +336,7 @@ abstract class Arena implements ShutdownSequence {
 			$this->processQueue();
 		});
 
-		Server::getInstance()->getAsyncPool()->submitTask($task);
+		LevelAsyncPool::getAsyncPool()->submitTask($task);
 
 		$this->setFlags(self::WORLD_ATTEMPT_LOAD, true);
 	}

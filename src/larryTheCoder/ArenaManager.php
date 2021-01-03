@@ -33,8 +33,8 @@ use larryTheCoder\arena\api\task\AsyncDirectoryDelete;
 use larryTheCoder\arena\ArenaImpl;
 use larryTheCoder\utils\ConfigManager;
 use larryTheCoder\utils\Utils;
+use larryTheCoder\worker\LevelAsyncPool;
 use pocketmine\Player;
-use pocketmine\Server;
 use pocketmine\utils\Config;
 
 final class ArenaManager {
@@ -135,7 +135,7 @@ final class ArenaManager {
 			unset($this->config[$arena->getMapName()]);
 		});
 
-		Server::getInstance()->getAsyncPool()->submitTask($task);
+		LevelAsyncPool::getAsyncPool()->submitTask($task);
 	}
 
 	/**

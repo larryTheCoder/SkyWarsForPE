@@ -35,7 +35,7 @@ use larryTheCoder\arena\api\Arena;
 use larryTheCoder\arena\api\CageManager;
 use larryTheCoder\arena\api\impl\ArenaListener;
 use larryTheCoder\arena\api\PlayerManager;
-use larryTheCoder\arena\api\scoreboard\Internal;
+use larryTheCoder\arena\api\scoreboard\ScoreFilter;
 use larryTheCoder\arena\api\SignManager;
 use larryTheCoder\arena\api\task\ArenaTickTask;
 use larryTheCoder\arena\task\SkyWarsTask;
@@ -106,7 +106,7 @@ class ArenaImpl extends ArenaData {
 
 		$this->signManager = new SignManager($this, $this->getSignPosition(), Settings::$prefix);
 		$this->cageManager = new CageManager($this->spawnPedestals);
-		$this->scoreboard = new Internal($this, Utils::getScoreboardConfig($this));
+		$this->scoreboard = new ScoreFilter($this, Utils::getScoreboardConfig($this));
 
 		$this->signManager->setTemplate([$this->statusLine1, $this->statusLine2, $this->statusLine3, $this->statusLine4]);
 
@@ -230,8 +230,6 @@ class ArenaImpl extends ArenaData {
 	}
 
 	public function unsetPlayer(Player $player, bool $isSpectator = false): void{
-		$player->setGamemode(0);
-
 		if($isSpectator){
 			$player->setAllowFlight(false);
 
@@ -244,16 +242,20 @@ class ArenaImpl extends ArenaData {
 			SkyWarsDatabase::addPlayedSince($player->getName(), time() - $this->startedTime);
 		}
 
-		$player->getInventory()->clearAll();
-		$player->getArmorInventory()->clearAll();
+		if(!$player->isClosed()){
+			$player->setGamemode(0);
 
-		if($this->getPlayerManager()->teamMode && isset($this->originalNametag[$player->getName()])){
-			$player->setNameTag($this->originalNametag[$player->getName()]);
-			unset($this->originalNametag[$player->getName()]);
+			$player->getInventory()->clearAll();
+			$player->getArmorInventory()->clearAll();
+
+			if($this->getPlayerManager()->teamMode && isset($this->originalNametag[$player->getName()])){
+				$player->setNameTag($this->originalNametag[$player->getName()]);
+				unset($this->originalNametag[$player->getName()]);
+			}
+
+			$player->setHealth(20);
+			$player->setFood(20);
 		}
-
-		$player->setHealth(20);
-		$player->setFood(20);
 	}
 
 	public function leaveArena(Player $player, bool $onQuit = false): void{

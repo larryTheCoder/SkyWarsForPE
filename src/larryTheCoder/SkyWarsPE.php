@@ -42,6 +42,7 @@ use larryTheCoder\utils\{fireworks\entity\FireworksRocket,
 	Utils
 };
 use larryTheCoder\utils\cage\CageManager;
+use larryTheCoder\worker\LevelAsyncPool;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\entity\Entity;
@@ -59,7 +60,7 @@ use pocketmine\utils\{Config, MainLogger, TextFormat};
 class SkyWarsPE extends PluginBase {
 
 	private const CONFIG_VERSION = 4;
-	private const LOCALE_VERSION = 10;
+	private const LOCALE_VERSION = 11;
 	private const CAGES_VERSION = 2;
 
 	/** @var SkyWarsPE|null */
@@ -99,6 +100,9 @@ class SkyWarsPE extends PluginBase {
 		$this->saveResource("arenas/default.yml");
 		$this->saveResource("looting-tables.json");
 		$this->saveResource("language/en_US.yml");
+		$this->saveResource("language/es_ES.yml");
+		$this->saveResource("language/ko_KR.yml");
+		$this->saveResource("language/ru_RU.yml");
 
 		// Load config file first.
 		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
@@ -129,19 +133,27 @@ class SkyWarsPE extends PluginBase {
 			$localeCode = basename($file, ".yml");
 
 			if($locale->get("config-version") < self::LOCALE_VERSION && file_exists($this->getFile() . "resources/language/" . $localeCode . ".yml")){
+				$newLocale = new Config($this->getFile() . "resources/language/" . $localeCode . ".yml");
+				if($newLocale->get("config-version") < self::LOCALE_VERSION){
+					goto register;
+				}
+
 				$this->getServer()->getLogger()->info(Settings::$prefix . TextFormat::YELLOW . "§cLanguage '" . $localeCode . "' is outdated, saving a newer locale config.");
 
 				Utils::oldRenameRecursive("language/" . $localeCode . ".yml");
 				$this->saveResource("language/" . $localeCode . ".yml", true);
 
-				$locale->reload();
+				$locale = $newLocale;
 			}
 
+			register:
 			TranslationContainer::getInstance()->addTranslation($localeCode, $locale);
 		}
 	}
 
 	public function onEnable(): void{
+		new LevelAsyncPool($this, 4);
+
 		$server = $this->getServer();
 		if(\Phar::running(true) === ""){
 			if(!class_exists("poggit\libasynql\libasynql")){
@@ -259,6 +271,8 @@ class SkyWarsPE extends PluginBase {
 
 			Utils::unLoadGame();
 			SkyWarsDatabase::shutdown();
+
+			LevelAsyncPool::getAsyncPool()->shutdown();
 
 			if($this->pedestalManager !== null){
 				$this->pedestalManager->closeAll();

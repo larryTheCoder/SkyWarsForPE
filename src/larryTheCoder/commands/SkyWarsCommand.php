@@ -173,6 +173,7 @@ final class SkyWarsCommand {
 					}elseif($arena->hasFlags(Arena::ARENA_OFFLINE_MODE)){
 						$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-hibernation'));
 					}elseif($arena->getStatus() < ArenaState::STATE_ARENA_RUNNING){
+						$arena->startArena();
 						$arena->setStatus(ArenaState::STATE_ARENA_RUNNING);
 
 						$sender->sendMessage(Settings::$prefix . TranslationContainer::getTranslation($sender, 'arena-started', ["{ARENA}" => $arena->getMapName()]));

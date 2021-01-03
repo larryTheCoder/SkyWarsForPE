@@ -84,7 +84,7 @@ team-setup-3: '최소 팀'
 team-setup-4: '최대 팀'
 team-setup-5: '팀 색깔'
 
-team-error-1: '&c팀 설정 중 오류가 발생했습니다. 0-15 사이의 정수여야 하며, ';'으로 분리되어야 합니다.'
+team-error-1: "&c팀 설정 중 오류가 발생했습니다. 0-15 사이의 정수여야 하며, ';'으로 분리되어야 합니다."
 team-error-2: '&c설정한 팀 색깔이 최대 팀 수보다 적습니다'
 
 solo-setup-1: "솔로 팀 설정"
@@ -217,7 +217,7 @@ economy-internal: "&c결제를 진행할 수 없습니다. 잠시 후 다시 시
 
 # Panel messages
 panel-cancelled: "&c요청이 취소되었습니다."
-panel-choose-cage: "&a케이지 &d{CAGE}&a를 선택했습니다.
+panel-choose-cage: "&a케이지 &d{CAGE}&a를 선택했습니다."
 panel-join-spect: "&a관전자 스폰 위치가 기록되었습니다."
 panel-join-sign: "&a참가 표지판 위치가 기록되었습니다."
 panel-spawn-pos: "&a스폰 위치 &e#{COUNT}&a를 설정했습니다."

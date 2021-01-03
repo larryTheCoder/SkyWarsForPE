@@ -10,6 +10,9 @@
     Powered by Open Sourced code, Our code comrade.
     Its time to burn those old fancy paid plugins and beat them in face!
 
+### Notice
+Support for PM3 will no longer be available in any time soon.
+
 ## Introduction
 SkyWarsForPE is a production-standard plugin built for all Minecraft PE Community, the code was acquired by Alair069 for
 SkyWars project/development. However, due to some inactivity in this project in the self-isolated environment, it was brought
