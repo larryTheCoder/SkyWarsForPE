@@ -1,12 +1,13 @@
 name: SkyWarsForPE
 main: larryTheCoder\SkyWarsPE
-version: "3.1.35-BETA"
+version: "3.1.35-delta1"
 api: 3.16.0
 author: larryTheCoder
 website: https://github.com/larryTheCoder/SkyWarsForPE
 softdepend:
   - EconomyAPI
   - EasyKits
+  - ScoreHud
 extensions:
   - sqlite3
 commands:

@@ -37,13 +37,13 @@ class Settings {
 	# ============ GENERALS CONFIG ============
 
 	/** @var string */
-	public static $lang = "";
-	/** @var string */
 	public static $prefix = '§d[§eSkyWars§d] §a';
 	/** @var int */
 	public static $joinHealth = 20;
 	/** @var string[] */
 	public static $acceptedCommand = [];
+	/** @var int */
+	public static $defaultGamemode = 0;
 
 	# ============ GENERALS CONFIG ============
 
@@ -51,10 +51,10 @@ class Settings {
 		# ============ GENERALS CONFIG ============
 
 		$general = $config->get("general");
-		self::$lang = $general['language'];
 		self::$prefix = str_replace("&", "§", $general['prefix']);
 		self::$joinHealth = $general['join-health'];
 		self::$acceptedCommand = array_merge(explode(":", $general['accepted-cmd']), ['sw', 'skywars']);
+		self::$defaultGamemode = $general['default-gamemode'] ?? 0;
 		SignManager::$blockStatus = (bool)$general['enable-block-status'];
 
 		# ============ GENERALS CONFIG ============

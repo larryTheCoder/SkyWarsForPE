@@ -93,8 +93,6 @@ class PlayerManager {
 	}
 
 	public function addPlayer(Player $pl, int $team = -1): void{
-		# Set the player gamemode first
-		$pl->setGamemode(0);
 		$pl->getInventory()->clearAll();
 		$pl->getArmorInventory()->clearAll();
 

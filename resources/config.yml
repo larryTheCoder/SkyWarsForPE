@@ -5,14 +5,10 @@
 ---
 # Config version node. Unique Config name.
 # No reason to edit this
-config-version: 4
+config-version: 5
 
 # General in-game configuration.
 general:
-  # Game language.
-  # Current available languages:
-  # - en_US: Adam Matthew
-  language: 'en_US'
   # The game prefix. Which will be used for command sending, Messaging
   # And Console usage. Use `&` for `§`
   prefix: '§d[§eSkyWars§d] &a'
@@ -20,6 +16,9 @@ general:
   # If the health is greater than the player max health,
   # max health will be used instead.
   join-health: 20
+  # Server default gamemode, you can choose what gamemode
+  # your players will be in after leaving the match.
+  default-gamemode: 0
   # Players can use varieties of commands, so make
   # Sure that player can use the command in game
   # and making sure that no cheat while in game.

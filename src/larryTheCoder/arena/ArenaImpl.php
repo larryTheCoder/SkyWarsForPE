@@ -139,7 +139,7 @@ class ArenaImpl extends ArenaData {
 
 		foreach($pm->getAlivePlayers() as $player){
 			// Set the player gamemode first
-			$player->setGamemode(0);
+			$player->setGamemode(Player::SURVIVAL);
 			$player->getInventory()->clearAll();
 			$player->getArmorInventory()->clearAll();
 
@@ -243,7 +243,7 @@ class ArenaImpl extends ArenaData {
 		}
 
 		if(!$player->isClosed()){
-			$player->setGamemode(0);
+			$player->setGamemode(Settings::$defaultGamemode);
 
 			$player->getInventory()->clearAll();
 			$player->getArmorInventory()->clearAll();
