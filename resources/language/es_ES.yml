@@ -193,7 +193,7 @@ list-help: "&2/sw list &l&5»&r&f Mostrar todas las arenas activas en el servido
 # Command false usage help message
 start-usage: "&Uso: &2/sw start &b[Nombre de Arena]."
 stop-usage: "&Uso: &2/sw start &b[Nombre de Arena]."
-join-usage: "&Uso: &2/sw start &b[Nombre de Arena]."
+join-usage: "&Uso: &2/sw join &b[Nombre de Arena]."
 moderation-usage: "&Uso: &2/sw moderation &b[On/Off]"
 
 setup-wrong-world-1: "&cNo estás en el mundo de arena correcto, teletranspórtate de vuelta al nivel {ARENA_WORLD}"
