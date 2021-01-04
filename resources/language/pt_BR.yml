@@ -193,7 +193,7 @@ list-help: "&2/sw list &l&5»&r&f Lista todas as arenas em execução no servido
 # Command false usage help message
 start-usage: "&6Use: &2/sw start &b[Nome da arena]."
 stop-usage: "&6Use: &2/sw start &b[Nome da arena]."
-join-usage: "&6Use: &2/sw start &b[Nome da arena]."
+join-usage: "&6Use: &2/sw join &b[Nome da arena]."
 moderation-usage: "&6Use: &2/sw moderation &b[On/Off]"
 
 setup-wrong-world-1: "&cVocê não está na arena certa, teleporte-se de volta ao mundo {ARENA_WORLD}"
