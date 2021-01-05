@@ -193,7 +193,7 @@ list-help: "&2/sw list &l&5»&r&f List all running arenas in the server."
 # Command false usage help message
 start-usage: "&6Usage: &2/sw start &b[Arena Name]."
 stop-usage: "&6Usage: &2/sw start &b[Arena Name]."
-join-usage: "&6Usage: &2/sw start &b[Arena Name]."
+join-usage: "&6Usage: &2/sw join &b[Arena Name]."
 moderation-usage: "&6Usage: &2/sw moderation &b[On/Off]"
 
 setup-wrong-world-1: "&cYou are not in the right arena world, teleport back to level {ARENA_WORLD}"

@@ -193,7 +193,7 @@ list-help: "&2/sw list &l&5»&r&f Показать список всех зап�
 # Command false usage help message
 start-usage: "&6Использовать: &2/sw start &b[Arena Name]!"
 stop-usage: "&6Использовать: &2/sw start &b[Arena Name]!"
-join-usage: "&6Использовать: &2/sw start &b[Arena Name]!"
+join-usage: "&6Использовать: &2/sw join &b[Arena Name]!"
 moderation-usage: "&6Использовать: &2/sw moderation &b[On/Off]"
 
 setup-wrong-world-1: "&cВы находитесь не в том мире арены, телепортируйтесь обратно в мир {ARENA_WORLD}"

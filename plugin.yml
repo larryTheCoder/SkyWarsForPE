@@ -56,3 +56,6 @@ permissions:
       sw.command.cage:
         description: Allow players to access kit selection form.
         default: true
+      sw.command.stats:
+        description: Check SkyWars stats of players.
+        default: true

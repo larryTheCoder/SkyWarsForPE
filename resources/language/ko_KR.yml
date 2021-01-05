@@ -193,7 +193,7 @@ list-help: "&2/sw list &l&5»&r&f 서버에서 실행되고 있는 게임 목록
 # Command false usage help message
 start-usage: "&6사용법: &2/sw start &b[게임 이름]."
 stop-usage: "&6사용법: &2/sw start &b[게임 이름]."
-join-usage: "&6사용법: &2/sw start &b[게임 이름]."
+join-usage: "&6사용법: &2/sw join &b[게임 이름]."
 moderation-usage: "&6사용법: &2/sw moderation &b[On/Off]"
 
 setup-wrong-world-1: "&c당신은 올바른 월드에 있지 않습니다. {ARENA_WORLD} 월드로 돌아갑니다."
