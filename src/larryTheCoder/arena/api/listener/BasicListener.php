@@ -292,7 +292,12 @@ abstract class BasicListener implements Listener {
 				$arena->onSpectatorSelection($p);
 
 				$e->setCancelled();
+			}elseif($item->equals(Arena::getRejoinItem())){
+				$arena->onRejoinSelection($p);
+
+				$e->setCancelled();
 			}
+
 
 			if(!$e->isCancelled() && $arena->getEventListener()->onPlayerInteractEvent($e)){
 				$e->setCancelled();

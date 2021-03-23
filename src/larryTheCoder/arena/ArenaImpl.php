@@ -299,6 +299,10 @@ class ArenaImpl extends ArenaData {
 	public function onSpectatorSelection(Player $player): void{
 		$this->getPlugin()->getPanel()->showSpectatorPanel($player, $this);
 	}
+	
+	public function onRejoinSelection(Player $player): void{
+		$player->chat("/sw random");
+	}
 
 	public function refillChests(): void{
 		foreach($this->getLevel()->getTiles() as $tile){
