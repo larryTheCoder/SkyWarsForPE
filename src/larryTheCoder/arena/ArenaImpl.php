@@ -301,6 +301,7 @@ class ArenaImpl extends ArenaData {
 	}
 	
 	public function onRejoinSelection(Player $player): void{
+		$player->chat("/sw leave");
 		$player->chat("/sw random");
 	}
 

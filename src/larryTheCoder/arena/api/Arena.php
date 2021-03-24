@@ -191,6 +191,13 @@ abstract class Arena implements ShutdownSequence {
 	public function onSpectatorSelection(Player $player): void{
 		// NOOP
 	}
+	
+	/**
+	 * @param Player $player
+	*/
+	public function onRejoinSelection(Player $player): void{
+		// NOOP
+	}
 
 	/**
 	 * Return the object where the players are being queued into
