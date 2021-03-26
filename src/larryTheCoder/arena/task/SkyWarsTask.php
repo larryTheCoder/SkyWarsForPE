@@ -87,6 +87,7 @@ class SkyWarsTask extends ArenaTickTask {
 
 				$arena->unsetPlayer($player);
 
+				$player->getInventory()->setItem(4, Arena::getRejoinItem());
 				$player->getInventory()->setItem(8, Arena::getLeaveItem());
 			}
 		}elseif($this->timeElapsed === 5){
