@@ -39,9 +39,9 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use larryTheCoder\libs\poggit\libasynql\DataConnector;
-use larryTheCoder\libs\poggit\libasynql\libasynql;
-use larryTheCoder\libs\poggit\libasynql\SqlError;
+use poggit\libasynql\DataConnector;
+use lpoggit\libasynql\libasynql;
+use poggit\libasynql\SqlError;
 use RuntimeException;
 
 class SkyWarsDatabase {
