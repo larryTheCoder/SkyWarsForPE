@@ -40,7 +40,7 @@ use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use poggit\libasynql\DataConnector;
-use lpoggit\libasynql\libasynql;
+use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
 use RuntimeException;
 
