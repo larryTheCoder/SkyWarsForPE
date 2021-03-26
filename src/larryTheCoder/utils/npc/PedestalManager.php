@@ -41,7 +41,7 @@ use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\scheduler\Task;
-use larryTheCoder\libs\poggit\libasynql\SqlError;
+use poggit\libasynql\SqlError;
 
 /**
  * Manages pedestal entities and watch for player events update.
