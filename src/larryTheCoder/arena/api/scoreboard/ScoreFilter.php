@@ -30,8 +30,9 @@ declare(strict_types = 1);
 
 namespace larryTheCoder\arena\api\scoreboard;
 
-use JackMD\ScoreHud\libs\JackMD\ScoreFactory\ScoreFactory;
-use JackMD\ScoreHud\ScoreHud;
+use Ifera\ScoreHud\libs\jackmd\scorefactory\ScoreFactory;
+use Ifera\ScoreHud\ScoreHud;
+use Ifera\ScoreHud\utils\HelperUtils;
 use larryTheCoder\arena\api\Arena;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -59,7 +60,7 @@ class ScoreFilter extends Internal {
 
 	public function removePlayer(Player $player): void{
 		if($this->scoreboard !== null){
-			unset($this->scoreboard->disabledScoreHudPlayers[strtolower($player->getName())]);
+			HelperUtils::destroy($player);
 		}
 
 		parent::removePlayer($player);
@@ -68,8 +69,7 @@ class ScoreFilter extends Internal {
 	public function addPlayer(Player $player): void{
 		if($this->scoreboard !== null){
 			ScoreFactory::removeScore($player);
-
-			$this->scoreboard->disabledScoreHudPlayers[strtolower($player->getName())] = 1;
+			HelperUtils::disable($player);
 		}
 
 		parent::addPlayer($player);

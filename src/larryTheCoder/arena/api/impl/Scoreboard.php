@@ -50,16 +50,16 @@ interface Scoreboard {
 	/**
 	 * Removes a player from this scoreboard.
 	 *
-	 * @param Player $pl
+	 * @param Player $player
 	 */
-	public function removePlayer(Player $pl): void;
+	public function removePlayer(Player $player): void;
 
 	/**
 	 * Add a player into this scoreboard.
 	 *
-	 * @param Player $pl
+	 * @param Player $player
 	 */
-	public function addPlayer(Player $pl): void;
+	public function addPlayer(Player $player): void;
 
 	/**
 	 * Set current event/status of an arena.

@@ -14,4 +14,4 @@ nbproject/*
 *.sworld
 *.txt
 
-lib/*
+stubs/*

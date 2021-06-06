@@ -381,6 +381,8 @@ class PlayerManager {
 
 		$i = 0;
 		foreach($sort as $player => $kills){
+			if(!is_string($player)) continue;
+
 			$this->ranking[$i++] = $player;
 		}
 	}

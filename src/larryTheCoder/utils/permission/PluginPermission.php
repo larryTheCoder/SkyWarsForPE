@@ -70,7 +70,7 @@ class PluginPermission implements Listener {
 		$this->attachments[$player->getName()] = $player->addAttachment(SkyWarsPE::getInstance());
 
 		SkyWarsDatabase::getPlayerEntry($player, function(?PlayerData $result) use ($player){
-			if($result === null) return;
+			if(!isset($this->attachments[$player->getName()]) || $result === null) return;
 
 			foreach($result->permissions as $permission){
 				$this->attachments[$player->getName()]->setPermission($permission, true);

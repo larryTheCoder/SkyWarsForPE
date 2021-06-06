@@ -117,6 +117,7 @@ class Cage {
 		for($y = 0; $y < 6; ++$y){
 			for($z = -2; $z < 2; $z++){
 				for($x = -2; $x < 2; $x++){
+					/** @phpstan-ignore-next-line */
 					$loc->level->setBlock($loc->add($x, $y, $z), Block::get(0));
 				}
 			}

@@ -81,14 +81,14 @@ class Internal implements Scoreboard {
 	/**
 	 * Adds a player into the scoreboard list.
 	 *
-	 * @param Player $pl
+	 * @param Player $player
 	 */
-	public function addPlayer(Player $pl): void{
-		$this->scoreboards[$pl->getName()] = $pl;
+	public function addPlayer(Player $player): void{
+		$this->scoreboards[$player->getName()] = $player;
 
-		StandardScoreboard::setScore($pl, $this->config->get("display-name", "§e§lSKYWARS"), StandardScoreboard::SORT_ASCENDING);
+		StandardScoreboard::setScore($player, $this->config->get("display-name", "§e§lSKYWARS"), StandardScoreboard::SORT_ASCENDING);
 
-		$this->updateScoreboard($pl);
+		$this->updateScoreboard($player);
 	}
 
 	private function updateScoreboard(Player $pl): void{
@@ -226,10 +226,10 @@ class Internal implements Scoreboard {
 		$this->config->reload();
 	}
 
-	public function removePlayer(Player $pl): void{
-		unset($this->scoreboards[$pl->getName()]);
-		unset($this->networkBound[$pl->getName()]);
+	public function removePlayer(Player $player): void{
+		unset($this->scoreboards[$player->getName()]);
+		unset($this->networkBound[$player->getName()]);
 
-		StandardScoreboard::removeScore($pl);
+		StandardScoreboard::removeScore($player);
 	}
 }
