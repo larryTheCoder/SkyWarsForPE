@@ -47,6 +47,7 @@ use larryTheCoder\utils\LootGenerator;
 use larryTheCoder\utils\Settings;
 use larryTheCoder\utils\Utils;
 use pocketmine\block\BlockFactory;
+use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
@@ -63,7 +64,7 @@ class ArenaImpl extends ArenaData {
 
 	/** @var EventListener */
 	private $eventListener;
-	/** @var array<mixed> */
+	/** @var array */
 	private $arenaData;
 	/** @var SignManager */
 	private $signManager;
@@ -74,6 +75,8 @@ class ArenaImpl extends ArenaData {
 	private $toRemove = [];
 	/** @var string[] */
 	private $originalNametag = [];
+	/** @var true[] */
+	private $openedChests = [];
 
 	/** @var int */
 	public $startedTime = -1;
@@ -299,20 +302,29 @@ class ArenaImpl extends ArenaData {
 	public function onSpectatorSelection(Player $player): void{
 		$this->getPlugin()->getPanel()->showSpectatorPanel($player, $this);
 	}
-	
+
 	public function onRejoinSelection(Player $player): void{
 		$player->chat("/sw leave");
 		$player->chat("/sw random");
 	}
 
-	public function refillChests(): void{
-		foreach($this->getLevel()->getTiles() as $tile){
-			if($tile instanceof Chest){
-				$tile->getInventory()->clearAll();
+	public function isChestRefilled(Chest $chest): bool{
+		return isset($this->openedChests[Level::blockHash($chest->getFloorX(), $chest->getFloorY(), $chest->getFloorZ())]);
+	}
 
-				$tile->getInventory()->setContents(LootGenerator::getLoot());
-			}
+	public function refillChest(Chest $chest): void{
+		if($this->isChestRefilled($chest)){
+			return;
 		}
+
+		$chest->getInventory()->clearAll();
+		$chest->getInventory()->setContents(LootGenerator::getLoot());
+
+		$this->openedChests[Level::blockHash($chest->getFloorX(), $chest->getFloorY(), $chest->getFloorZ())] = true;
+	}
+
+	public function refillChests(): void{
+		$this->openedChests = [];
 	}
 
 	public function getMinPlayer(): int{

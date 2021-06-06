@@ -43,10 +43,13 @@ use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\inventory\InventoryCloseEvent;
+use pocketmine\event\inventory\InventoryOpenEvent;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\inventory\ChestInventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -113,6 +116,14 @@ class EventListener extends ArenaListener {
 		$player = $event->getPlayer();
 
 		$this->arena->leaveArena($player, true);
+	}
+
+	public function onInventoryOpenEvent(InventoryOpenEvent $event): void{
+		$inventory = $event->getInventory();
+
+		if($inventory instanceof ChestInventory){
+			$this->arena->refillChest($inventory->getHolder());
+		}
 	}
 
 	public function onPlayerHitEvent(EntityDamageEvent $event): void{
