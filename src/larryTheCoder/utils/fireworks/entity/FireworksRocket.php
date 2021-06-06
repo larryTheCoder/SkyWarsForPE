@@ -52,6 +52,7 @@ class FireworksRocket extends Projectile {
 			$this->setLifeTime($fireworks->getRandomizedFlightDuration());
 		}
 		$level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_LAUNCH);
+		$this->setCanSaveWithChunk(false);
 	}
 
 	protected function tryChangeMovement(): void{

@@ -188,9 +188,6 @@ class SkyWarsPE extends PluginBase {
 			$server->getLogger()->info(Settings::$prefix . TextFormat::GREEN . "EasyKits plugin found! The plugin will use start using it now.");
 		}
 
-		Entity::registerEntity(FireworksRocket::class, true, ["Firework", "minecraft:firework_rocket"]);
-		Entity::registerEntity(FakeHuman::class, true, ["FakeHuman", "skywars:npc"]);
-
 		$this->getArenaManager()->checkArenas();
 		$this->loadHumans();
 
